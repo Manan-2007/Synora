@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Synora — One calm home for everything you're studying</title>
+  <meta name="description" content="Synora brings your tasks, assignments, notes, timetable, and grades into a single, quiet workspace. Free, offline, no sign-up.">
+  <meta name="color-scheme" content="light dark">
+
+  <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700&display=swap">
+
+  <link rel="stylesheet" href="./styles/tokens.css">
+  <link rel="stylesheet" href="./styles/base.css">
+  <link rel="stylesheet" href="./styles/landing.css">
+
+  <!-- Runs before first paint so the correct theme is applied with no flash. -->
+  <script src="./scripts/theme.js"></script>
+</head>
+
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ===================================================== NAVBAR -->
+  <header class="site-header" id="site-header">
+    <div class="container">
+      <nav class="nav" aria-label="Primary">
+        <a class="wordmark" href="#top">Synora</a>
+
+        <ul class="nav-links">
+          <li><a href="#features">Features</a></li>
+          <li><a href="#why">Why Synora</a></li>
+          <li><a href="#faq">FAQ</a></li>
+        </ul>
+
+        <div class="nav-actions">
+          <button type="button" class="icon-btn theme-toggle" data-theme-toggle aria-label="Switch to dark theme">
+            <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="4"></circle>
+              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
+            </svg>
+            <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+            </svg>
+          </button>
+
+          <button type="button" class="icon-btn nav-toggle" id="nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="nav-panel">
+            <svg class="icon-menu" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+              <path d="M3 6h18M3 12h18M3 18h18"></path>
+            </svg>
+            <svg class="icon-close" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+              <path d="M18 6 6 18M6 6l12 12"></path>
+            </svg>
+          </button>
+
+          <a class="btn btn--primary" href="./app/index.html">Get Started</a>
+        </div>
+      </nav>
+
+      <div class="nav-panel" id="nav-panel" hidden>
+        <ul>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#why">Why Synora</a></li>
+          <li><a href="#faq">FAQ</a></li>
+        </ul>
+        <a class="btn btn--primary" href="./app/index.html">Get Started</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- =================================================== HERO -->
+    <section class="hero" id="top">
+      <div class="container">
+        <div class="hero-copy">
+          <p class="eyebrow">Student productivity, unified</p>
+          <h1>One calm home for everything you're studying.</h1>
+          <p class="hero-sub">
+            Synora brings your tasks, assignments, notes, timetable, and grades into a
+            single, quiet workspace — so you spend less time organizing and more time doing.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn--primary btn--lg" href="./app/index.html">Get Started</a>
+            <a class="btn btn--ghost btn--lg" href="#features">See features</a>
+          </div>
+          <p class="hero-micro">No account needed · Works offline · Free</p>
+        </div>
+
+        <!-- Schematic preview of the app. Decorative, so hidden from AT. -->
+        <div class="hero-visual reveal">
+          <div class="app-frame" role="img" aria-label="A preview of the Synora workspace: a sidebar, today's task list, and a week view.">
+            <div class="app-frame__bar" aria-hidden="true">
+              <span class="wordmark">Synora</span>
+              <span class="app-frame__chip">Week 6</span>
+            </div>
+
+            <div class="app-frame__body" aria-hidden="true">
+              <ul class="app-sidebar">
+                <li aria-current="page">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="2"></rect><rect x="14" y="3" width="7" height="7" rx="2"></rect><rect x="3" y="14" width="7" height="7" rx="2"></rect><rect x="14" y="14" width="7" height="7" rx="2"></rect></svg>
+                  Dashboard
+                </li>
+                <li>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 11 3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                  Tasks
+                </li>
+                <li>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg>
+                  Calendar
+                </li>
+                <li>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h9.5L21 14.5V5a2 2 0 0 0-2-2Z"></path><path d="M15 21v-5a1 1 0 0 1 1-1h5"></path></svg>
+                  Notes
+                </li>
+                <li>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+                  Grades
+                </li>
+              </ul>
+
+              <div class="app-main">
+                <p class="app-main__title">Today</p>
+                <p class="app-main__meta">3 tasks · 1 due</p>
+
+                <div class="task-list">
+                  <div class="task" style="--color-status: var(--status-high)">
+                    <span class="task__box"></span>
+                    <span class="task__label">DBMS assignment 4</span>
+                    <span class="task__tag">Due 6pm</span>
+                  </div>
+                  <div class="task" style="--color-status: var(--status-medium)">
+                    <span class="task__box"></span>
+                    <span class="task__label">Read Ch. 7 — Networks</span>
+                    <span class="task__tag">Tomorrow</span>
+                  </div>
+                  <div class="task task--done" style="--color-status: var(--status-done)">
+                    <span class="task__box"></span>
+                    <span class="task__label">Submit lab record</span>
+                    <span class="task__tag">Done</span>
+                  </div>
+                </div>
+              </div>
+
+              <aside class="app-aside">
+                <p class="app-aside__title">This week</p>
+                <div class="week">
+                  <div><span>M</span><span>10</span></div>
+                  <div><span>T</span><span>11</span></div>
+                  <div aria-current="date"><span>W</span><span>12</span></div>
+                  <div><span>T</span><span>13</span></div>
+                  <div><span>F</span><span>14</span></div>
+                  <div><span>S</span><span>15</span></div>
+                  <div><span>S</span><span>16</span></div>
+                </div>
+                <ul class="agenda">
+                  <li><time>09:00</time><span><strong>Networks</strong><br>LT-3</span></li>
+                  <li><time>11:30</time><span><strong>DBMS Lab</strong><br>Block C</span></li>
+                  <li><time>16:00</time><span><strong>Study block</strong><br>Library</span></li>
+                </ul>
+              </aside>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================== FEATURES -->
+    <section class="section" id="features" aria-labelledby="features-title">
+      <div class="container">
+        <div class="section-head section-head--center reveal">
+          <h2 id="features-title">Everything a student tracks, in one place.</h2>
+          <p>Six focused tools that share one workspace, one look, and one place to look.</p>
+        </div>
+
+        <ul class="card-grid">
+          <li class="card reveal">
+            <span class="card__icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 11 3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+            </span>
+            <h3>Tasks &amp; Assignments</h3>
+            <p>Capture every to-do and deadline, sorted by what matters now.</p>
+          </li>
+
+          <li class="card reveal">
+            <span class="card__icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg>
+            </span>
+            <h3>Calendar &amp; Timetable</h3>
+            <p>See your week at a glance, from classes to due dates.</p>
+          </li>
+
+          <li class="card reveal">
+            <span class="card__icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h9.5L21 14.5V5a2 2 0 0 0-2-2Z"></path><path d="M15 21v-5a1 1 0 0 1 1-1h5"></path></svg>
+            </span>
+            <h3>Quick Notes</h3>
+            <p>Jot ideas and lecture notes without breaking your flow.</p>
+          </li>
+
+          <li class="card reveal">
+            <span class="card__icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 9 12 4 2 9l10 5 10-5Z"></path><path d="M6 11.5V16c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5v-4.5"></path><path d="M22 9v5"></path></svg>
+            </span>
+            <h3>CGPA Calculator</h3>
+            <p>Track your grades and see where you're headed.</p>
+          </li>
+
+          <li class="card reveal">
+            <span class="card__icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><polyline points="16 11 18 13 22 9"></polyline></svg>
+            </span>
+            <h3>Attendance Calculator</h3>
+            <p>Know exactly how many classes you can afford to miss.</p>
+          </li>
+
+          <li class="card reveal">
+            <span class="card__icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"></circle><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"></path></svg>
+            </span>
+            <h3>Achievements</h3>
+            <p>Small wins, marked — stay motivated as you go.</p>
+          </li>
+        </ul>
+
+        <p class="features-note reveal">
+          Plus a unified dashboard, light &amp; dark themes, and your data kept private on your own device.
+        </p>
+      </div>
+    </section>
+
+    <!-- =================================================== WHY SYNORA -->
+    <section class="section why" id="why" aria-labelledby="why-title">
+      <div class="container">
+        <div class="section-head section-head--flush reveal">
+          <h2 id="why-title">Why Synora</h2>
+          <p>Built the way a study tool should be: quiet, private, and out of your way.</p>
+        </div>
+
+        <div class="why-grid">
+          <div class="why-item reveal">
+            <span class="why-item__icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"></path><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path></svg>
+            </span>
+            <h3>Calm by design</h3>
+            <p>No clutter, no noise, no badges begging for attention — just what you need, when you need it.</p>
+          </div>
+
+          <div class="why-item reveal">
+            <span class="why-item__icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            </span>
+            <h3>Yours, offline</h3>
+            <p>Everything lives in your browser. Nothing leaves your device, and there's no server to trust.</p>
+          </div>
+
+          <div class="why-item reveal">
+            <span class="why-item__icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8Z"></path></svg>
+            </span>
+            <h3>Free, no sign-up</h3>
+            <p>Open it and start. No account, no email, no trial that quietly turns into a subscription.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================== FAQ -->
+    <section class="section" id="faq" aria-labelledby="faq-title">
+      <div class="container">
+        <div class="section-head section-head--center reveal">
+          <h2 id="faq-title">Questions, answered</h2>
+        </div>
+
+        <div class="faq-list reveal">
+          <div class="faq-item">
+            <h3>
+              <button type="button" class="faq-trigger" aria-expanded="false" aria-controls="faq-panel-1" id="faq-trigger-1">
+                Is Synora free?
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+              </button>
+            </h3>
+            <div class="faq-panel" id="faq-panel-1" role="region" aria-labelledby="faq-trigger-1" hidden>
+              <p>Yes — completely. There's no paid tier, no trial period, and nothing locked behind an upgrade.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <h3>
+              <button type="button" class="faq-trigger" aria-expanded="false" aria-controls="faq-panel-2" id="faq-trigger-2">
+                Do I need an account?
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+              </button>
+            </h3>
+            <div class="faq-panel" id="faq-panel-2" role="region" aria-labelledby="faq-trigger-2" hidden>
+              <p>No. There's no sign-up and no email required — open Synora and start adding things straight away.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <h3>
+              <button type="button" class="faq-trigger" aria-expanded="false" aria-controls="faq-panel-3" id="faq-trigger-3">
+                Where is my data stored?
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+              </button>
+            </h3>
+            <div class="faq-panel" id="faq-panel-3" role="region" aria-labelledby="faq-trigger-3" hidden>
+              <p>In your browser's local storage, on the device you're using. Nothing is uploaded anywhere. The trade-off is that your data doesn't follow you between browsers or devices, and clearing your browser data will clear it.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <h3>
+              <button type="button" class="faq-trigger" aria-expanded="false" aria-controls="faq-panel-4" id="faq-trigger-4">
+                Does it work on mobile?
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+              </button>
+            </h3>
+            <div class="faq-panel" id="faq-panel-4" role="region" aria-labelledby="faq-trigger-4" hidden>
+              <p>Yes. Synora is responsive and runs in any modern mobile browser. Since data is stored per-device, your phone keeps its own copy.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <h3>
+              <button type="button" class="faq-trigger" aria-expanded="false" aria-controls="faq-panel-5" id="faq-trigger-5">
+                Is there a dark mode?
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+              </button>
+            </h3>
+            <div class="faq-panel" id="faq-panel-5" role="region" aria-labelledby="faq-trigger-5" hidden>
+              <p>There is. Synora follows your system setting on first visit, and remembers your choice if you switch it yourself using the toggle in the header.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================== CLOSING CTA -->
+    <section class="section section--tight" aria-labelledby="cta-title">
+      <div class="container">
+        <div class="cta reveal">
+          <h2 id="cta-title">Start with a clear week.</h2>
+          <p>Open Synora, add what's on your plate, and let the rest of the noise wait.</p>
+          <a class="btn btn--primary btn--lg" href="./app/index.html">Get Started</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- =================================================== FOOTER -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <span class="wordmark">Synora</span>
+          <p>A calm, offline-first workspace for everything you're studying.</p>
+        </div>
+
+        <nav class="footer-nav" aria-label="Footer">
+          <a href="#features">Features</a>
+          <a href="#why">Why Synora</a>
+          <a href="#faq">FAQ</a>
+          <a href="https://github.com/Manan-2007" target="_blank" rel="noopener noreferrer">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path><path d="M9 18c-4.51 2-5-2-7-2"></path></svg>
+            GitHub
+          </a>
+        </nav>
+      </div>
+
+      <div class="footer-bottom">
+        <p>© <span id="year">2026</span> Synora. Built by Manan.</p>
+        <button type="button" class="icon-btn theme-toggle" data-theme-toggle aria-label="Switch to dark theme">
+          <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
+          </svg>
+          <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </footer>
+
+  <script src="./scripts/landing.js" defer></script>
+</body>
+</html>

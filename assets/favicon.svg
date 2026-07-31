@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Synora mark — a rounded tile holding two stacked lines and a dot:
+  "many things, gathered into one calm place".
+
+  Colours are literal here because an .svg asset cannot read the CSS
+  custom properties in styles/tokens.css. They mirror --color-brand
+  (#53655C) and --color-on-brand (#FFFFFF). Keep the two in sync.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" role="img" aria-label="Synora">
+  <rect width="32" height="32" rx="8" fill="#53655C"/>
+  <g fill="none" stroke="#FFFFFF" stroke-width="2.25" stroke-linecap="round">
+    <path d="M10 12h12"/>
+    <path d="M10 20h8"/>
+  </g>
+  <circle cx="22" cy="20" r="1.75" fill="#FFFFFF"/>
+</svg>
