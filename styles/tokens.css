@@ -3,43 +3,82 @@
    The single source of truth for colour, type, spacing,
    radii, shadows and motion. Shared with the app.
    Nothing but custom properties belongs in this file.
+
+   THE PALETTE (all five are used, on purpose):
+     #22252B  Ink      — headings, dark bands, deepest text
+     #53655C  Sage     — the brand colour: buttons, links, active state
+     #A3AEB1  Slate    — decorative lines, dividers, quiet icons
+     #E5E8EB  Mist     — borders and hairlines
+     #B09F95  Taupe    — the warm accent: numbers, underlines, gradients
    ========================================================= */
 
 :root {
   color-scheme: light;
 
+  /* ---- Raw palette (never used directly in components) ---- */
+  --palette-ink: #22252B;
+  --palette-sage: #53655C;
+  --palette-slate: #A3AEB1;
+  --palette-mist: #E5E8EB;
+  --palette-taupe: #B09F95;
+
   /* ---- Colour: surfaces & lines ---- */
-  --color-bg: #F8F9FA;
+  /* Warm paper white, tinted a few degrees toward taupe so the page
+     never reads as clinical grey. */
+  --color-bg: #FAF9F7;
   --color-surface: #FFFFFF;
-  /* Recessed fill inside a surface (sidebars, chips). Kept level with --color-bg
-     so --color-text-muted still clears 4.5:1 on top of it. */
-  --color-surface-sunken: #F8F9FA;
+  --color-surface-sunken: #F3F1EE;   /* recessed fill: sidebars, chips */
+  --color-surface-sage: #EEF2EF;     /* sage-tinted panel */
+  --color-surface-taupe: #F6F0EC;    /* taupe-tinted panel */
   --color-border: #E5E8EB;
-  --color-border-strong: #D5DADE;
+  --color-border-strong: #CFD5D8;
 
   /* ---- Colour: text ---- */
   --color-text: #22252B;
-  --color-text-muted: #6B7280;
-  --color-secondary: #A3AEB1;
+  --color-text-muted: #5F6A70;
+  --color-secondary: #A3AEB1;        /* decorative only — too light for body copy */
 
-  /* ---- Colour: brand ---- */
+  /* ---- Colour: brand (sage) ---- */
   --color-brand: #53655C;
-  --color-brand-hover: #47564E;
-  --color-brand-soft: #EDF0EE;   /* flat brand tint for icon wells */
-  --color-on-brand: #FFFFFF;     /* text/icons sitting on --color-brand */
-  --color-accent: #B09F95;       /* used sparingly */
+  --color-brand-hover: #43524A;
+  --color-brand-soft: #E7EDE9;
+  --color-on-brand: #FFFFFF;
+
+  /* ---- Colour: accent (taupe) ---- */
+  --color-accent: #9C8A7F;           /* darkened for text contrast */
+  --color-accent-bright: #B09F95;    /* the true palette value, for fills */
+  --color-accent-soft: #F4EDE8;
+  --color-on-accent: #FFFFFF;
+
+  /* ---- Colour: ink band (the dark section) ---- */
+  --color-ink: #22252B;
+  --color-ink-raised: #2C3037;
+  --color-on-ink: #EDEFF1;
+  --color-on-ink-muted: #A3AEB1;
+  --color-ink-border: #383D45;
+  /* Veil laid over the photo behind the dark band, so white text stays legible. */
+  --ink-veil: rgba(34, 37, 43, .94);
+  --ink-veil-edge: rgba(34, 37, 43, .62);
 
   /* ---- Colour: status ---- */
-  --status-high: #D9534F;
-  --status-medium: #F0AD4E;
-  --status-low: #5CB85C;
-  --status-done: #4CAF50;
-  --status-overdue: #C0392B;
+  --status-high: #C0574E;
+  --status-medium: #C79A5A;
+  --status-low: #6E9070;
+  --status-done: #53655C;
+  --status-overdue: #A8443C;
+
+  /* ---- Decorative gradients ---- */
+  --gradient-page:
+    radial-gradient(90rem 40rem at 12% -10%, rgba(83, 101, 92, .10), transparent 60%),
+    radial-gradient(70rem 36rem at 92% 4%, rgba(176, 159, 149, .16), transparent 62%);
+  --gradient-brand: linear-gradient(135deg, #53655C 0%, #6B7D71 55%, #B09F95 140%);
+  --gradient-rule: linear-gradient(90deg, var(--color-brand), var(--color-accent-bright) 60%, transparent);
 
   /* ---- Elevation ---- */
   --shadow-sm: 0 1px 2px rgba(34, 37, 43, .04), 0 1px 3px rgba(34, 37, 43, .06);
-  --shadow-md: 0 4px 12px rgba(34, 37, 43, .06);
-  --shadow-lg: 0 10px 30px rgba(34, 37, 43, .08);
+  --shadow-md: 0 4px 14px rgba(34, 37, 43, .07);
+  --shadow-lg: 0 10px 30px rgba(34, 37, 43, .09);
+  --shadow-xl: 0 24px 60px rgba(34, 37, 43, .14);
 
   /* ---- Focus ---- */
   --focus-ring: 0 0 0 3px rgba(83, 101, 92, .28);
@@ -94,12 +133,13 @@
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
+  --radius-xl: 24px;
   --radius-pill: 999px;
 
   /* ---- Layout ---- */
   --container-max: 1120px;
   --container-pad: var(--space-24);
-  --header-height: 64px;
+  --header-height: 68px;
 
   /* ---- Motion ---- */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -108,35 +148,62 @@
   --duration-slow: 300ms;
 }
 
+/* =========================================================
+   Dark theme — same five hues, re-mixed for a dark canvas.
+   Applied by scripts/theme.js as <html data-theme="dark">.
+   ========================================================= */
+
 [data-theme="dark"] {
   color-scheme: dark;
 
   --color-bg: #16181C;
-  --color-surface: #1E2126;
-  --color-surface-sunken: #191C21;
-  --color-border: #2A2E35;
-  --color-border-strong: #3A4048;
+  --color-surface: #1D2025;
+  --color-surface-sunken: #202329;
+  --color-surface-sage: #1F2622;
+  --color-surface-taupe: #26221F;
+  --color-border: #2C3138;
+  --color-border-strong: #3D444C;
 
   --color-text: #E8EAED;
-  --color-text-muted: #9BA3AA;
-  --color-secondary: #7E888C;
+  --color-text-muted: #9CA5AC;
+  --color-secondary: #78848A;
 
-  --color-brand: #879C8E;
-  --color-brand-hover: #99AC9F;
-  --color-brand-soft: #252A28;
+  --color-brand: #8FA697;
+  --color-brand-hover: #A6BBAD;
+  --color-brand-soft: #232B26;
   --color-on-brand: #16181C;
-  --color-accent: #BCACA2;
 
-  --status-high: #E4736F;
-  --status-medium: #E9B268;
-  --status-low: #7FC77F;
-  --status-done: #6FC172;
-  --status-overdue: #D96050;
+  --color-accent: #C6B4A9;
+  --color-accent-bright: #B09F95;
+  --color-accent-soft: #2A2522;
+  --color-on-accent: #16181C;
+
+  /* In dark mode the "ink band" goes darker than the page, not lighter. */
+  --color-ink: #0F1114;
+  --color-ink-raised: #191C20;
+  --color-on-ink: #E8EAED;
+  --color-on-ink-muted: #98A29A;
+  --color-ink-border: #292E34;
+  --ink-veil: rgba(15, 17, 20, .95);
+  --ink-veil-edge: rgba(15, 17, 20, .70);
+
+  --status-high: #D98A83;
+  --status-medium: #D7B078;
+  --status-low: #8FB891;
+  --status-done: #8FA697;
+  --status-overdue: #C9756A;
+
+  --gradient-page:
+    radial-gradient(90rem 40rem at 12% -10%, rgba(143, 166, 151, .12), transparent 60%),
+    radial-gradient(70rem 36rem at 92% 4%, rgba(198, 180, 169, .10), transparent 62%);
+  --gradient-brand: linear-gradient(135deg, #2C3831 0%, #3C4A41 55%, #5A4F48 140%);
+  --gradient-rule: linear-gradient(90deg, var(--color-brand), var(--color-accent) 60%, transparent);
 
   /* Dark UI leans on borders, not shadows. */
   --shadow-sm: none;
   --shadow-md: none;
   --shadow-lg: none;
+  --shadow-xl: 0 24px 60px rgba(0, 0, 0, .5);
 
-  --focus-ring: 0 0 0 3px rgba(135, 156, 142, .35);
+  --focus-ring: 0 0 0 3px rgba(143, 166, 151, .35);
 }

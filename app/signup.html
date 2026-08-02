@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Create your account — Synora</title>
+  <meta name="description" content="Create a free Synora account and start with a clear week.">
+  <meta name="color-scheme" content="light dark">
+
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700&display=swap">
+
+  <link rel="stylesheet" href="../styles/tokens.css">
+  <link rel="stylesheet" href="../styles/base.css">
+  <link rel="stylesheet" href="../styles/components.css">
+  <link rel="stylesheet" href="../styles/auth.css">
+
+  <!-- Runs before first paint so the saved theme applies with no flash. -->
+  <script src="../scripts/theme.js"></script>
+  <!-- Form validation and account storage. Deferred: it only needs
+       to run once the form exists. -->
+  <script src="../scripts/auth.js" defer></script>
+</head>
+
+<body>
+  <div class="auth-layout">
+
+    <!-- ================================================= FORM SIDE -->
+    <main class="auth-main">
+      <div class="auth-topbar">
+        <a class="wordmark" href="../index.html">Synora</a>
+
+        <button type="button" class="icon-btn theme-toggle" data-theme-toggle aria-label="Toggle dark mode">
+          <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
+          </svg>
+          <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div class="auth-body">
+
+        <!-- Revealed by auth.js only when a session already exists. -->
+        <p class="session-bar" id="session-bar" hidden>
+          Signed in as <strong data-session-name></strong>
+          <button type="button" id="sign-out">Sign out</button>
+        </p>
+
+        <!-- ---------- The form ---------- -->
+        <div class="auth-view" id="form-view">
+          <div class="auth-head">
+            <h1>Create your account</h1>
+            <p>A username and a password is all it takes — no email, no verification. Your account is stored in this browser, on this device.</p>
+          </div>
+
+          <!-- novalidate turns off the browser's own error bubbles so
+               our own messages are shown instead. -->
+          <form class="auth-form" id="signup-form" novalidate>
+
+            <div class="form-alert" role="alert">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"></circle><path d="M12 8v4M12 16h.01"></path>
+              </svg>
+              <span data-alert-text></span>
+            </div>
+
+            <div class="field" data-field="fullName">
+              <label class="field__label" for="fullName">Your name</label>
+              <input class="input" type="text" id="fullName" name="fullName"
+                     autocomplete="name" placeholder="Manan" required>
+              <p class="field__error"></p>
+            </div>
+
+            <div class="field" data-field="username">
+              <label class="field__label" for="username">Username</label>
+              <input class="input" type="text" id="username" name="username"
+                     autocomplete="username" placeholder="manan_07"
+                     minlength="3" maxlength="20" required>
+              <p class="field__hint">3–20 characters. Letters, numbers and underscores.</p>
+              <p class="field__error"></p>
+            </div>
+
+            <div class="field" data-field="password">
+              <label class="field__label" for="password">Password</label>
+              <input class="input" type="password" id="password" name="password"
+                     autocomplete="new-password" minlength="8" required data-password>
+              <p class="field__hint">At least 8 characters, with a letter and a number.</p>
+              <p class="field__error"></p>
+            </div>
+
+            <div class="field" data-field="confirm">
+              <label class="field__label" for="confirm">Confirm password</label>
+              <input class="input" type="password" id="confirm" name="confirm"
+                     autocomplete="new-password" required data-password>
+              <p class="field__error"></p>
+            </div>
+
+            <div class="auth-options">
+              <span class="check-row">
+                <input type="checkbox" id="show-password">
+                <label for="show-password">Show password</label>
+              </span>
+            </div>
+
+            <button type="submit" class="btn btn--primary btn--lg btn--block">Create account</button>
+          </form>
+
+          <p class="auth-alt">
+            Already have an account? <a href="./login.html">Sign in</a>
+          </p>
+        </div>
+
+        <!-- ---------- The success panel ---------- -->
+        <div class="auth-done" id="done-view">
+          <span class="auth-done__mark" aria-hidden="true">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 6 9 17l-5-5"></path>
+            </svg>
+          </span>
+          <h2 data-done-heading>Account created</h2>
+          <p>You're signed in as <strong data-done-name></strong>. Your workspace is ready when the dashboard is.</p>
+          <a class="btn btn--primary btn--lg btn--block" href="../index.html">Back to Synora</a>
+          <p class="auth-done__note">
+            The dashboard is the next piece to build. Until then, your account is saved
+            under <code>synora-users</code> in this browser's local storage.
+          </p>
+        </div>
+
+      </div>
+
+      <p class="auth-foot">© 2026 Synora. Built by Manan.</p>
+    </main>
+
+    <!-- ================================================= PHOTO SIDE -->
+    <aside class="auth-aside auth-aside--signup">
+      <div>
+        <p class="auth-quote">Six notebooks, three apps and a group chat is not a system.</p>
+        <ul class="auth-points">
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>
+            <span>Tasks, timetable, notes and grades in one place</span>
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>
+            <span>Free, with no ads and no paid tier</span>
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>
+            <span>Everything stays on your own device</span>
+          </li>
+        </ul>
+      </div>
+    </aside>
+
+  </div>
+</body>
+</html>

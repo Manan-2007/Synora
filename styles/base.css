@@ -14,6 +14,7 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  /* Pure-CSS smooth anchor scrolling — replaces the JS scroll handler. */
   scroll-behavior: smooth;
   scroll-padding-top: calc(var(--header-height) + var(--space-24));
 }
@@ -21,6 +22,9 @@ html {
 body {
   min-height: 100vh;
   background-color: var(--color-bg);
+  background-image: var(--gradient-page);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   color: var(--color-text);
   font-family: var(--font-body);
   font-size: var(--text-body);
@@ -41,8 +45,16 @@ video {
   max-width: 100%;
 }
 
+img {
+  height: auto;
+}
+
 svg {
   flex: none;
+}
+
+figure {
+  margin: 0;
 }
 
 input,
@@ -58,6 +70,16 @@ button {
   border: 0;
   padding: 0;
   cursor: pointer;
+}
+
+/* <summary> renders a disclosure triangle by default; we draw our own. */
+summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+summary::-webkit-details-marker {
+  display: none;
 }
 
 /* ---- Typography defaults ---- */

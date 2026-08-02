@@ -1,0 +1,1948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Synora — Project & Viva Notes</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Manrope:wght@400;600;700;800&display=swap');
+
+  :root {
+    /* Synora's own palette, reused here so the notes match the product */
+    --sage: #8FA697;
+    --sage-dim: rgba(143,166,151,0.12);
+    --sage-border: rgba(143,166,151,0.32);
+    --taupe: #C6B4A9;
+    --taupe-dim: rgba(198,180,169,0.12);
+    --slate: #A3AEB1;
+    --slate-dim: rgba(163,174,177,0.10);
+    --mist: #E5E8EB;
+
+    --bg: #131519;
+    --surface: #1B1E23;
+    --surface2: #23272E;
+    --border: rgba(255,255,255,0.08);
+    --text: #E5E8EB;
+    --muted: #8A939B;
+
+    --blue: #7FB0C9;
+    --blue-dim: rgba(127,176,201,0.10);
+    --amber: #D9B172;
+    --amber-dim: rgba(217,177,114,0.10);
+    --rose: #D08C86;
+    --rose-dim: rgba(208,140,134,0.10);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Manrope', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 15px;
+  }
+
+  /* ---- NAV ---- */
+  .sidenav {
+    position: fixed; top: 0; left: 0; width: 246px; height: 100vh;
+    background: var(--surface); border-right: 1px solid var(--border);
+    overflow-y: auto; z-index: 100; padding: 20px 0;
+  }
+  .sidenav::-webkit-scrollbar { width: 4px; }
+  .sidenav::-webkit-scrollbar-thumb { background: var(--border); }
+  .sidenav .brand { padding: 0 20px 18px; border-bottom: 1px solid var(--border); margin-bottom: 10px; }
+  .sidenav .brand span { color: var(--sage); font-weight: 800; font-size: 1.4rem; }
+  .sidenav .brand small { display: block; color: var(--muted); font-size: 0.68rem; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+  .nav-section { padding: 12px 20px 4px; color: var(--muted); font-size: 0.63rem; text-transform: uppercase; letter-spacing: 2px; }
+  .sidenav a {
+    display: block; padding: 6px 20px; color: var(--muted); text-decoration: none;
+    font-size: 0.8rem; transition: all 0.2s; border-left: 2px solid transparent;
+  }
+  .sidenav a:hover { color: var(--text); background: rgba(255,255,255,0.03); border-left-color: var(--sage); }
+
+  /* ---- MAIN ---- */
+  .main { margin-left: 246px; max-width: 980px; padding: 50px 50px 120px; }
+
+  /* ---- HERO ---- */
+  .hero {
+    background: linear-gradient(135deg, #1E2622 0%, #131519 55%, #241F1C 130%);
+    border: 1px solid var(--sage-border);
+    border-radius: 16px; padding: 40px; margin-bottom: 50px;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: 'SYNORA'; position: absolute; right: 26px; top: 14px;
+    font-size: 4.4rem; font-weight: 800; color: rgba(143,166,151,0.06); letter-spacing: -2px;
+  }
+  .hero h1 { font-size: 2rem; font-weight: 800; color: #fff; margin-bottom: 8px; }
+  .hero h1 span { color: var(--sage); }
+  .hero p { color: var(--muted); max-width: 560px; font-size: 0.9rem; }
+  .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+  .tag { padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; }
+  .tag-sage  { background: var(--sage-dim);  color: var(--sage);  border: 1px solid var(--sage-border); }
+  .tag-taupe { background: var(--taupe-dim); color: var(--taupe); border: 1px solid rgba(198,180,169,0.28); }
+  .tag-blue  { background: var(--blue-dim);  color: var(--blue);  border: 1px solid rgba(127,176,201,0.25); }
+  .tag-amber { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(217,177,114,0.25); }
+  .tag-slate { background: var(--slate-dim); color: var(--slate); border: 1px solid rgba(163,174,177,0.25); }
+  .tag-rose  { background: var(--rose-dim);  color: var(--rose);  border: 1px solid rgba(208,140,134,0.25); }
+
+  /* ---- SECTIONS ---- */
+  .section { margin-bottom: 60px; scroll-margin-top: 20px; }
+  .section-title {
+    font-size: 1.3rem; font-weight: 800; color: #fff;
+    border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 24px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-title .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--sage); flex-shrink: 0; }
+  h3.sub { font-size: 1rem; font-weight: 700; color: #fff; margin: 28px 0 12px; }
+
+  /* ---- CARDS ---- */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 22px; margin-bottom: 16px; }
+  .card-title { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+  .card-title.sage  { color: var(--sage); }
+  .card-title.taupe { color: var(--taupe); }
+  .card-title.blue  { color: var(--blue); }
+  .card-title.amber { color: var(--amber); }
+  .card-title.slate { color: var(--slate); }
+  .card-title.rose  { color: var(--rose); }
+  .card > p { font-size: 0.86rem; color: var(--text); margin-bottom: 10px; }
+  .card > p.note { color: var(--muted); font-size: 0.82rem; }
+
+  /* ---- CODE ---- */
+  pre, code { font-family: 'JetBrains Mono', monospace; font-size: 0.79rem; }
+  pre {
+    background: #0E1013; border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px; overflow-x: auto;
+    margin: 12px 0; line-height: 1.65; white-space: pre;
+  }
+  code { background: rgba(255,255,255,0.07); padding: 2px 6px; border-radius: 4px; color: var(--taupe); }
+  pre code { background: none; padding: 0; color: inherit; }
+  .kw   { color: #C6A0D8; }
+  .fn   { color: #7FB0C9; }
+  .str  { color: #C3D9A8; }
+  .cm   { color: #5F6B75; font-style: italic; }
+  .num  { color: #D9B172; }
+  .prop { color: #8FA697; }
+  .sel  { color: #E5B0A8; }
+
+  /* ---- TABLE ---- */
+  .tbl-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.81rem; margin: 12px 0; }
+  th { background: var(--surface2); color: var(--muted); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; white-space: nowrap; }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+
+  /* ---- Q&A ---- */
+  .qa { margin-bottom: 18px; }
+  .q { background: var(--sage-dim); border-left: 3px solid var(--sage); border-radius: 0 8px 8px 0; padding: 10px 16px; font-weight: 700; color: #fff; font-size: 0.87rem; margin-bottom: 8px; }
+  .a { background: var(--surface); border-radius: 8px; padding: 12px 16px; color: var(--text); font-size: 0.845rem; line-height: 1.75; border: 1px solid var(--border); }
+  .a code { font-size: 0.76rem; }
+
+  /* ---- LIST ---- */
+  ul.points { list-style: none; padding: 0; }
+  ul.points li { padding: 6px 0 6px 22px; position: relative; color: var(--text); font-size: 0.845rem; border-bottom: 1px solid var(--border); }
+  ul.points li:last-child { border-bottom: none; }
+  ul.points li::before { content: '→'; position: absolute; left: 0; color: var(--sage); font-weight: 700; }
+
+  /* ---- GRID ---- */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+  /* ---- FLOW ---- */
+  .flow { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+  .flow-step { background: var(--surface2); border: 1px solid var(--border); padding: 7px 13px; border-radius: 8px; font-size: 0.76rem; }
+  .flow-arrow { color: var(--taupe); font-weight: 700; padding: 0 4px; }
+
+  /* ---- CALLOUT ---- */
+  .callout { border-radius: 10px; padding: 13px 17px; margin: 14px 0; font-size: 0.83rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { font-size: 1.05rem; flex-shrink: 0; }
+  .callout.info    { background: var(--blue-dim);  border: 1px solid rgba(127,176,201,0.2); color: var(--blue); }
+  .callout.warn    { background: var(--amber-dim); border: 1px solid rgba(217,177,114,0.2); color: var(--amber); }
+  .callout.success { background: var(--sage-dim);  border: 1px solid var(--sage-border);    color: var(--sage); }
+  .callout.tip     { background: var(--taupe-dim); border: 1px solid rgba(198,180,169,0.22); color: var(--taupe); }
+  .callout strong { color: #fff; }
+
+  /* ---- SWATCHES ---- */
+  .swatches { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 14px 0; }
+  .sw { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .sw .chip { height: 54px; }
+  .sw .meta { padding: 8px 10px; font-size: 0.68rem; font-family: 'JetBrains Mono', monospace; }
+  .sw .meta b { display: block; color: #fff; font-size: 0.72rem; }
+  .sw .meta span { color: var(--muted); }
+
+  /* ---- ANSWER PILL ---- */
+  .pill { display: inline-block; background: var(--slate-dim); color: var(--slate);
+    border: 1px solid rgba(163,174,177,0.22); border-radius: 4px; font-size: 0.66rem;
+    padding: 1px 7px; font-family: 'JetBrains Mono', monospace; margin-left: 6px; vertical-align: middle; }
+
+  @media (max-width: 860px) {
+    .sidenav { display: none; }
+    .main { margin-left: 0; padding: 24px 18px 80px; }
+    .two-col, .three-col { grid-template-columns: 1fr; }
+    .swatches { grid-template-columns: repeat(2, 1fr); }
+    .hero { padding: 24px; }
+    .hero::before { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================ SIDE NAV -->
+<nav class="sidenav">
+  <div class="brand"><span>Synora</span><small>Project &amp; Viva Notes</small></div>
+
+  <div class="nav-section">Overview</div>
+  <a href="#overview">What We Built</a>
+  <a href="#files">File Structure</a>
+  <a href="#palette">Colour System</a>
+
+  <div class="nav-section">HTML</div>
+  <a href="#html-doc">Document &amp; Head</a>
+  <a href="#html-semantic">Semantic Elements</a>
+  <a href="#html-details">details / summary</a>
+  <a href="#html-form">The Checkbox Input</a>
+  <a href="#html-svg">Inline SVG Icons</a>
+  <a href="#html-a11y">Accessibility &amp; ARIA</a>
+
+  <div class="nav-section">CSS</div>
+  <a href="#css-vars">Custom Properties</a>
+  <a href="#css-selectors">Selectors &amp; Specificity</a>
+  <a href="#css-flex">Flexbox</a>
+  <a href="#css-grid">Grid</a>
+  <a href="#css-position">Position &amp; Stacking</a>
+  <a href="#css-pseudo">Pseudo-elements</a>
+  <a href="#css-color">Gradients &amp; Colour</a>
+  <a href="#css-type">Typography</a>
+  <a href="#css-anim">Transitions &amp; Animation</a>
+  <a href="#css-counter">CSS Counters</a>
+  <a href="#css-responsive">Responsive Design</a>
+  <a href="#css-dark">Dark Mode</a>
+
+  <div class="nav-section">No-JS Techniques</div>
+  <a href="#trick-menu">Checkbox Hack Menu</a>
+  <a href="#trick-accordion">Native Accordion</a>
+  <a href="#trick-scroll">Smooth Scrolling</a>
+
+  <div class="nav-section">JavaScript — Theme</div>
+  <a href="#js-overview">Why It Exists</a>
+  <a href="#js-line">Line-by-Line</a>
+  <a href="#js-concepts">Concepts Inside It</a>
+  <a href="#js-storage">localStorage</a>
+  <a href="#js-why">Why So Little JS</a>
+
+  <div class="nav-section">App — Auth Pages</div>
+  <a href="#auth-pages">Layout &amp; Structure</a>
+  <a href="#auth-forms">Form Markup</a>
+  <a href="#auth-validate">Validation Logic</a>
+  <a href="#auth-store">Accounts &amp; Passwords</a>
+  <a href="#auth-flow">The Full Flow</a>
+
+  <div class="nav-section">Viva Q&amp;A</div>
+  <a href="#qa-html">HTML Questions</a>
+  <a href="#qa-css">CSS Questions</a>
+  <a href="#qa-js">JavaScript Questions</a>
+  <a href="#qa-project">Project Questions</a>
+  <a href="#cheatsheet">Final Cheat Sheet</a>
+</nav>
+
+<!-- ============================================ MAIN -->
+<main class="main">
+
+  <div class="hero">
+    <h1><span>Synora</span> — Project &amp; Viva Notes</h1>
+    <p>Every HTML tag, CSS property and line of JavaScript used in the landing page, with the concept behind it and how to explain it. Read top to bottom the night before; skim the Q&amp;A on the day.</p>
+    <div class="tag-row">
+      <span class="tag tag-sage">HTML5</span>
+      <span class="tag tag-taupe">CSS3</span>
+      <span class="tag tag-blue">CSS Grid</span>
+      <span class="tag tag-amber">Flexbox</span>
+      <span class="tag tag-slate">Custom Properties</span>
+      <span class="tag tag-rose">JavaScript (minimal)</span>
+    </div>
+  </div>
+
+  <!-- ======================================== OVERVIEW -->
+  <section class="section" id="overview">
+    <div class="section-title"><span class="dot"></span>What We Built</div>
+
+    <div class="card">
+      <div class="card-title sage">The one-line answer</div>
+      <p><strong>Synora is a responsive, themeable web project for a student productivity app: a landing page plus a working sign-up and sign-in flow, written in plain HTML, CSS and JavaScript.</strong></p>
+      <ul class="points">
+        <li><strong>No frameworks</strong> — no Bootstrap, no Tailwind, no React. Every style is ours.</li>
+        <li><strong>No build step</strong> — open <code>index.html</code> in a browser and it runs.</li>
+        <li><strong>One design-token file</strong> drives every colour, size and spacing value on every page.</li>
+        <li><strong>Light and dark themes</strong> from the same markup, swapped by one HTML attribute.</li>
+        <li><strong>The landing page is interactive without JavaScript</strong> — the mobile menu and the FAQ accordion are pure CSS/HTML.</li>
+        <li><strong>The auth pages do use JavaScript</strong>, because validation and storing an account genuinely need it.</li>
+      </ul>
+      <div class="callout info"><span class="callout-icon">i</span><div><strong>Say this split clearly in the viva.</strong> The landing page has one script (the theme toggle). The app's sign-up and login pages add a second (<code>auth.js</code>). We used JavaScript where it was necessary, not everywhere.</div></div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title taupe">Sections on the page</div>
+        <div class="tbl-wrap"><table>
+          <tr><th>Section</th><th>What it demonstrates</th></tr>
+          <tr><td>Sticky navbar</td><td>position: sticky, flexbox, CSS-only mobile menu</td></tr>
+          <tr><td>Hero</td><td>2-column grid, overlapping absolute card, keyframe entrance</td></tr>
+          <tr><td>Stats strip</td><td>4-column grid, border dividers</td></tr>
+          <tr><td>Feature cards</td><td>auto grid, hover transforms, ::before accent bar</td></tr>
+          <tr><td>Showcase &times;2</td><td>image + text grid, <code>order</code> to flip the layout</td></tr>
+          <tr><td>App preview</td><td>3-column grid schematic built from divs</td></tr>
+          <tr><td>Steps</td><td>CSS counters for the 01 / 02 / 03 numerals</td></tr>
+          <tr><td>Why Synora</td><td>dark band, background image + gradient veil, backdrop-filter</td></tr>
+          <tr><td>FAQ</td><td>native <code>&lt;details&gt;</code> accordion</td></tr>
+          <tr><td>CTA</td><td>gradient background + radial light bloom</td></tr>
+          <tr><td>Footer</td><td>flex-wrap layout, second theme toggle</td></tr>
+        </table></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title blue">The product being advertised</div>
+        <p class="note">Useful if the examiner asks "what does the app actually do?"</p>
+        <ul class="points">
+          <li>Tasks &amp; assignments with due dates and priority</li>
+          <li>Calendar and class timetable in one week view</li>
+          <li>Quick notes</li>
+          <li>CGPA calculator</li>
+          <li>Attendance calculator</li>
+          <li>Achievements / streaks</li>
+        </ul>
+        <div class="callout warn"><span class="callout-icon">!</span><div><strong>Account required.</strong> Synora is used by signing up with a username and password. The account and all its data live in the browser's own storage on that device — nothing is sent to a server.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================== FILES -->
+  <section class="section" id="files">
+    <div class="section-title"><span class="dot"></span>File Structure &amp; Roles</div>
+
+    <div class="card">
+      <div class="card-title sage">Who does what</div>
+      <pre><span class="cm">Synora/</span>
+├── index.html            <span class="cm">the landing page (all markup)</span>
+├── notes.html            <span class="cm">this revision sheet</span>
+├── app/
+│   ├── signup.html       <span class="cm">create an account</span>
+│   └── login.html        <span class="cm">sign in to an existing one</span>
+├── styles/
+│   ├── tokens.css        <span class="cm">ONLY variables: colour, type, space, motion</span>
+│   ├── base.css          <span class="cm">reset + default styles for h1, p, a, img...</span>
+│   ├── components.css    <span class="cm">shared pieces: buttons, inputs, fields</span>
+│   ├── landing.css       <span class="cm">landing-only: navbar, hero, cards, footer</span>
+│   └── auth.css          <span class="cm">the split-screen sign-up / sign-in layout</span>
+├── scripts/
+│   ├── theme.js          <span class="cm">dark mode (used by every page)</span>
+│   └── auth.js           <span class="cm">form validation + account storage</span>
+└── assets/
+    ├── favicon.svg
+    └── img/              <span class="cm">4 photographs used in the design</span></pre>
+
+      <div class="tbl-wrap"><table>
+        <tr><th>File</th><th>Role</th><th>Why it is separate</th></tr>
+        <tr><td><code>tokens.css</code></td><td>Declares ~70 CSS custom properties on <code>:root</code></td><td>Change one value here and the whole site changes. This is the "single source of truth".</td></tr>
+        <tr><td><code>base.css</code></td><td>Reset (<code>box-sizing</code>, margin zero) + element defaults</td><td>Separates "how a heading looks by default" from "how this card looks".</td></tr>
+        <tr><td><code>components.css</code></td><td>Buttons, icon buttons, form fields</td><td>The landing page and the auth pages both need these. Extracting them means the auth pages don't have to load the entire landing layout.</td></tr>
+        <tr><td><code>landing.css</code></td><td>Landing-page-only components</td><td>Navbar, hero, showcases, FAQ — nothing else uses them</td></tr>
+        <tr><td><code>auth.css</code></td><td>The two-column auth layout</td><td>Only signup.html and login.html load it</td></tr>
+        <tr><td><code>theme.js</code></td><td>Reads/writes the theme, sets <code>data-theme</code></td><td>Behaviour CSS genuinely cannot do — it needs memory across page loads</td></tr>
+        <tr><td><code>auth.js</code></td><td>Validates both forms, stores accounts</td><td>One file serves both pages; it picks the flow by checking which form id is present</td></tr>
+      </table></div>
+
+      <h3 class="sub">Which page loads what</h3>
+      <div class="tbl-wrap"><table>
+        <tr><th>Page</th><th>Stylesheets</th><th>Scripts</th></tr>
+        <tr><td><code>index.html</code></td><td>tokens → base → components → landing</td><td>theme.js</td></tr>
+        <tr><td><code>app/signup.html</code></td><td>tokens → base → components → auth</td><td>theme.js, auth.js</td></tr>
+        <tr><td><code>app/login.html</code></td><td>tokens → base → components → auth</td><td>theme.js, auth.js</td></tr>
+      </table></div>
+
+      <div class="callout info"><span class="callout-icon">i</span><div><strong>Load order matters.</strong> <code>tokens.css</code> must come first, because <code>base.css</code> and <code>landing.css</code> both use <code>var(--...)</code> values defined in it. CSS is read top to bottom.</div></div>
+    </div>
+  </section>
+
+  <!-- ======================================== PALETTE -->
+  <section class="section" id="palette">
+    <div class="section-title"><span class="dot"></span>The Colour System</div>
+
+    <div class="card">
+      <div class="card-title taupe">Five colours, and where each one lives</div>
+
+      <div class="swatches">
+        <div class="sw"><div class="chip" style="background:#22252B"></div><div class="meta"><b>#22252B</b><span>Ink</span></div></div>
+        <div class="sw"><div class="chip" style="background:#53655C"></div><div class="meta"><b>#53655C</b><span>Sage</span></div></div>
+        <div class="sw"><div class="chip" style="background:#A3AEB1"></div><div class="meta"><b>#A3AEB1</b><span>Slate</span></div></div>
+        <div class="sw"><div class="chip" style="background:#E5E8EB"></div><div class="meta"><b>#E5E8EB</b><span>Mist</span></div></div>
+        <div class="sw"><div class="chip" style="background:#B09F95"></div><div class="meta"><b>#B09F95</b><span>Taupe</span></div></div>
+      </div>
+
+      <div class="tbl-wrap"><table>
+        <tr><th>Colour</th><th>Role</th><th>Where you can point at it</th></tr>
+        <tr><td>Ink #22252B</td><td>Headings, body text, the dark band</td><td>All headings; the entire "Why Synora" section background; two feature icon wells</td></tr>
+        <tr><td>Sage #53655C</td><td>The brand colour — primary action</td><td>"Create account" button, link hovers, active sidebar item, checkmarks, focus ring</td></tr>
+        <tr><td>Slate #A3AEB1</td><td>Quiet decoration only</td><td>FAQ chevrons, schematic icons, footer credit line</td></tr>
+        <tr><td>Mist #E5E8EB</td><td>Every border and hairline</td><td>Card borders, section dividers, the header's bottom rule</td></tr>
+        <tr><td>Taupe #B09F95</td><td>The warm accent</td><td>Stat numbers, step numerals 01/02/03, eyebrow dot, gradient tails, agenda times</td></tr>
+      </table></div>
+
+      <div class="callout tip"><span class="callout-icon">*</span><div><strong>The design idea worth saying out loud:</strong> a page built from only one colour plus grey looks flat. Sage carries <em>action</em>, taupe carries <em>information</em>, ink carries <em>structure</em>. Three jobs, three colours — that is what stops it looking dull.</div></div>
+
+      <h3 class="sub">Contrast, and why some values were adjusted</h3>
+      <p class="note">Taupe <code>#B09F95</code> is too light to read as small text on white, so the token <code>--color-accent</code> is a darkened <code>#9C8A7F</code> for <em>text</em>, while <code>--color-accent-bright: #B09F95</code> is kept for <em>fills</em> (dots, gradients) where contrast does not matter. Slate is never used for body text for the same reason.</p>
+    </div>
+  </section>
+
+  <!-- ======================================== HTML DOC -->
+  <section class="section" id="html-doc">
+    <div class="section-title"><span class="dot"></span>HTML — Document Structure &amp; &lt;head&gt;</div>
+
+    <div class="card">
+      <div class="card-title sage">Every line of our &lt;head&gt;, explained</div>
+      <pre><span class="kw">&lt;!DOCTYPE html&gt;</span>
+<span class="cm">&lt;!-- Tells the browser to use standards mode, not "quirks mode" --&gt;</span>
+
+<span class="kw">&lt;html</span> <span class="prop">lang</span>=<span class="str">"en"</span><span class="kw">&gt;</span>
+<span class="cm">&lt;!-- lang helps screen readers pronounce text and helps search engines --&gt;</span>
+
+<span class="kw">&lt;meta</span> <span class="prop">charset</span>=<span class="str">"UTF-8"</span><span class="kw">&gt;</span>
+<span class="cm">&lt;!-- Character encoding. Without it, characters like — and · break --&gt;</span>
+
+<span class="kw">&lt;meta</span> <span class="prop">name</span>=<span class="str">"viewport"</span> <span class="prop">content</span>=<span class="str">"width=device-width, initial-scale=1"</span><span class="kw">&gt;</span>
+<span class="cm">&lt;!-- Makes the page use the real device width. Without it a phone
+     pretends to be 980px wide and zooms out — media queries misfire --&gt;</span>
+
+<span class="kw">&lt;meta</span> <span class="prop">name</span>=<span class="str">"description"</span> <span class="prop">content</span>=<span class="str">"Synora brings your tasks..."</span><span class="kw">&gt;</span>
+<span class="cm">&lt;!-- The grey text under the title in Google results --&gt;</span>
+
+<span class="kw">&lt;meta</span> <span class="prop">name</span>=<span class="str">"color-scheme"</span> <span class="prop">content</span>=<span class="str">"light dark"</span><span class="kw">&gt;</span>
+<span class="cm">&lt;!-- Tells the browser we support both, so scrollbars and form
+     controls are drawn in the matching colours --&gt;</span>
+
+<span class="kw">&lt;link</span> <span class="prop">rel</span>=<span class="str">"icon"</span> <span class="prop">href</span>=<span class="str">"./assets/favicon.svg"</span> <span class="prop">type</span>=<span class="str">"image/svg+xml"</span><span class="kw">&gt;</span>
+<span class="cm">&lt;!-- Browser tab icon. SVG so it stays sharp at any size --&gt;</span>
+
+<span class="kw">&lt;link</span> <span class="prop">rel</span>=<span class="str">"preconnect"</span> <span class="prop">href</span>=<span class="str">"https://fonts.gstatic.com"</span> <span class="prop">crossorigin</span><span class="kw">&gt;</span>
+<span class="cm">&lt;!-- Opens the network connection early so the font arrives sooner --&gt;</span>
+
+<span class="kw">&lt;link</span> <span class="prop">rel</span>=<span class="str">"stylesheet"</span> <span class="prop">href</span>=<span class="str">"./styles/tokens.css"</span><span class="kw">&gt;</span>
+<span class="kw">&lt;link</span> <span class="prop">rel</span>=<span class="str">"stylesheet"</span> <span class="prop">href</span>=<span class="str">"./styles/base.css"</span><span class="kw">&gt;</span>
+<span class="kw">&lt;link</span> <span class="prop">rel</span>=<span class="str">"stylesheet"</span> <span class="prop">href</span>=<span class="str">"./styles/landing.css"</span><span class="kw">&gt;</span>
+<span class="cm">&lt;!-- Three external stylesheets, in dependency order --&gt;</span>
+
+<span class="kw">&lt;script</span> <span class="prop">src</span>=<span class="str">"./scripts/theme.js"</span><span class="kw">&gt;&lt;/script&gt;</span>
+<span class="cm">&lt;!-- NO defer here, deliberately. See the callout below --&gt;</span></pre>
+
+      <div class="callout warn"><span class="callout-icon">!</span><div><strong>Why is theme.js the one script without <code>defer</code>?</strong> It must run <em>before</em> the browser paints anything. If it ran late, a dark-mode user would see a white flash and then the page would turn dark. This is called <strong>FOUC</strong> — Flash Of Unstyled Content. Blocking for a few milliseconds is the correct trade here.</div></div>
+    </div>
+  </section>
+
+  <!-- ======================================== HTML SEMANTIC -->
+  <section class="section" id="html-semantic">
+    <div class="section-title"><span class="dot"></span>HTML — Semantic Elements Used</div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title sage">Structural tags</div>
+        <div class="tbl-wrap"><table>
+          <tr><th>Tag</th><th>Used for</th></tr>
+          <tr><td><code>&lt;header&gt;</code></td><td>The sticky navbar block</td></tr>
+          <tr><td><code>&lt;nav&gt;</code></td><td>Primary navigation and footer navigation</td></tr>
+          <tr><td><code>&lt;main&gt;</code></td><td>The one main content region (only one per page)</td></tr>
+          <tr><td><code>&lt;section&gt;</code></td><td>Each band: hero, features, FAQ, CTA...</td></tr>
+          <tr><td><code>&lt;aside&gt;</code></td><td>The week-view sliver in the app schematic</td></tr>
+          <tr><td><code>&lt;footer&gt;</code></td><td>Site footer</td></tr>
+          <tr><td><code>&lt;figure&gt;</code></td><td>Wrapper around each photograph</td></tr>
+          <tr><td><code>&lt;details&gt; &lt;summary&gt;</code></td><td>Each FAQ item</td></tr>
+          <tr><td><code>&lt;time&gt;</code></td><td>Class times in the agenda (09:00, 11:30)</td></tr>
+        </table></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title taupe">Why semantic tags instead of &lt;div&gt;</div>
+        <ul class="points">
+          <li><strong>Screen readers</strong> can jump straight to <code>&lt;main&gt;</code> or list all <code>&lt;nav&gt;</code> landmarks</li>
+          <li><strong>Search engines</strong> weigh content inside <code>&lt;main&gt;</code> higher than a sidebar</li>
+          <li><strong>Readability</strong> — a wall of <code>&lt;div&gt;</code> tells the next developer nothing</li>
+          <li>A <code>&lt;div&gt;</code> is still correct when the grouping is purely visual, e.g. <code>.hero-visual</code></li>
+        </ul>
+        <div class="callout info"><span class="callout-icon">i</span><div>Rule of thumb we followed: <strong>if it has a meaning, use the tag; if it only has a look, use a div.</strong></div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title blue">Heading hierarchy</div>
+      <p class="note">One <code>&lt;h1&gt;</code> per page, then <code>&lt;h2&gt;</code> per section, then <code>&lt;h3&gt;</code> inside. Never skip a level just to get a smaller font — that is what CSS is for.</p>
+      <pre><span class="kw">h1</span>  One calm home for everything you're studying.   <span class="cm">// hero, once</span>
+ <span class="kw">h2</span>  Everything a student tracks, in one place.     <span class="cm">// features</span>
+   <span class="kw">h3</span>  Tasks &amp; Assignments                          <span class="cm">// one per card</span>
+   <span class="kw">h3</span>  Calendar &amp; Timetable
+ <span class="kw">h2</span>  Why Synora
+   <span class="kw">h3</span>  Calm by design
+ <span class="kw">h2</span>  Questions, answered</pre>
+    </div>
+  </section>
+
+  <!-- ======================================== DETAILS -->
+  <section class="section" id="html-details">
+    <div class="section-title"><span class="dot"></span>HTML — &lt;details&gt; and &lt;summary&gt;</div>
+
+    <div class="card">
+      <div class="card-title sage">The FAQ accordion, with zero JavaScript</div>
+      <p><code>&lt;details&gt;</code> is a built-in HTML5 <strong>disclosure widget</strong>. The browser itself handles opening and closing, keyboard support, and screen-reader announcements.</p>
+      <pre><span class="kw">&lt;details</span> <span class="prop">class</span>=<span class="str">"faq-item"</span><span class="kw">&gt;</span>
+  <span class="kw">&lt;summary&gt;</span>
+    Do I need an account?
+    <span class="kw">&lt;svg</span> ...chevron... <span class="kw">/&gt;</span>
+  <span class="kw">&lt;/summary&gt;</span>
+  <span class="kw">&lt;div</span> <span class="prop">class</span>=<span class="str">"faq-answer"</span><span class="kw">&gt;</span>
+    <span class="kw">&lt;p&gt;</span>Yes. Synora is built around your account...<span class="kw">&lt;/p&gt;</span>
+  <span class="kw">&lt;/div&gt;</span>
+<span class="kw">&lt;/details&gt;</span></pre>
+
+      <h3 class="sub">How we style it</h3>
+      <pre><span class="cm">/* base.css — remove the browser's default triangle */</span>
+<span class="sel">summary</span> { <span class="prop">cursor</span>: pointer; <span class="prop">list-style</span>: none; }
+<span class="sel">summary::-webkit-details-marker</span> { <span class="prop">display</span>: none; }
+
+<span class="cm">/* landing.css — the browser adds/removes the `open` attribute
+   for us, so we can style the expanded state with CSS alone */</span>
+<span class="sel">.faq-item[open]</span> { <span class="prop">border-color</span>: <span class="fn">var</span>(--color-brand); }
+<span class="sel">.faq-item[open] &gt; summary svg</span> { <span class="prop">transform</span>: <span class="fn">rotate</span>(<span class="num">180deg</span>); }</pre>
+
+      <div class="callout success"><span class="callout-icon">+</span><div><strong>Key exam point:</strong> <code>[open]</code> is an <strong>attribute selector</strong>. The browser writes <code>open</code> onto the <code>&lt;details&gt;</code> element when it expands, and CSS reacts to it. This is the whole trick — state lives in the HTML, styling reacts to it.</div></div>
+
+      <div class="tbl-wrap"><table>
+        <tr><th>What we get free</th><th>What we'd have had to write in JS</th></tr>
+        <tr><td>Click to open/close</td><td><code>addEventListener('click', ...)</code></td></tr>
+        <tr><td>Enter / Space keyboard support</td><td><code>keydown</code> handler checking key codes</td></tr>
+        <tr><td>Announced as "expanded / collapsed"</td><td>Manually maintaining <code>aria-expanded</code></td></tr>
+        <tr><td>Ctrl+F finds text inside closed panels</td><td>Not possible with <code>display:none</code></td></tr>
+      </table></div>
+    </div>
+  </section>
+
+  <!-- ======================================== CHECKBOX -->
+  <section class="section" id="html-form">
+    <div class="section-title"><span class="dot"></span>HTML — The One Form Input on the Page</div>
+
+    <div class="card">
+      <div class="card-title taupe">A checkbox used as a switch, not as a form field</div>
+      <pre><span class="kw">&lt;input</span> <span class="prop">class</span>=<span class="str">"nav-checkbox"</span> <span class="prop">type</span>=<span class="str">"checkbox"</span> <span class="prop">id</span>=<span class="str">"nav-open"</span>
+       <span class="prop">aria-label</span>=<span class="str">"Toggle navigation menu"</span><span class="kw">&gt;</span>
+
+<span class="cm">&lt;!-- ...later, the visible button --&gt;</span>
+<span class="kw">&lt;label</span> <span class="prop">class</span>=<span class="str">"icon-btn nav-toggle"</span> <span class="prop">for</span>=<span class="str">"nav-open"</span><span class="kw">&gt;</span>
+  <span class="kw">&lt;svg</span> <span class="prop">class</span>=<span class="str">"icon-menu"</span> ...<span class="kw">&gt;&lt;/svg&gt;</span>
+  <span class="kw">&lt;svg</span> <span class="prop">class</span>=<span class="str">"icon-close"</span> ...<span class="kw">&gt;&lt;/svg&gt;</span>
+<span class="kw">&lt;/label&gt;</span></pre>
+
+      <ul class="points">
+        <li><code>type="checkbox"</code> — a control with two states the browser tracks for us</li>
+        <li><code>id="nav-open"</code> + <code>for="nav-open"</code> — this pairing is what makes clicking the <em>label</em> toggle the <em>checkbox</em></li>
+        <li>The checkbox is hidden with a 1px transparent box, <strong>not</strong> <code>display:none</code>, so it stays focusable with the Tab key</li>
+        <li><code>aria-label</code> gives it a spoken name, since there is no visible text</li>
+      </ul>
+
+      <div class="callout tip"><span class="callout-icon">*</span><div>The <code>&lt;label for&gt;</code> ↔ <code>&lt;input id&gt;</code> relationship is standard forms knowledge — it is normally used to make "Username:" clickable. We are using the same mechanism for a completely different purpose. Examiners like this answer.</div></div>
+    </div>
+  </section>
+
+  <!-- ======================================== SVG -->
+  <section class="section" id="html-svg">
+    <div class="section-title"><span class="dot"></span>HTML — Inline SVG Icons</div>
+
+    <div class="card">
+      <div class="card-title blue">No icon font, no image files</div>
+      <p>Every icon on the page is an inline <code>&lt;svg&gt;</code> written directly in the HTML.</p>
+      <pre><span class="kw">&lt;svg</span> <span class="prop">width</span>=<span class="str">"20"</span> <span class="prop">height</span>=<span class="str">"20"</span> <span class="prop">viewBox</span>=<span class="str">"0 0 24 24"</span>
+     <span class="prop">fill</span>=<span class="str">"none"</span> <span class="prop">stroke</span>=<span class="str">"currentColor"</span> <span class="prop">stroke-width</span>=<span class="str">"1.5"</span>
+     <span class="prop">stroke-linecap</span>=<span class="str">"round"</span> <span class="prop">aria-hidden</span>=<span class="str">"true"</span><span class="kw">&gt;</span>
+  <span class="kw">&lt;path</span> <span class="prop">d</span>=<span class="str">"m9 11 3 3L22 4"</span><span class="kw">&gt;&lt;/path&gt;</span>
+<span class="kw">&lt;/svg&gt;</span></pre>
+
+      <div class="tbl-wrap"><table>
+        <tr><th>Attribute</th><th>Meaning</th></tr>
+        <tr><td><code>viewBox="0 0 24 24"</code></td><td>The internal coordinate grid. Drawing is done on a 24&times;24 canvas, then scaled to whatever <code>width/height</code> says — so it never blurs.</td></tr>
+        <tr><td><code>stroke="currentColor"</code></td><td><strong>The important one.</strong> The icon takes the CSS <code>color</code> of its parent. That is how one SVG turns sage in light mode and pale green in dark mode with no extra code.</td></tr>
+        <tr><td><code>fill="none"</code></td><td>Outline style, not solid</td></tr>
+        <tr><td><code>aria-hidden="true"</code></td><td>Decorative — hide it from screen readers so they don't read gibberish</td></tr>
+      </table></div>
+
+      <div class="callout success"><span class="callout-icon">+</span><div><strong>Why inline SVG beats an icon font (like Font Awesome):</strong> no extra network request, no CDN dependency, it works offline, it is styleable with plain CSS, and it stays crisp on every screen.</div></div>
+    </div>
+  </section>
+
+  <!-- ======================================== A11Y -->
+  <section class="section" id="html-a11y">
+    <div class="section-title"><span class="dot"></span>HTML — Accessibility Features</div>
+
+    <div class="card">
+      <div class="card-title sage">What we added and why</div>
+      <div class="tbl-wrap"><table>
+        <tr><th>Feature</th><th>Code</th><th>Purpose</th></tr>
+        <tr><td>Skip link</td><td><code>&lt;a class="skip-link" href="#main"&gt;</code></td><td>First thing a keyboard user tabs to — jumps past the navbar straight to content</td></tr>
+        <tr><td>Alt text</td><td><code>alt="A tidy study desk: a laptop..."</code></td><td>Describes the photo for screen readers. Decorative images get <code>alt=""</code> instead</td></tr>
+        <tr><td>Labelled sections</td><td><code>aria-labelledby="faq-title"</code></td><td>Ties a section to its heading so it is announced as "FAQ region"</td></tr>
+        <tr><td>Hidden decoration</td><td><code>aria-hidden="true"</code></td><td>On every icon and on the fake app screenshot — stops noise</td></tr>
+        <tr><td>Image role</td><td><code>role="img" aria-label="A preview of..."</code></td><td>The app schematic is built from divs, so we tell AT to treat it as one picture</td></tr>
+        <tr><td>Visible focus</td><td><code>:focus-visible { outline: 2px solid ... }</code></td><td>Keyboard users can always see where they are</td></tr>
+        <tr><td>Reduced motion</td><td><code>@media (prefers-reduced-motion: reduce)</code></td><td>Turns animations off for users who get motion sickness</td></tr>
+      </table></div>
+
+      <pre><span class="cm">/* base.css — respect the OS accessibility setting */</span>
+<span class="kw">@media</span> (prefers-reduced-motion: reduce) {
+  <span class="sel">html</span> { <span class="prop">scroll-behavior</span>: auto; }
+  <span class="sel">*, *::before, *::after</span> {
+    <span class="prop">animation-duration</span>: <span class="num">0.001ms</span> !important;
+    <span class="prop">transition-duration</span>: <span class="num">0.001ms</span> !important;
+  }
+}</pre>
+    </div>
+  </section>
+
+  <!-- ======================================== CSS VARS -->
+  <section class="section" id="css-vars">
+    <div class="section-title"><span class="dot"></span>CSS — Custom Properties (Design Tokens)</div>
+
+    <div class="card">
+      <div class="card-title taupe">The single most important idea in this project</div>
+      <p>A <strong>CSS custom property</strong> (also called a CSS variable) is a value you declare once and reuse everywhere. Declared with two dashes, read with <code>var()</code>.</p>
+      <pre><span class="cm">/* tokens.css — declared on :root, which IS the &lt;html&gt; element */</span>
+<span class="sel">:root</span> {
+  <span class="prop">--color-brand</span>: <span class="str">#53655C</span>;
+  <span class="prop">--color-bg</span>: <span class="str">#FAF9F7</span>;
+  <span class="prop">--space-24</span>: <span class="num">24px</span>;
+  <span class="prop">--radius-lg</span>: <span class="num">16px</span>;
+  <span class="prop">--duration-fast</span>: <span class="num">140ms</span>;
+}
+
+<span class="cm">/* landing.css — used */</span>
+<span class="sel">.btn--primary</span> {
+  <span class="prop">background-color</span>: <span class="fn">var</span>(--color-brand);
+  <span class="prop">border-radius</span>: <span class="fn">var</span>(--radius-lg);
+  <span class="prop">padding</span>: <span class="fn">var</span>(--space-24);
+}</pre>
+
+      <div class="two-col" style="margin-top:14px">
+        <div>
+          <h3 class="sub" style="margin-top:0">Why they matter here</h3>
+          <ul class="points">
+            <li><strong>Dark mode becomes trivial</strong> — redefine the same names under <code>[data-theme="dark"]</code> and every component updates</li>
+            <li><strong>Consistency</strong> — impossible to accidentally use 23px when the scale says 24px</li>
+            <li><strong>They cascade and inherit</strong>, unlike Sass variables which are compiled away</li>
+            <li><strong>Readable at runtime</strong> — DevTools shows the variable name, not just a hex code</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="sub" style="margin-top:0">Token categories in tokens.css</h3>
+          <div class="tbl-wrap"><table>
+            <tr><th>Group</th><th>Example</th></tr>
+            <tr><td>Colour</td><td><code>--color-brand</code>, <code>--color-border</code></td></tr>
+            <tr><td>Type</td><td><code>--font-heading</code>, <code>--text-h2</code></td></tr>
+            <tr><td>Spacing</td><td><code>--space-4</code> … <code>--space-128</code></td></tr>
+            <tr><td>Radius</td><td><code>--radius-sm</code> … <code>--radius-pill</code></td></tr>
+            <tr><td>Shadow</td><td><code>--shadow-sm/md/lg/xl</code></td></tr>
+            <tr><td>Motion</td><td><code>--ease-out</code>, <code>--duration-base</code></td></tr>
+            <tr><td>Gradient</td><td><code>--gradient-brand</code>, <code>--gradient-rule</code></td></tr>
+          </table></div>
+        </div>
+      </div>
+
+      <h3 class="sub">A local variable, set from HTML</h3>
+      <p class="note">Custom properties can also be set inline and read by CSS — we use this for task priority colours.</p>
+      <pre><span class="cm">&lt;!-- index.html --&gt;</span>
+<span class="kw">&lt;div</span> <span class="prop">class</span>=<span class="str">"task"</span> <span class="prop">style</span>=<span class="str">"--color-status: var(--status-high)"</span><span class="kw">&gt;</span>
+
+<span class="cm">/* landing.css — the same rule serves every priority */</span>
+<span class="sel">.task</span>          { <span class="prop">border-left</span>: <span class="num">3px</span> solid <span class="fn">var</span>(--color-status); }
+<span class="sel">.task__tag::before</span> { <span class="prop">background-color</span>: <span class="fn">var</span>(--color-status); }</pre>
+      <div class="callout tip"><span class="callout-icon">*</span><div>Without this we would need <code>.task--high</code>, <code>.task--medium</code>, <code>.task--done</code> classes each repeating the same three properties. One variable replaces three classes.</div></div>
+    </div>
+  </section>
+
+  <!-- ======================================== SELECTORS -->
+  <section class="section" id="css-selectors">
+    <div class="section-title"><span class="dot"></span>CSS — Selectors, Combinators &amp; Specificity</div>
+
+    <div class="card">
+      <div class="card-title sage">Every selector type we actually used</div>
+      <div class="tbl-wrap"><table>
+        <tr><th>Type</th><th>Example from our CSS</th><th>Meaning</th></tr>
+        <tr><td>Type / element</td><td><code>summary { }</code></td><td>All &lt;summary&gt; tags</td></tr>
+        <tr><td>Class</td><td><code>.card { }</code></td><td>Any element with class="card"</td></tr>
+        <tr><td>ID</td><td><code>#main</code> (as a link target only)</td><td>We avoid styling by ID — specificity is too high</td></tr>
+        <tr><td>Universal</td><td><code>*, *::before, *::after</code></td><td>Used once, for the box-sizing reset</td></tr>
+        <tr><td>Grouping</td><td><code>h1, h2, h3, h4 { }</code></td><td>One rule, several selectors</td></tr>
+        <tr><td>Descendant</td><td><code>.nav-panel ul a</code></td><td>Any &lt;a&gt; anywhere inside a &lt;ul&gt; inside .nav-panel</td></tr>
+        <tr><td>Child <code>&gt;</code></td><td><code>.faq-item &gt; summary</code></td><td>Only a <em>direct</em> child</td></tr>
+        <tr><td>General sibling <code>~</code></td><td><code>.nav-checkbox:checked ~ .nav-panel</code></td><td>A later sibling at the same level — this powers the mobile menu</td></tr>
+        <tr><td>Attribute</td><td><code>.faq-item[open]</code>, <code>[data-theme="dark"]</code></td><td>Matches on an HTML attribute's presence or value</td></tr>
+        <tr><td>Pseudo-class</td><td><code>:hover</code>, <code>:checked</code>, <code>:focus-visible</code>, <code>:root</code>, <code>:nth-child(2)</code></td><td>A state or position, not a real class</td></tr>
+        <tr><td>Pseudo-element</td><td><code>::before</code>, <code>::after</code>, <code>::selection</code></td><td>A sub-part of an element that isn't in the HTML</td></tr>
+        <tr><td>Relational <code>:has()</code></td><td><code>.site-header:has(.nav-checkbox:checked)</code></td><td>"A parent that contains…" — the long-awaited parent selector</td></tr>
+      </table></div>
+
+      <h3 class="sub">Specificity — the scoring system</h3>
+      <p class="note">When two rules target the same element, the one with the higher specificity wins. Score it as (IDs, classes/attributes/pseudo-classes, elements).</p>
+      <div class="tbl-wrap"><table>
+        <tr><th>Selector</th><th>Score</th><th>Note</th></tr>
+        <tr><td><code>p</code></td><td>0,0,1</td><td>Weakest</td></tr>
+        <tr><td><code>.card</code></td><td>0,1,0</td><td>A class beats any number of elements</td></tr>
+        <tr><td><code>.card p</code></td><td>0,1,1</td><td></td></tr>
+        <tr><td><code>.nav-panel ul a</code></td><td>0,1,2</td><td>Deliberately scoped so it cannot outrank <code>.btn</code></td></tr>
+        <tr><td><code>.faq-item[open] &gt; summary svg</code></td><td>0,2,2</td><td>Class + attribute + two elements</td></tr>
+        <tr><td><code>#main</code></td><td>1,0,0</td><td>One ID beats a hundred classes — why we avoid it</td></tr>
+        <tr><td><code>style="..."</code> inline</td><td>1,0,0,0</td><td>Beats everything except <code>!important</code></td></tr>
+      </table></div>
+
+      <div class="callout info"><span class="callout-icon">i</span><div>A real decision from our file: <code>.nav-panel ul a</code> is written that way instead of <code>.nav-panel a</code>, because the mobile panel also contains <code>&lt;a class="btn btn--primary"&gt;</code>. Scoping to <code>ul</code> keeps the button styling intact. Equal specificity would have made source order decide — fragile.</div></div>
+    </div>
+  </section>
+
+  <!-- ======================================== FLEX -->
+  <section class="section" id="css-flex">
+    <div class="section-title"><span class="dot"></span>CSS — Flexbox</div>
+
+    <div class="card">
+      <div class="card-title taupe">One dimension: a row or a column</div>
+      <p>We use Flexbox everywhere something sits <em>in a line</em>: the navbar, buttons, list items with an icon, the footer.</p>
+      <pre><span class="cm">/* The navbar — logo left, links pushed right */</span>
+<span class="sel">.nav</span> {
+  <span class="prop">display</span>: flex;
+  <span class="prop">align-items</span>: center;      <span class="cm">/* vertical centring on the cross axis */</span>
+  <span class="prop">gap</span>: <span class="fn">var</span>(--space-24);      <span class="cm">/* space between items, no margins needed */</span>
+  <span class="prop">height</span>: <span class="fn">var</span>(--header-height);
+}
+<span class="sel">.nav-links</span> { <span class="prop">margin-left</span>: auto; }   <span class="cm">/* the "push right" trick */</span></pre>
+
+      <div class="two-col">
+        <div>
+          <h3 class="sub" style="margin-top:0">Properties we used</h3>
+          <div class="tbl-wrap"><table>
+            <tr><th>Property</th><th>Where</th></tr>
+            <tr><td><code>display: flex</code></td><td>.nav, .btn, .footer-top, .check-list li</td></tr>
+            <tr><td><code>flex-direction: column</code></td><td>.task-list, .agenda, .nav-panel ul</td></tr>
+            <tr><td><code>align-items: center</code></td><td>.nav, .task, .icon-btn</td></tr>
+            <tr><td><code>justify-content: center</code></td><td>.btn, .cta-actions</td></tr>
+            <tr><td><code>justify-content: space-between</code></td><td>.footer-bottom, .hero-card__head</td></tr>
+            <tr><td><code>flex-wrap: wrap</code></td><td>.hero-actions, .footer-nav</td></tr>
+            <tr><td><code>gap</code></td><td>Almost everywhere</td></tr>
+            <tr><td><code>margin-left: auto</code></td><td>.nav-links, .task__tag, .app-frame__chip</td></tr>
+            <tr><td><code>flex: 1 1 auto</code></td><td>.hero-actions .btn on mobile — buttons stretch</td></tr>
+            <tr><td><code>flex: none</code></td><td>svg, .agenda time — never shrink these</td></tr>
+          </table></div>
+        </div>
+        <div>
+          <h3 class="sub" style="margin-top:0">The two axes</h3>
+          <pre><span class="cm">flex-direction: row  (default)</span>
+main axis  →  horizontal
+cross axis ↓  vertical
+
+justify-content → along MAIN axis
+align-items     → along CROSS axis
+
+<span class="cm">flex-direction: column</span>
+main axis  ↓  vertical
+cross axis →  horizontal
+<span class="cm">(the two properties swap meaning!)</span></pre>
+          <div class="callout tip"><span class="callout-icon">*</span><div><code>margin-left: auto</code> works because an <code>auto</code> margin absorbs all leftover free space on the main axis. It is cleaner than <code>justify-content: space-between</code> when only <em>one</em> item needs pushing.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================== GRID -->
+  <section class="section" id="css-grid">
+    <div class="section-title"><span class="dot"></span>CSS — Grid</div>
+
+    <div class="card">
+      <div class="card-title blue">Two dimensions: rows and columns together</div>
+      <p>Grid is used for every page-level layout: the hero split, card grids, the stats strip and the app schematic.</p>
+
+      <pre><span class="cm">/* Feature cards — 3 equal columns */</span>
+<span class="sel">.card-grid</span> {
+  <span class="prop">display</span>: grid;
+  <span class="prop">grid-template-columns</span>: <span class="fn">repeat</span>(<span class="num">3</span>, <span class="fn">minmax</span>(<span class="num">0</span>, <span class="num">1fr</span>));
+  <span class="prop">gap</span>: <span class="fn">var</span>(--space-24);
+}
+
+<span class="cm">/* Hero — two unequal columns, copy slightly wider */</span>
+<span class="sel">.hero .container</span> {
+  <span class="prop">display</span>: grid;
+  <span class="prop">grid-template-columns</span>: <span class="fn">minmax</span>(<span class="num">0</span>, <span class="num">1.05fr</span>) <span class="fn">minmax</span>(<span class="num">0</span>, <span class="num">0.95fr</span>);
+  <span class="prop">gap</span>: <span class="fn">var</span>(--space-64);
+  <span class="prop">align-items</span>: center;
+}
+
+<span class="cm">/* App schematic — fixed sidebar, flexible middle, fixed aside */</span>
+<span class="sel">.app-frame__body</span> {
+  <span class="prop">display</span>: grid;
+  <span class="prop">grid-template-columns</span>: <span class="num">168px</span> <span class="fn">minmax</span>(<span class="num">0</span>, <span class="num">1fr</span>) <span class="num">200px</span>;
+}
+
+<span class="cm">/* Week strip — 7 equal day cells */</span>
+<span class="sel">.week</span> {
+  <span class="prop">display</span>: grid;
+  <span class="prop">grid-template-columns</span>: <span class="fn">repeat</span>(<span class="num">7</span>, <span class="fn">minmax</span>(<span class="num">0</span>, <span class="num">1fr</span>));
+  <span class="prop">gap</span>: <span class="fn">var</span>(--space-4);
+}</pre>
+
+      <div class="tbl-wrap"><table>
+        <tr><th>Term</th><th>Meaning</th></tr>
+        <tr><td><code>1fr</code></td><td>One <strong>fr</strong>action of the leftover space. <code>1fr 1fr</code> = two equal columns.</td></tr>
+        <tr><td><code>repeat(3, ...)</code></td><td>Shorthand for writing the same track three times</td></tr>
+        <tr><td><code>minmax(0, 1fr)</code></td><td>An <code>fr</code> track has a minimum size of <code>auto</code>, so long words can force it wider than intended. <code>minmax(0, 1fr)</code> forces the true minimum to 0 and stops the blow-out.</td></tr>
+        <tr><td><code>gap</code></td><td>Gutters between tracks. Replaces the old margin-and-negative-margin hacks.</td></tr>
+        <tr><td><code>order</code></td><td>Changes visual order without touching the HTML — used on <code>.showcase--flip</code></td></tr>
+      </table></div>
+
+      <h3 class="sub">Flipping a layout with <code>order</code></h3>
+      <pre><span class="cm">/* Desktop: the second showcase puts the photo on the right */</span>
+<span class="sel">.showcase--flip .showcase__media</span> { <span class="prop">order</span>: <span class="num">2</span>; }
+
+<span class="cm">/* Mobile: photo always leads, so undo it */</span>
+<span class="kw">@media</span> (max-width: <span class="num">720px</span>) {
+  <span class="sel">.showcase--flip .showcase__media</span> { <span class="prop">order</span>: <span class="num">0</span>; }
+}</pre>
+      <div class="callout warn"><span class="callout-icon">!</span><div><code>order</code> changes <em>painting</em> order only, not DOM order. A screen reader and the Tab key still follow the HTML. That is fine here (image then text is sensible either way) but it is a real accessibility trap in general — worth mentioning.</div></div>
+
+      <h3 class="sub">Grid vs Flexbox — the answer to expect</h3>
+      <div class="tbl-wrap"><table>
+        <tr><th></th><th>Flexbox</th><th>Grid</th></tr>
+        <tr><td>Dimensions</td><td>One (row <em>or</em> column)</td><td>Two (rows <em>and</em> columns)</td></tr>
+        <tr><td>Driven by</td><td>Content — items size themselves</td><td>The container — you define the tracks first</td></tr>
+        <tr><td>Best for</td><td>Navbars, button rows, a label next to an icon</td><td>Page layout, card galleries, calendars</td></tr>
+        <tr><td>In Synora</td><td>.nav, .btn, .task, .footer-top</td><td>.hero .container, .card-grid, .week, .steps</td></tr>
+      </table></div>
+    </div>
+  </section>
+
+  <!-- ======================================== POSITION -->
+  <section class="section" id="css-position">
+    <div class="section-title"><span class="dot"></span>CSS — Position &amp; Stacking</div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title sage">The sticky header</div>
+        <pre><span class="sel">.site-header</span> {
+  <span class="prop">position</span>: sticky;
+  <span class="prop">top</span>: <span class="num">0</span>;
+  <span class="prop">z-index</span>: <span class="num">50</span>;
+  <span class="prop">backdrop-filter</span>: <span class="fn">blur</span>(<span class="num">12px</span>);
+}</pre>
+        <ul class="points">
+          <li><code>sticky</code> = behaves like <code>relative</code> until it hits <code>top: 0</code>, then acts like <code>fixed</code></li>
+          <li><code>top: 0</code> is <strong>required</strong> — sticky does nothing without an offset</li>
+          <li><code>z-index: 50</code> keeps it above the page content</li>
+          <li><code>backdrop-filter: blur()</code> blurs whatever scrolls <em>behind</em> the header — the frosted-glass look</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title taupe">The floating hero card</div>
+        <pre><span class="sel">.hero-visual</span> { <span class="prop">position</span>: relative; }
+
+<span class="sel">.hero-card</span> {
+  <span class="prop">position</span>: absolute;
+  <span class="prop">right</span>: <span class="fn">calc</span>(<span class="fn">var</span>(--space-24) * -1);
+  <span class="prop">bottom</span>: <span class="num">0</span>;
+  <span class="prop">width</span>: <span class="fn">min</span>(<span class="num">19rem</span>, <span class="num">78%</span>);
+}</pre>
+        <ul class="points">
+          <li>An <code>absolute</code> child positions against its nearest <code>relative</code> ancestor</li>
+          <li>Negative <code>right</code> makes it hang <em>outside</em> the photo — the overlap effect</li>
+          <li><code>min(19rem, 78%)</code> = "19rem, but never more than 78% of the parent"</li>
+          <li>On mobile it becomes <code>position: static</code> and simply stacks below</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title blue">z-index &amp; stacking context</div>
+      <div class="tbl-wrap"><table>
+        <tr><th>Element</th><th>z-index</th><th>Why</th></tr>
+        <tr><td><code>.skip-link</code></td><td>100</td><td>Must appear above everything when focused</td></tr>
+        <tr><td><code>.site-header</code></td><td>50</td><td>Above content, below the skip link</td></tr>
+        <tr><td><code>.why::before</code></td><td>-1</td><td>The background photo sits behind the text of its own section</td></tr>
+      </table></div>
+      <pre><span class="sel">.why</span> {
+  <span class="prop">position</span>: relative;
+  <span class="prop">isolation</span>: isolate;   <span class="cm">/* creates a new stacking context */</span>
+}
+<span class="sel">.why::before</span> { <span class="prop">z-index</span>: <span class="num">-1</span>; }</pre>
+      <div class="callout info"><span class="callout-icon">i</span><div><code>isolation: isolate</code> traps the <code>z-index: -1</code> inside <code>.why</code>. Without it the pseudo-element could slide behind the page background entirely and vanish.</div></div>
+    </div>
+  </section>
+
+  <!-- ======================================== PSEUDO -->
+  <section class="section" id="css-pseudo">
+    <div class="section-title"><span class="dot"></span>CSS — Pseudo-elements Doing Real Work</div>
+
+    <div class="card">
+      <div class="card-title sage">Decoration with no extra HTML</div>
+      <p><code>::before</code> and <code>::after</code> create a child element from CSS. They need <code>content</code> — even an empty string — to exist at all.</p>
+
+      <div class="tbl-wrap"><table>
+        <tr><th>Where</th><th>What it draws</th></tr>
+        <tr><td><code>.wordmark::before</code></td><td>The gradient lozenge in front of "Synora"</td></tr>
+        <tr><td><code>.eyebrow::before</code></td><td>The small taupe dot before the eyebrow text</td></tr>
+        <tr><td><code>.card::before</code></td><td>The 3px gradient bar that grows on hover</td></tr>
+        <tr><td><code>.step::before</code></td><td>The numerals 01, 02, 03 (from a CSS counter)</td></tr>
+        <tr><td><code>.why::before</code></td><td>The background photo + its dark veil</td></tr>
+        <tr><td><code>.hero-photo::after</code></td><td>A sage/taupe wash over the photograph</td></tr>
+        <tr><td><code>.showcase__media::after</code></td><td>The same wash on the two showcase photos</td></tr>
+        <tr><td><code>.cta::before</code></td><td>The radial light bloom on the gradient band</td></tr>
+        <tr><td><code>.task__tag::before</code></td><td>The coloured priority dot</td></tr>
+      </table></div>
+
+      <h3 class="sub">The hover accent bar — animating a pseudo-element</h3>
+      <pre><span class="sel">.card::before</span> {
+  <span class="prop">content</span>: <span class="str">""</span>;                <span class="cm">/* mandatory */</span>
+  <span class="prop">position</span>: absolute;
+  <span class="prop">inset</span>: <span class="num">0</span> auto auto <span class="num">0</span>;     <span class="cm">/* top:0 right:auto bottom:auto left:0 */</span>
+  <span class="prop">width</span>: <span class="num">100%</span>;
+  <span class="prop">height</span>: <span class="num">3px</span>;
+  <span class="prop">background-image</span>: <span class="fn">var</span>(--gradient-rule);
+  <span class="prop">transform</span>: <span class="fn">scaleX</span>(<span class="num">0</span>);       <span class="cm">/* start collapsed */</span>
+  <span class="prop">transform-origin</span>: left;      <span class="cm">/* grow from the left edge */</span>
+  <span class="prop">transition</span>: transform <span class="fn">var</span>(--duration-slow) <span class="fn">var</span>(--ease-out);
+}
+<span class="sel">.card:hover::before</span> { <span class="prop">transform</span>: <span class="fn">scaleX</span>(<span class="num">1</span>); }</pre>
+      <div class="callout success"><span class="callout-icon">+</span><div>Animating <code>transform</code> instead of <code>width</code> is a performance point worth making: <code>transform</code> and <code>opacity</code> are handled by the GPU and do not trigger layout recalculation. Animating <code>width</code>, <code>height</code>, <code>top</code> or <code>margin</code> forces a reflow on every frame.</div></div>
+
+      <h3 class="sub">Photo + veil in one pseudo-element</h3>
+      <pre><span class="sel">.why::before</span> {
+  <span class="prop">content</span>: <span class="str">""</span>;
+  <span class="prop">position</span>: absolute; <span class="prop">inset</span>: <span class="num">0</span>; <span class="prop">z-index</span>: <span class="num">-1</span>;
+  <span class="prop">background-image</span>:
+    <span class="fn">linear-gradient</span>(<span class="num">100deg</span>, <span class="fn">var</span>(--ink-veil) <span class="num">30%</span>, <span class="fn">var</span>(--ink-veil-edge)),
+    <span class="fn">url</span>(<span class="str">"../assets/img/desk-evening.jpg"</span>);
+  <span class="prop">background-size</span>: cover, cover;
+  <span class="prop">background-position</span>: center, center;
+}</pre>
+      <p class="note">Two background layers on one element, comma-separated. <strong>The first layer listed paints on top</strong> — so the gradient veil sits over the photo, keeping white text readable. Reversing the order would hide the photo completely.</p>
+    </div>
+  </section>
+
+  <!-- ======================================== COLOR -->
+  <section class="section" id="css-color">
+    <div class="section-title"><span class="dot"></span>CSS — Gradients, Transparency &amp; Colour Functions</div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title taupe">linear-gradient</div>
+        <pre><span class="cm">/* The CTA band: sage → mid → taupe */</span>
+<span class="prop">--gradient-brand</span>: <span class="fn">linear-gradient</span>(
+  <span class="num">135deg</span>,
+  <span class="str">#53655C</span> <span class="num">0%</span>,
+  <span class="str">#6B7D71</span> <span class="num">55%</span>,
+  <span class="str">#B09F95</span> <span class="num">140%</span>
+);
+
+<span class="cm">/* The little rule under each heading */</span>
+<span class="prop">--gradient-rule</span>: <span class="fn">linear-gradient</span>(
+  <span class="num">90deg</span>,
+  <span class="fn">var</span>(--color-brand),
+  <span class="fn">var</span>(--color-accent-bright) <span class="num">60%</span>,
+  transparent
+);</pre>
+        <ul class="points">
+          <li><code>135deg</code> = top-left to bottom-right; <code>90deg</code> = left to right</li>
+          <li>The percentage after a colour is its <strong>colour stop</strong> position</li>
+          <li>A stop beyond 100% (like <code>140%</code>) means the last colour is never fully reached — it stays a hint of warmth</li>
+          <li>Ending in <code>transparent</code> gives a fade-out with no hard edge</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title blue">radial-gradient</div>
+        <pre><span class="cm">/* Page-wide wash, in tokens.css */</span>
+<span class="prop">--gradient-page</span>:
+  <span class="fn">radial-gradient</span>(<span class="num">90rem</span> <span class="num">40rem</span> at <span class="num">12%</span> <span class="num">-10%</span>,
+    <span class="fn">rgba</span>(<span class="num">83,101,92</span>, .<span class="num">10</span>), transparent <span class="num">60%</span>),
+  <span class="fn">radial-gradient</span>(<span class="num">70rem</span> <span class="num">36rem</span> at <span class="num">92%</span> <span class="num">4%</span>,
+    <span class="fn">rgba</span>(<span class="num">176,159,149</span>, .<span class="num">16</span>), transparent <span class="num">62%</span>);</pre>
+        <ul class="points">
+          <li><code>90rem 40rem</code> = the ellipse's width and height</li>
+          <li><code>at 12% -10%</code> = its centre, partly above the viewport</li>
+          <li>Two washes: a cool sage bloom top-left, a warm taupe bloom top-right</li>
+          <li>Applied to <code>body</code> with <code>background-attachment: fixed</code> so it stays put while you scroll</li>
+        </ul>
+        <div class="callout tip"><span class="callout-icon">*</span><div>This is the single change that stops the page reading as flat white. It is only ~10% opacity — barely visible on its own, obvious the moment you remove it.</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title amber">Colour functions in use</div>
+      <div class="tbl-wrap"><table>
+        <tr><th>Function</th><th>Example</th><th>What it does</th></tr>
+        <tr><td><code>rgba()</code></td><td><code>rgba(34, 37, 43, .06)</code></td><td>Red/green/blue plus an alpha channel from 0 to 1. All our shadows use it.</td></tr>
+        <tr><td><code>color-mix()</code></td><td><code>color-mix(in srgb, var(--color-bg) 82%, transparent)</code></td><td>Blends two colours in CSS. We use it for the translucent header so it still tracks the theme variable — you cannot do that with a hard-coded rgba.</td></tr>
+        <tr><td><code>currentColor</code></td><td><code>stroke="currentColor"</code></td><td>Keyword meaning "whatever this element's <code>color</code> is"</td></tr>
+        <tr><td><code>calc()</code></td><td><code>calc(var(--space-24) * -1)</code></td><td>Arithmetic in CSS. Here it turns a positive spacing token into a negative offset.</td></tr>
+        <tr><td><code>min()</code> / <code>clamp()</code></td><td><code>min(19rem, 78%)</code></td><td>Picks the smaller value at render time — responsive sizing with no media query</td></tr>
+      </table></div>
+    </div>
+  </section>
+
+  <!-- ======================================== TYPE -->
+  <section class="section" id="css-type">
+    <div class="section-title"><span class="dot"></span>CSS — Typography</div>
+
+    <div class="card">
+      <div class="card-title sage">Two typefaces, one job each</div>
+      <pre><span class="prop">--font-heading</span>: <span class="str">"Manrope"</span>, ui-sans-serif, system-ui, sans-serif;
+<span class="prop">--font-body</span>:    <span class="str">"Inter"</span>,   ui-sans-serif, system-ui, sans-serif;</pre>
+      <p class="note">Everything after the first name is the <strong>font stack fallback</strong>: if Manrope fails to download, the browser walks the list left to right. <code>system-ui</code> means "whatever this OS uses" — San Francisco on Mac, Segoe UI on Windows.</p>
+
+      <h3 class="sub">Fluid type with clamp()</h3>
+      <pre><span class="prop">--text-hero</span>: <span class="fn">clamp</span>(<span class="num">2.5rem</span>, <span class="num">5vw</span>, <span class="num">4rem</span>);
+<span class="cm">/*                minimum   preferred  maximum */</span></pre>
+      <ul class="points">
+        <li>Never smaller than <code>2.5rem</code>, never larger than <code>4rem</code></li>
+        <li>In between it is <code>5vw</code> — 5% of the viewport width, so it scales smoothly</li>
+        <li>One line replaces three font-size overrides in three media queries</li>
+      </ul>
+
+      <h3 class="sub">Other type properties we set</h3>
+      <div class="tbl-wrap"><table>
+        <tr><th>Property</th><th>Value</th><th>Effect</th></tr>
+        <tr><td><code>line-height</code></td><td>1.65 body, 1.1 hero</td><td>Long text needs air; big headings need tightness</td></tr>
+        <tr><td><code>letter-spacing</code></td><td><code>-0.02em</code> headings, <code>0.08em</code> eyebrows</td><td>Large text looks loose, so tighten it; small uppercase looks cramped, so open it</td></tr>
+        <tr><td><code>text-wrap: balance</code></td><td>on h1–h4</td><td>Evens out the last line of a heading instead of leaving one orphan word</td></tr>
+        <tr><td><code>text-wrap: pretty</code></td><td>on p</td><td>Same idea, tuned for paragraphs</td></tr>
+        <tr><td><code>font-variant-numeric: tabular-nums</code></td><td>.agenda time</td><td>Makes digits equal width so 09:00 and 11:30 line up</td></tr>
+        <tr><td><code>text-overflow: ellipsis</code></td><td>.task__label</td><td>Long task names end in "…" instead of breaking the layout (needs <code>overflow:hidden</code> + <code>white-space:nowrap</code>)</td></tr>
+      </table></div>
+    </div>
+  </section>
+
+  <!-- ======================================== ANIM -->
+  <section class="section" id="css-anim">
+    <div class="section-title"><span class="dot"></span>CSS — Transitions &amp; Animations</div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title taupe">Transitions — state A to state B</div>
+        <pre><span class="sel">.btn</span> {
+  <span class="prop">transition</span>:
+    background-color <span class="fn">var</span>(--duration-fast) <span class="fn">var</span>(--ease-out),
+    box-shadow       <span class="fn">var</span>(--duration-base) <span class="fn">var</span>(--ease-out),
+    transform        <span class="fn">var</span>(--duration-base) <span class="fn">var</span>(--ease-out);
+}
+<span class="sel">.btn--primary:hover</span> {
+  <span class="prop">background-color</span>: <span class="fn">var</span>(--color-brand-hover);
+  <span class="prop">transform</span>: <span class="fn">translateY</span>(<span class="num">-1px</span>);   <span class="cm">/* lifts 1px */</span>
+}
+<span class="sel">.btn:active</span> { <span class="prop">transform</span>: <span class="fn">translateY</span>(<span class="num">0</span>); }  <span class="cm">/* presses back down */</span></pre>
+        <p class="note">A transition needs four things: <em>which</em> property, <em>how long</em>, <em>what curve</em>, and a trigger (<code>:hover</code>, <code>[open]</code>, a class change). We list properties explicitly instead of using <code>all</code> — <code>all</code> animates things you did not intend and costs performance.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title blue">Keyframes — the hero entrance</div>
+        <pre><span class="kw">@keyframes</span> rise {
+  <span class="prop">from</span> { <span class="prop">opacity</span>: <span class="num">0</span>; <span class="prop">transform</span>: <span class="fn">translateY</span>(<span class="num">16px</span>); }
+  <span class="prop">to</span>   { <span class="prop">opacity</span>: <span class="num">1</span>; <span class="prop">transform</span>: none; }
+}
+
+<span class="sel">.hero-copy &gt; *, .hero-visual</span> {
+  <span class="prop">animation</span>: rise <span class="num">700ms</span> <span class="fn">var</span>(--ease-out) both;
+}
+
+<span class="cm">/* Staggered by child position — a "cascade" effect */</span>
+<span class="sel">.hero-copy &gt; *:nth-child(2)</span> { <span class="prop">animation-delay</span>: <span class="num">70ms</span>; }
+<span class="sel">.hero-copy &gt; *:nth-child(3)</span> { <span class="prop">animation-delay</span>: <span class="num">140ms</span>; }
+<span class="sel">.hero-copy &gt; *:nth-child(4)</span> { <span class="prop">animation-delay</span>: <span class="num">210ms</span>; }</pre>
+        <ul class="points">
+          <li><code>both</code> = <code>animation-fill-mode: both</code> — hold the <code>from</code> styles before it starts and the <code>to</code> styles after it ends</li>
+          <li>Without <code>both</code>, delayed elements would flash visible, then jump down, then animate</li>
+          <li><code>:nth-child(n)</code> selects by position, so the stagger needs no extra classes</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title amber">Easing</div>
+      <pre><span class="prop">--ease-out</span>: <span class="fn">cubic-bezier</span>(<span class="num">0.16</span>, <span class="num">1</span>, <span class="num">0.3</span>, <span class="num">1</span>);</pre>
+      <p class="note">A custom timing curve: fast at the start, gently settling at the end. It feels more natural than the built-in <code>ease</code> or <code>linear</code>. The four numbers are the two control points of a Bézier curve from (0,0) to (1,1).</p>
+      <div class="tbl-wrap"><table>
+        <tr><th>Duration token</th><th>Value</th><th>Used for</th></tr>
+        <tr><td><code>--duration-fast</code></td><td>140ms</td><td>Colour changes on hover — must feel instant</td></tr>
+        <tr><td><code>--duration-base</code></td><td>200ms</td><td>Movement, shadows, chevron rotation</td></tr>
+        <tr><td><code>--duration-slow</code></td><td>300ms</td><td>Theme switch, the card accent bar</td></tr>
+      </table></div>
+    </div>
+  </section>
+
+  <!-- ======================================== COUNTERS -->
+  <section class="section" id="css-counter">
+    <div class="section-title"><span class="dot"></span>CSS — Counters (the 01 / 02 / 03 numerals)</div>
+
+    <div class="card">
+      <div class="card-title sage">Numbering generated entirely by CSS</div>
+      <p>The "Three steps" section shows 01, 02, 03 — but those digits appear nowhere in the HTML.</p>
+      <pre><span class="cm">/* 1. Create and reset the counter on the parent */</span>
+<span class="sel">.steps</span> { <span class="prop">counter-reset</span>: step; }
+
+<span class="cm">/* 2. Increment it once per child, and print it */</span>
+<span class="sel">.step::before</span> {
+  <span class="prop">counter-increment</span>: step;
+  <span class="prop">content</span>: <span class="fn">counter</span>(step, decimal-leading-zero);
+  <span class="prop">font-size</span>: <span class="num">1.75rem</span>;
+  <span class="prop">color</span>: <span class="fn">var</span>(--color-accent);
+}</pre>
+      <ul class="points">
+        <li><code>counter-reset: step</code> declares a counter named <code>step</code> starting at 0</li>
+        <li><code>counter-increment: step</code> adds 1 each time the rule matches</li>
+        <li><code>content: counter(step, decimal-leading-zero)</code> prints it as 01, 02, 03 rather than 1, 2, 3</li>
+        <li><strong>The benefit:</strong> reorder or add a step in the HTML and the numbering fixes itself</li>
+      </ul>
+      <div class="callout info"><span class="callout-icon">i</span><div>Other list styles available: <code>decimal</code>, <code>upper-roman</code>, <code>lower-alpha</code>. Counters are also how automatic chapter numbering works in printed CSS.</div></div>
+    </div>
+  </section>
+
+  <!-- ======================================== RESPONSIVE -->
+  <section class="section" id="css-responsive">
+    <div class="section-title"><span class="dot"></span>CSS — Responsive Design</div>
+
+    <div class="card">
+      <div class="card-title taupe">Our five breakpoints, and what changes at each</div>
+      <div class="tbl-wrap"><table>
+        <tr><th>Breakpoint</th><th>What happens</th><th>Why there</th></tr>
+        <tr><td><code>max-width: 1024px</code></td><td>Week-view sliver hidden; hero gap tightens</td><td>The 200px aside stops having enough room to be legible</td></tr>
+        <tr><td><code>max-width: 940px</code></td><td>Hero becomes one column; cards go 3→2; stats go 4→2; steps stack</td><td>The point where two hero columns each get too narrow</td></tr>
+        <tr><td><code>max-width: 860px</code></td><td>Nav links hidden, hamburger appears</td><td>The link row would start colliding with the buttons</td></tr>
+        <tr><td><code>max-width: 720px</code></td><td>Cards go 2→1; showcase stacks; hero card un-floats; padding shrinks</td><td>Tablet portrait / large phone</td></tr>
+        <tr><td><code>max-width: 400px</code></td><td>Container padding 24px → 16px</td><td>Small phones need every pixel of width</td></tr>
+      </table></div>
+
+      <pre><span class="cm">/* Breakpoints are chosen by where the DESIGN breaks,
+   not by device names. Resize the window until it looks
+   wrong — that width is your breakpoint. */</span>
+
+<span class="kw">@media</span> (max-width: <span class="num">860px</span>) {
+  <span class="sel">.nav-links,
+  .nav-actions .btn</span> { <span class="prop">display</span>: none; }
+  <span class="sel">.nav-toggle</span>          { <span class="prop">display</span>: inline-flex; }
+  <span class="sel">.nav-actions</span>         { <span class="prop">margin-left</span>: auto; }
+}
+
+<span class="cm">/* Smallest screens: change a token, and everything using it
+   updates at once. This is the payoff of the token system. */</span>
+<span class="kw">@media</span> (max-width: <span class="num">400px</span>) {
+  <span class="sel">:root</span> { <span class="prop">--container-pad</span>: <span class="fn">var</span>(--space-16); }
+}</pre>
+
+      <h3 class="sub">Responsive techniques that need no media query at all</h3>
+      <div class="tbl-wrap"><table>
+        <tr><th>Technique</th><th>Example</th></tr>
+        <tr><td><code>clamp()</code> for type</td><td><code>--text-hero: clamp(2.5rem, 5vw, 4rem)</code></td></tr>
+        <tr><td><code>min()</code> for widths</td><td><code>width: min(19rem, 78%)</code></td></tr>
+        <tr><td><code>max-width</code> + <code>margin-inline: auto</code></td><td><code>.container</code> centres and caps itself at 1120px</td></tr>
+        <tr><td><code>flex-wrap: wrap</code></td><td>Footer nav and hero buttons reflow on their own</td></tr>
+        <tr><td><code>aspect-ratio</code></td><td><code>.hero-photo img { aspect-ratio: 4/3 }</code> — the image box never changes shape</td></tr>
+        <tr><td><code>object-fit: cover</code></td><td>Fills that box by cropping, never squashing the photo</td></tr>
+      </table></div>
+      <div class="callout success"><span class="callout-icon">+</span><div><strong>Good closing line for this topic:</strong> "We used media queries only where the layout genuinely had to change structure. Sizing responds fluidly on its own."</div></div>
+    </div>
+  </section>
+
+  <!-- ======================================== DARK -->
+  <section class="section" id="css-dark">
+    <div class="section-title"><span class="dot"></span>CSS — How Dark Mode Actually Works</div>
+
+    <div class="card">
+      <div class="card-title blue">One attribute, two palettes</div>
+      <pre><span class="cm">/* tokens.css — the light values */</span>
+<span class="sel">:root</span> {
+  <span class="prop">color-scheme</span>: light;
+  <span class="prop">--color-bg</span>:     <span class="str">#FAF9F7</span>;
+  <span class="prop">--color-text</span>:   <span class="str">#22252B</span>;
+  <span class="prop">--color-brand</span>:  <span class="str">#53655C</span>;
+  <span class="prop">--shadow-md</span>:    <span class="num">0</span> <span class="num">4px</span> <span class="num">14px</span> <span class="fn">rgba</span>(<span class="num">34,37,43</span>,.<span class="num">07</span>);
+}
+
+<span class="cm">/* the dark values — SAME names, different values */</span>
+<span class="sel">[data-theme="dark"]</span> {
+  <span class="prop">color-scheme</span>: dark;
+  <span class="prop">--color-bg</span>:     <span class="str">#16181C</span>;
+  <span class="prop">--color-text</span>:   <span class="str">#E8EAED</span>;
+  <span class="prop">--color-brand</span>:  <span class="str">#8FA697</span>;   <span class="cm">/* lightened sage */</span>
+  <span class="prop">--shadow-md</span>:    none;      <span class="cm">/* dark UI uses borders, not shadows */</span>
+}</pre>
+
+      <div class="callout success"><span class="callout-icon">+</span><div><strong>Not one component rule changes.</strong> <code>.btn--primary</code> still says <code>background-color: var(--color-brand)</code>. Only the value behind the name is swapped. That is the entire dark-mode implementation.</div></div>
+
+      <h3 class="sub">Three details worth knowing</h3>
+      <div class="tbl-wrap"><table>
+        <tr><th>Detail</th><th>Explanation</th></tr>
+        <tr><td>Brand colour is lightened</td><td><code>#53655C</code> on a dark background fails contrast, so dark mode uses <code>#8FA697</code>. Dark mode is <strong>not</strong> "invert the colours".</td></tr>
+        <tr><td>Shadows become <code>none</code></td><td>A black shadow on a near-black surface is invisible. Depth in dark UI comes from lighter surfaces and visible borders.</td></tr>
+        <tr><td>The ink band goes <em>darker</em></td><td>In light mode the "Why Synora" band is <code>#22252B</code> (darker than the page). In dark mode it becomes <code>#0F1114</code> — still darker than its surroundings, so the contrast <em>relationship</em> survives.</td></tr>
+      </table></div>
+
+      <h3 class="sub">The <code>color-scheme</code> property</h3>
+      <p class="note">Setting <code>color-scheme: dark</code> tells the browser to draw its <em>own</em> UI — scrollbars, text-selection highlights, default form controls — in dark colours. Without it you get a light scrollbar on a dark page.</p>
+
+      <h3 class="sub">Smooth switching</h3>
+      <pre><span class="sel">body</span> {
+  <span class="prop">transition</span>:
+    background-color <span class="fn">var</span>(--duration-slow) <span class="fn">var</span>(--ease-out),
+    color            <span class="fn">var</span>(--duration-slow) <span class="fn">var</span>(--ease-out);
+}</pre>
+      <p class="note">Because the transition is on <code>body</code>, flipping the attribute fades between themes over 300ms instead of snapping.</p>
+    </div>
+  </section>
+
+  <!-- ======================================== TRICK MENU -->
+  <section class="section" id="trick-menu">
+    <div class="section-title"><span class="dot"></span>No-JS — The Checkbox Hack Menu</div>
+
+    <div class="card">
+      <div class="card-title sage">A working mobile menu with zero JavaScript</div>
+
+      <div class="flow">
+        <span class="flow-step">Tap &lt;label&gt;</span><span class="flow-arrow">→</span>
+        <span class="flow-step">Browser toggles the &lt;input&gt;</span><span class="flow-arrow">→</span>
+        <span class="flow-step">:checked now matches</span><span class="flow-arrow">→</span>
+        <span class="flow-step">~ selector reveals the panel</span>
+      </div>
+
+      <pre><span class="cm">&lt;!-- HTML: the checkbox comes FIRST --&gt;</span>
+<span class="kw">&lt;div</span> <span class="prop">class</span>=<span class="str">"container"</span><span class="kw">&gt;</span>
+  <span class="kw">&lt;input</span> <span class="prop">class</span>=<span class="str">"nav-checkbox"</span> <span class="prop">type</span>=<span class="str">"checkbox"</span> <span class="prop">id</span>=<span class="str">"nav-open"</span><span class="kw">&gt;</span>
+  <span class="kw">&lt;nav</span> <span class="prop">class</span>=<span class="str">"nav"</span><span class="kw">&gt;</span>
+    ...
+    <span class="kw">&lt;label</span> <span class="prop">class</span>=<span class="str">"nav-toggle"</span> <span class="prop">for</span>=<span class="str">"nav-open"</span><span class="kw">&gt;</span>☰<span class="kw">&lt;/label&gt;</span>
+  <span class="kw">&lt;/nav&gt;</span>
+  <span class="kw">&lt;div</span> <span class="prop">class</span>=<span class="str">"nav-panel"</span><span class="kw">&gt;</span> ...links... <span class="kw">&lt;/div&gt;</span>
+<span class="kw">&lt;/div&gt;</span></pre>
+
+      <pre><span class="cm">/* CSS: hide the checkbox but keep it focusable */</span>
+<span class="sel">.nav-checkbox</span> {
+  <span class="prop">position</span>: absolute; <span class="prop">width</span>: <span class="num">1px</span>; <span class="prop">height</span>: <span class="num">1px</span>;
+  <span class="prop">opacity</span>: <span class="num">0</span>; <span class="prop">pointer-events</span>: none;
+}
+
+<span class="cm">/* the panel is hidden by default */</span>
+<span class="sel">.nav-panel</span> { <span class="prop">display</span>: none; }
+
+<span class="cm">/* ...and revealed when the checkbox is checked */</span>
+<span class="sel">.nav-checkbox:checked ~ .nav-panel</span> { <span class="prop">display</span>: block; }
+
+<span class="cm">/* swap hamburger for X, same idea */</span>
+<span class="sel">.nav-checkbox:checked ~ .nav .nav-toggle .icon-menu</span>  { <span class="prop">display</span>: none; }
+<span class="sel">.nav-checkbox:checked ~ .nav .nav-toggle .icon-close</span> { <span class="prop">display</span>: block; }
+
+<span class="cm">/* keyboard focus lands on the invisible input,
+   so draw the ring on the visible label instead */</span>
+<span class="sel">.nav-checkbox:focus-visible ~ .nav .nav-toggle</span> {
+  <span class="prop">outline</span>: <span class="num">2px</span> solid <span class="fn">var</span>(--color-brand);
+}
+
+<span class="cm">/* :has() — make the header solid while the menu is open */</span>
+<span class="sel">.site-header:has(.nav-checkbox:checked)</span> {
+  <span class="prop">background-color</span>: <span class="fn">var</span>(--color-bg);
+}</pre>
+
+      <div class="callout warn"><span class="callout-icon">!</span><div><strong>Why the checkbox must come first in the HTML.</strong> The <code>~</code> (general sibling) combinator only looks <em>forward</em>. CSS cannot select backwards, so <code>.nav-panel ~ .nav-checkbox</code> would never match. Source order is part of the technique.</div></div>
+
+      <div class="callout tip"><span class="callout-icon">*</span><div><strong>Why not <code>display: none</code> on the checkbox?</strong> A <code>display:none</code> element is removed from the accessibility tree and from the tab order, so keyboard users could never open the menu. The 1px transparent trick keeps it focusable.</div></div>
+
+      <h3 class="sub"><code>:has()</code> — the parent selector</h3>
+      <p class="note">For twenty years CSS could not style a parent based on its children. <code>:has()</code> changed that. <code>.site-header:has(.nav-checkbox:checked)</code> reads as "a <code>.site-header</code> that contains a checked <code>.nav-checkbox</code>". Before <code>:has()</code>, this needed JavaScript to add a class to the header.</p>
+    </div>
+  </section>
+
+  <!-- ======================================== TRICK ACCORDION -->
+  <section class="section" id="trick-accordion">
+    <div class="section-title"><span class="dot"></span>No-JS — Accordion &amp; Icon Swapping</div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title taupe">FAQ accordion</div>
+        <p class="note">Covered in full <a href="#html-details" style="color:var(--sage)">above</a> — <code>&lt;details&gt;</code> + <code>&lt;summary&gt;</code>, styled through the <code>[open]</code> attribute selector.</p>
+        <pre><span class="sel">.faq-item[open]</span> {
+  <span class="prop">border-color</span>: <span class="fn">var</span>(--color-brand);
+}
+<span class="sel">.faq-item[open] &gt; summary svg</span> {
+  <span class="prop">transform</span>: <span class="fn">rotate</span>(<span class="num">180deg</span>);
+}</pre>
+      </div>
+
+      <div class="card">
+        <div class="card-title blue">Sun / moon icon swap</div>
+        <p class="note">Both icons are always in the HTML. CSS decides which one is displayed, based on the theme attribute.</p>
+        <pre><span class="cm">/* default (light): show sun, hide moon */</span>
+<span class="sel">.theme-toggle .icon-moon</span> { <span class="prop">display</span>: none; }
+
+<span class="cm">/* dark: reverse it */</span>
+<span class="sel">[data-theme="dark"] .theme-toggle .icon-sun</span>  { <span class="prop">display</span>: none; }
+<span class="sel">[data-theme="dark"] .theme-toggle .icon-moon</span> { <span class="prop">display</span>: block; }</pre>
+        <div class="callout success"><span class="callout-icon">+</span><div>The JavaScript never touches these icons. It only sets <code>data-theme</code> on <code>&lt;html&gt;</code>; CSS does the rest. This is the pattern to describe if asked "how do you keep JavaScript small?"</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================== TRICK SCROLL -->
+  <section class="section" id="trick-scroll">
+    <div class="section-title"><span class="dot"></span>No-JS — Smooth Anchor Scrolling</div>
+
+    <div class="card">
+      <div class="card-title sage">Two CSS lines replace a scroll handler</div>
+      <pre><span class="sel">html</span> {
+  <span class="prop">scroll-behavior</span>: smooth;
+  <span class="prop">scroll-padding-top</span>: <span class="fn">calc</span>(<span class="fn">var</span>(--header-height) + <span class="fn">var</span>(--space-24));
+}</pre>
+      <ul class="points">
+        <li><code>scroll-behavior: smooth</code> — clicking <code>href="#features"</code> glides instead of jumping</li>
+        <li><code>scroll-padding-top</code> — stops the sticky header covering the heading you just jumped to</li>
+        <li>Both are overridden inside the <code>prefers-reduced-motion</code> block</li>
+      </ul>
+      <div class="callout info"><span class="callout-icon">i</span><div>The earlier version of this project used ~25 lines of JavaScript with <code>scrollIntoView()</code>, focus management and <code>history.pushState()</code> to do this. The CSS version is two lines and is more reliable.</div></div>
+    </div>
+  </section>
+
+  <!-- ======================================== JS OVERVIEW -->
+  <section class="section" id="js-overview">
+    <div class="section-title"><span class="dot"></span>JavaScript — theme.js, and Why It Exists</div>
+
+    <div class="card">
+      <div class="card-title rose">Why any JavaScript is needed at all</div>
+      <p>CSS can style a theme, but it cannot <strong>remember</strong> a choice between page loads. Storing and recalling the user's preference requires JavaScript. That is the one job <code>theme.js</code> has — and it is the only script the landing page loads.</p>
+      <div class="flow">
+        <span class="flow-step">Read localStorage</span><span class="flow-arrow">→</span>
+        <span class="flow-step">Else read OS preference</span><span class="flow-arrow">→</span>
+        <span class="flow-step">Set &lt;html data-theme&gt;</span><span class="flow-arrow">→</span>
+        <span class="flow-step">CSS repaints</span>
+      </div>
+      <div class="flow">
+        <span class="flow-step">User clicks toggle</span><span class="flow-arrow">→</span>
+        <span class="flow-step">Flip the attribute</span><span class="flow-arrow">→</span>
+        <span class="flow-step">Save to localStorage</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================== JS LINE -->
+  <section class="section" id="js-line">
+    <div class="section-title"><span class="dot"></span>JavaScript — Line by Line</div>
+
+    <div class="card">
+      <div class="card-title rose">theme.js in full</div>
+      <pre>(<span class="kw">function</span> () {
+  <span class="str">"use strict"</span>;
+
+  <span class="kw">var</span> STORAGE_KEY = <span class="str">"synora-theme"</span>;
+  <span class="kw">var</span> root = document.<span class="prop">documentElement</span>;   <span class="cm">// the &lt;html&gt; element</span>
+
+  <span class="cm">/* ---- 1. Pick the theme ---- */</span>
+  <span class="kw">var</span> saved = <span class="fn">localStorage</span>.<span class="fn">getItem</span>(STORAGE_KEY);
+  <span class="kw">var</span> systemPrefersDark = window.<span class="fn">matchMedia</span>(<span class="str">"(prefers-color-scheme: dark)"</span>).matches;
+  <span class="kw">var</span> theme = saved || (systemPrefersDark ? <span class="str">"dark"</span> : <span class="str">"light"</span>);
+
+  root.<span class="fn">setAttribute</span>(<span class="str">"data-theme"</span>, theme);
+
+  <span class="cm">/* ---- 2. Wire up the toggle buttons ---- */</span>
+  document.<span class="fn">addEventListener</span>(<span class="str">"DOMContentLoaded"</span>, <span class="kw">function</span> () {
+    <span class="kw">var</span> buttons = document.<span class="fn">querySelectorAll</span>(<span class="str">"[data-theme-toggle]"</span>);
+
+    <span class="kw">for</span> (<span class="kw">var</span> i = <span class="num">0</span>; i &lt; buttons.<span class="prop">length</span>; i++) {
+      buttons[i].<span class="fn">addEventListener</span>(<span class="str">"click"</span>, <span class="kw">function</span> () {
+        <span class="kw">var</span> next = root.<span class="fn">getAttribute</span>(<span class="str">"data-theme"</span>) === <span class="str">"dark"</span> ? <span class="str">"light"</span> : <span class="str">"dark"</span>;
+
+        root.<span class="fn">setAttribute</span>(<span class="str">"data-theme"</span>, next);
+        <span class="fn">localStorage</span>.<span class="fn">setItem</span>(STORAGE_KEY, next);
+      });
+    }
+  });
+})();</pre>
+
+      <div class="tbl-wrap"><table>
+        <tr><th>Line</th><th>What it does</th><th>Concept</th></tr>
+        <tr><td><code>(function(){ ... })()</code></td><td>Defines a function and immediately runs it</td><td><strong>IIFE</strong> — Immediately Invoked Function Expression. Keeps our variables out of the global scope so nothing can clash.</td></tr>
+        <tr><td><code>"use strict"</code></td><td>Turns on strict mode</td><td>Catches silent mistakes, e.g. assigning to an undeclared variable throws instead of creating a global</td></tr>
+        <tr><td><code>document.documentElement</code></td><td>A reference to <code>&lt;html&gt;</code></td><td>DOM traversal. (<code>document.body</code> would be <code>&lt;body&gt;</code>.)</td></tr>
+        <tr><td><code>localStorage.getItem(k)</code></td><td>Reads a saved string, or <code>null</code></td><td>Web Storage API</td></tr>
+        <tr><td><code>window.matchMedia(...)</code></td><td>Runs a media query from JavaScript</td><td>Returns an object whose <code>.matches</code> is <code>true</code>/<code>false</code></td></tr>
+        <tr><td><code>saved || (...)</code></td><td>"Use <code>saved</code> if it has a value, otherwise…"</td><td>Logical OR short-circuit — a default-value idiom</td></tr>
+        <tr><td><code>cond ? a : b</code></td><td>Inline if/else</td><td>Ternary / conditional operator</td></tr>
+        <tr><td><code>setAttribute("data-theme", t)</code></td><td>Writes the attribute onto <code>&lt;html&gt;</code></td><td>DOM manipulation — the single point where JS talks to CSS</td></tr>
+        <tr><td><code>addEventListener("DOMContentLoaded")</code></td><td>Waits for the HTML to finish parsing</td><td>Needed because the script runs in <code>&lt;head&gt;</code>, before the buttons exist</td></tr>
+        <tr><td><code>querySelectorAll("[data-theme-toggle]")</code></td><td>Finds every element with that attribute</td><td>Returns a <strong>NodeList</strong>. We use an attribute selector, so adding a third toggle needs no code change.</td></tr>
+        <tr><td><code>for (var i = 0; ...)</code></td><td>Loops over the NodeList</td><td>There are two toggles: one in the header, one in the footer</td></tr>
+        <tr><td><code>addEventListener("click", fn)</code></td><td>Attaches the handler</td><td>Event handling. Better than <code>onclick=</code> because many handlers can coexist.</td></tr>
+      </table></div>
+    </div>
+  </section>
+
+  <!-- ======================================== JS CONCEPTS -->
+  <section class="section" id="js-concepts">
+    <div class="section-title"><span class="dot"></span>JavaScript — Concepts You Can Point To</div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title rose">Present in our code</div>
+        <ul class="points">
+          <li><strong>IIFE</strong> and function scope</li>
+          <li><strong>Strict mode</strong></li>
+          <li><strong>Variables</strong> — <code>var</code>, declared at the top of the scope</li>
+          <li><strong>Data types</strong> — String (<code>"dark"</code>), Boolean (<code>.matches</code>), Number (<code>i</code>), Object (<code>root</code>, <code>buttons</code>), <code>null</code> (empty localStorage)</li>
+          <li><strong>Operators</strong> — <code>||</code>, <code>===</code>, <code>?:</code>, <code>++</code>, <code>&lt;</code></li>
+          <li><strong>Loops</strong> — a classic <code>for</code> loop</li>
+          <li><strong>Callback functions</strong> — anonymous functions passed to <code>addEventListener</code></li>
+          <li><strong>DOM selection</strong> — <code>querySelectorAll</code>, <code>documentElement</code></li>
+          <li><strong>DOM manipulation</strong> — <code>get/setAttribute</code></li>
+          <li><strong>Events</strong> — <code>click</code>, <code>DOMContentLoaded</code></li>
+          <li><strong>Web Storage API</strong> — <code>localStorage</code></li>
+          <li><strong>BOM</strong> — <code>window.matchMedia</code></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title amber">Why <code>var</code> and not <code>let</code>?</div>
+        <p class="note">Honest answer, and a good one: this file is deliberately written in the most widely supported style so it runs in any browser without a build step. <code>let</code>/<code>const</code> would work equally well here.</p>
+        <div class="tbl-wrap"><table>
+          <tr><th></th><th>var</th><th>let</th><th>const</th></tr>
+          <tr><td>Scope</td><td>Function</td><td>Block</td><td>Block</td></tr>
+          <tr><td>Re-declare</td><td>Yes</td><td>No</td><td>No</td></tr>
+          <tr><td>Re-assign</td><td>Yes</td><td>Yes</td><td>No</td></tr>
+          <tr><td>Hoisted</td><td>Yes, as <code>undefined</code></td><td>Yes, but in the "temporal dead zone"</td><td>Same as let</td></tr>
+        </table></div>
+        <div class="callout tip"><span class="callout-icon">*</span><div>If asked to improve it: <code>const STORAGE_KEY</code>, <code>const root</code>, and <code>let</code> inside the loop — or replace the <code>for</code> loop with <code>buttons.forEach(...)</code>.</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title blue">The one function-vs-block-scope gotcha</div>
+      <p class="note">Our loop is safe, but it is worth knowing why.</p>
+      <pre><span class="kw">for</span> (<span class="kw">var</span> i = <span class="num">0</span>; i &lt; buttons.length; i++) {
+  buttons[i].<span class="fn">addEventListener</span>(<span class="str">"click"</span>, <span class="kw">function</span> () {
+    <span class="cm">// This callback does NOT use `i`, so there is no closure bug.</span>
+    <span class="cm">// If it did, every handler would see the FINAL value of i,</span>
+    <span class="cm">// because `var` is function-scoped, not block-scoped.</span>
+    <span class="kw">var</span> next = root.<span class="fn">getAttribute</span>(<span class="str">"data-theme"</span>) === <span class="str">"dark"</span> ? <span class="str">"light"</span> : <span class="str">"dark"</span>;
+  });
+}</pre>
+      <p class="note">We read the current state from the DOM each time instead of capturing it in a variable, so the handler is always correct no matter how many times the theme changes.</p>
+    </div>
+  </section>
+
+  <!-- ======================================== JS STORAGE -->
+  <section class="section" id="js-storage">
+    <div class="section-title"><span class="dot"></span>JavaScript — localStorage</div>
+
+    <div class="card">
+      <div class="card-title rose">The Web Storage API</div>
+      <div class="tbl-wrap"><table>
+        <tr><th>Method</th><th>Purpose</th></tr>
+        <tr><td><code>localStorage.setItem(key, value)</code></td><td>Save. Both arguments must be strings.</td></tr>
+        <tr><td><code>localStorage.getItem(key)</code></td><td>Read. Returns <code>null</code> if the key does not exist.</td></tr>
+        <tr><td><code>localStorage.removeItem(key)</code></td><td>Delete one key</td></tr>
+        <tr><td><code>localStorage.clear()</code></td><td>Delete everything for this origin</td></tr>
+      </table></div>
+
+      <div class="tbl-wrap"><table>
+        <tr><th></th><th>localStorage</th><th>sessionStorage</th><th>Cookies</th></tr>
+        <tr><td>Lifetime</td><td>Until manually cleared</td><td>Until the tab is closed</td><td>Until their expiry date</td></tr>
+        <tr><td>Capacity</td><td>~5–10 MB</td><td>~5 MB</td><td>~4 KB</td></tr>
+        <tr><td>Sent to server</td><td>No</td><td>No</td><td>Yes, on every request</td></tr>
+        <tr><td>Used here for</td><td>The theme choice</td><td>—</td><td>—</td></tr>
+      </table></div>
+
+      <div class="callout warn"><span class="callout-icon">!</span><div><strong>Everything is stored as a string.</strong> Saving <code>"dark"</code> is fine, but saving an object needs <code>JSON.stringify()</code> going in and <code>JSON.parse()</code> coming out. In the Synora app itself, that is exactly how the account and task list are stored.</div></div>
+
+      <p class="note">You can demonstrate this live in the viva: open DevTools → Application → Local Storage, flip the toggle, and watch <code>synora-theme</code> change between <code>light</code> and <code>dark</code>.</p>
+    </div>
+  </section>
+
+  <!-- ======================================== JS WHY -->
+  <section class="section" id="js-why">
+    <div class="section-title"><span class="dot"></span>JavaScript — Why So Little Of It</div>
+
+    <div class="card">
+      <div class="card-title sage">What was removed, and what replaced it</div>
+      <div class="tbl-wrap"><table>
+        <tr><th>Feature</th><th>Old JavaScript approach</th><th>What we use now</th></tr>
+        <tr><td>Mobile menu</td><td>Click handler, <code>aria-expanded</code>, Escape key, resize listener</td><td>Checkbox + <code>~</code> + <code>:has()</code></td></tr>
+        <tr><td>FAQ accordion</td><td>Loop over triggers, toggle <code>hidden</code></td><td><code>&lt;details&gt;</code> / <code>&lt;summary&gt;</code></td></tr>
+        <tr><td>Smooth scrolling</td><td><code>scrollIntoView()</code> + <code>history.pushState()</code></td><td><code>scroll-behavior: smooth</code></td></tr>
+        <tr><td>Header shadow on scroll</td><td><code>scroll</code> listener + <code>requestAnimationFrame</code></td><td>A permanent border + <code>backdrop-filter</code></td></tr>
+        <tr><td>Scroll-reveal animations</td><td><code>IntersectionObserver</code></td><td>One <code>@keyframes</code> that runs on load</td></tr>
+        <tr><td>Footer year</td><td><code>new Date().getFullYear()</code></td><td>Written in the HTML</td></tr>
+      </table></div>
+
+      <div class="callout success"><span class="callout-icon">+</span><div><strong>The principle, if asked to justify it:</strong> use the lowest-powered tool that does the job. HTML for structure and state, CSS for presentation and interaction it can express, JavaScript only for what genuinely needs logic or memory. Less JavaScript means fewer bugs, faster loading, and it still works if a script fails to download.</div></div>
+
+      <p class="note"><strong>Be ready for the follow-up:</strong> "Where <em>would</em> you need JavaScript?" — the app itself, and we have already built the first piece of it. <code>auth.js</code> validates the sign-up and login forms and stores accounts; see the <a href="#auth-pages" style="color:var(--sage)">Auth Pages</a> sections below. Adding and deleting tasks, calculating CGPA and filtering a search box would follow the same pattern. None of that is expressible in CSS.</p>
+    </div>
+  </section>
+
+  <!-- ======================================== AUTH PAGES -->
+  <section class="section" id="auth-pages">
+    <div class="section-title"><span class="dot"></span>App — Sign-up &amp; Sign-in Pages</div>
+
+    <div class="card">
+      <div class="card-title sage">The split-screen layout</div>
+      <p>Both pages share one structure: the form on the left, a photograph with a brand wash on the right.</p>
+      <pre><span class="sel">.auth-layout</span> {
+  <span class="prop">display</span>: grid;
+  <span class="prop">grid-template-columns</span>: <span class="fn">repeat</span>(<span class="num">2</span>, <span class="fn">minmax</span>(<span class="num">0</span>, <span class="num">1fr</span>));
+  <span class="prop">min-height</span>: <span class="num">100vh</span>;
+  <span class="prop">min-height</span>: <span class="num">100dvh</span>;   <span class="cm">/* dvh excludes mobile browser chrome */</span>
+}
+
+<span class="cm">/* The photo column is decorative, so it is the first thing dropped */</span>
+<span class="kw">@media</span> (max-width: <span class="num">980px</span>) {
+  <span class="sel">.auth-layout</span> { <span class="prop">grid-template-columns</span>: <span class="fn">minmax</span>(<span class="num">0</span>, <span class="num">1fr</span>); }
+  <span class="sel">.auth-aside</span>  { <span class="prop">display</span>: none; }
+}</pre>
+
+      <ul class="points">
+        <li><code>100dvh</code> = <strong>dynamic viewport height</strong>. On a phone, <code>100vh</code> includes the space the address bar occupies, so a full-height page gets a scrollbar it should not have. Declaring <code>100vh</code> first and <code>100dvh</code> second gives older browsers a working fallback.</li>
+        <li><code>margin: auto</code> on <code>.auth-body</code> centres it <em>both</em> ways inside the flex column</li>
+        <li>Hiding the photo below 980px loses no information — every word is in the left column</li>
+      </ul>
+
+      <h3 class="sub">Why the photo needs two gradients over it</h3>
+      <pre><span class="sel">.auth-aside::before</span> {
+  <span class="prop">background-image</span>:
+    <span class="fn">linear-gradient</span>(<span class="num">180deg</span>, <span class="fn">rgba</span>(<span class="num">34,37,43</span>,.<span class="num">15</span>) <span class="num">0%</span>,
+                            <span class="fn">rgba</span>(<span class="num">34,37,43</span>,.<span class="num">88</span>) <span class="num">78%</span>),
+    <span class="fn">linear-gradient</span>(<span class="num">120deg</span>, <span class="fn">rgba</span>(<span class="num">83,101,92</span>,.<span class="num">55</span>),
+                            <span class="fn">rgba</span>(<span class="num">176,159,149</span>,.<span class="num">40</span>));
+}</pre>
+      <p class="note">The <strong>first</strong> gradient darkens towards the bottom so the white quote stays readable over whatever the photo happens to contain. The <strong>second</strong> is the sage-and-taupe wash that pulls the photograph into the palette. Remember: in a multi-layer background, the first layer listed is painted on top.</p>
+    </div>
+  </section>
+
+  <!-- ======================================== AUTH FORMS -->
+  <section class="section" id="auth-forms">
+    <div class="section-title"><span class="dot"></span>App — Form Markup</div>
+
+    <div class="card">
+      <div class="card-title taupe">One field, and every attribute on it</div>
+      <pre><span class="kw">&lt;div</span> <span class="prop">class</span>=<span class="str">"field"</span> <span class="prop">data-field</span>=<span class="str">"username"</span><span class="kw">&gt;</span>
+  <span class="kw">&lt;label</span> <span class="prop">class</span>=<span class="str">"field__label"</span> <span class="prop">for</span>=<span class="str">"username"</span><span class="kw">&gt;</span>Username<span class="kw">&lt;/label&gt;</span>
+
+  <span class="kw">&lt;input</span> <span class="prop">class</span>=<span class="str">"input"</span> <span class="prop">type</span>=<span class="str">"text"</span> <span class="prop">id</span>=<span class="str">"username"</span> <span class="prop">name</span>=<span class="str">"username"</span>
+         <span class="prop">autocomplete</span>=<span class="str">"username"</span> <span class="prop">placeholder</span>=<span class="str">"manan_07"</span>
+         <span class="prop">minlength</span>=<span class="str">"3"</span> <span class="prop">maxlength</span>=<span class="str">"20"</span> <span class="prop">required</span><span class="kw">&gt;</span>
+
+  <span class="kw">&lt;p</span> <span class="prop">class</span>=<span class="str">"field__hint"</span><span class="kw">&gt;</span>3–20 characters...<span class="kw">&lt;/p&gt;</span>
+  <span class="kw">&lt;p</span> <span class="prop">class</span>=<span class="str">"field__error"</span><span class="kw">&gt;&lt;/p&gt;</span>   <span class="cm">&lt;!-- filled by JS --&gt;</span>
+<span class="kw">&lt;/div&gt;</span></pre>
+
+      <div class="tbl-wrap"><table>
+        <tr><th>Attribute</th><th>Purpose</th></tr>
+        <tr><td><code>for</code> / <code>id</code></td><td>Ties the label to the input. Clicking the label focuses the field, and a screen reader reads the label when the field is focused. <strong>Every input on both pages has one.</strong></td></tr>
+        <tr><td><code>name</code></td><td>The key JavaScript uses: <code>form.elements.username</code></td></tr>
+        <tr><td><code>type="text"</code> / <code>"password"</code></td><td><code>password</code> masks the characters — the browser does that, not CSS</td></tr>
+        <tr><td><code>autocomplete</code></td><td><code>name</code>, <code>username</code>, <code>new-password</code>, <code>current-password</code>. Tells password managers what each field is. <code>new-password</code> on signup makes them offer to generate one; <code>current-password</code> on login makes them offer to fill it.</td></tr>
+        <tr><td><code>required</code>, <code>minlength</code>, <code>maxlength</code></td><td>HTML5 built-in constraints. Kept as documentation and as a fallback, even though we validate ourselves.</td></tr>
+        <tr><td><code>placeholder</code></td><td>An example, <em>not</em> a label. A placeholder disappears as soon as you type, so it can never replace a <code>&lt;label&gt;</code>.</td></tr>
+        <tr><td><code>autofocus</code></td><td>On the login username field only — puts the cursor there on page load</td></tr>
+        <tr><td><code>data-field="username"</code></td><td>Our own hook, so JS can find the wrapper to mark invalid</td></tr>
+        <tr><td><code>data-password</code></td><td>Marks the inputs the "Show password" checkbox should toggle</td></tr>
+      </table></div>
+
+      <h3 class="sub">The <code>novalidate</code> attribute</h3>
+      <pre><span class="kw">&lt;form</span> <span class="prop">class</span>=<span class="str">"auth-form"</span> <span class="prop">id</span>=<span class="str">"signup-form"</span> <span class="prop">novalidate</span><span class="kw">&gt;</span></pre>
+      <p class="note">Without it, the browser blocks submission and shows its own grey tooltip ("Please fill out this field"), which we cannot style and which only reports one field at a time. <code>novalidate</code> switches that off so our own messages run instead — all invalid fields highlighted at once, in our colours, with our wording.</p>
+
+      <div class="callout warn"><span class="callout-icon">!</span><div><strong>Expect the follow-up:</strong> "so the <code>required</code> attributes do nothing?" They do nothing <em>while our JavaScript is running</em>. They stay in the markup because they describe the field's constraints to assistive technology, and because they are the correct HTML regardless of what JS does.</div></div>
+
+      <h3 class="sub">The "Show password" toggle</h3>
+      <pre><span class="kw">var</span> inputs = document.<span class="fn">querySelectorAll</span>(<span class="str">"[data-password]"</span>);
+
+<span class="kw">for</span> (<span class="kw">var</span> i = <span class="num">0</span>; i &lt; inputs.length; i++) {
+  inputs[i].<span class="prop">type</span> = showPassword.checked ? <span class="str">"text"</span> : <span class="str">"password"</span>;
+}</pre>
+      <p class="note">This is one of the few UI toggles that genuinely <em>cannot</em> be CSS-only. Masking is done by the browser based on the <code>type</code> attribute, and CSS cannot change an attribute — only JavaScript can.</p>
+    </div>
+  </section>
+
+  <!-- ======================================== AUTH VALIDATION -->
+  <section class="section" id="auth-validate">
+    <div class="section-title"><span class="dot"></span>App — Validation Logic</div>
+
+    <div class="card">
+      <div class="card-title blue">The rules we enforce</div>
+      <div class="tbl-wrap"><table>
+        <tr><th>Field</th><th>Rule</th><th>Code</th></tr>
+        <tr><td>Name</td><td>At least 2 characters</td><td><code>name.length &lt; 2</code></td></tr>
+        <tr><td>Username</td><td>3–20 letters, numbers or underscores</td><td><code>/^[A-Za-z0-9_]{3,20}$/</code></td></tr>
+        <tr><td>Username</td><td>Not already taken</td><td><code>findUser(username)</code></td></tr>
+        <tr><td>Password</td><td>At least 8 characters</td><td><code>password.length &lt; 8</code></td></tr>
+        <tr><td>Password</td><td>At least one letter and one number</td><td><code>/[A-Za-z]/</code> and <code>/[0-9]/</code></td></tr>
+        <tr><td>Confirm</td><td>Identical to the password</td><td><code>confirm !== password</code></td></tr>
+      </table></div>
+
+      <h3 class="sub">Reading the regular expression</h3>
+      <pre><span class="kw">var</span> USERNAME_PATTERN = <span class="str">/^[A-Za-z0-9_]{3,20}$/</span>;</pre>
+      <div class="tbl-wrap"><table>
+        <tr><th>Part</th><th>Meaning</th></tr>
+        <tr><td><code>/ ... /</code></td><td>The delimiters of a regex literal</td></tr>
+        <tr><td><code>^</code></td><td>Anchor to the start of the string</td></tr>
+        <tr><td><code>[A-Za-z0-9_]</code></td><td>A character class: any one uppercase letter, lowercase letter, digit or underscore</td></tr>
+        <tr><td><code>{3,20}</code></td><td>A quantifier: between 3 and 20 of the preceding class</td></tr>
+        <tr><td><code>$</code></td><td>Anchor to the end of the string</td></tr>
+      </table></div>
+      <div class="callout warn"><span class="callout-icon">!</span><div>The <code>^</code> and <code>$</code> anchors are the important part. Without them, <code>.test("hi there!!")</code> would return <code>true</code>, because the regex would happily match the <code>there</code> in the middle. Anchoring forces the <em>whole</em> string to fit the pattern.</div></div>
+
+      <h3 class="sub">The validation pattern itself</h3>
+      <pre><span class="kw">function</span> <span class="fn">handleSignup</span>(event) {
+  event.<span class="fn">preventDefault</span>();       <span class="cm">// no server, so don't submit</span>
+
+  <span class="kw">var</span> form = event.<span class="prop">target</span>;
+  <span class="fn">clearErrors</span>(form);
+
+  <span class="kw">var</span> valid = <span class="kw">true</span>;               <span class="cm">// a flag, not an early return</span>
+
+  <span class="kw">if</span> (name.length &lt; <span class="num">2</span>) {
+    <span class="fn">setError</span>(form, <span class="str">"fullName"</span>, <span class="str">"Please enter your name."</span>);
+    valid = <span class="kw">false</span>;
+  }
+  <span class="cm">// ...every other rule checked the same way...</span>
+
+  <span class="kw">if</span> (!valid) {
+    <span class="fn">showAlert</span>(form, <span class="str">"Please fix the highlighted fields and try again."</span>);
+    <span class="kw">return</span>;
+  }
+  <span class="cm">// ...only now do we create the account</span>
+}</pre>
+      <div class="callout success"><span class="callout-icon">+</span><div><strong>Why a <code>valid</code> flag instead of returning on the first failure?</strong> Returning early would only ever show one error at a time, so the user fixes one field, submits, and gets told about the next. Checking everything first and then reporting means all the problems are visible at once.</div></div>
+
+      <h3 class="sub">JavaScript adds a class; CSS does the styling</h3>
+      <pre><span class="cm">// auth.js — the entire visual job of the error system</span>
+field.classList.<span class="fn">add</span>(<span class="str">"is-invalid"</span>);
+field.<span class="fn">querySelector</span>(<span class="str">".field__error"</span>).<span class="prop">textContent</span> = message;</pre>
+      <pre><span class="cm">/* components.css — everything you actually see */</span>
+<span class="sel">.field.is-invalid .input</span>        { <span class="prop">border-color</span>: <span class="fn">var</span>(--status-high); }
+<span class="sel">.field.is-invalid .field__hint</span>  { <span class="prop">display</span>: none; }
+<span class="sel">.field.is-invalid .field__error</span> { <span class="prop">display</span>: block; }</pre>
+      <p class="note">This separation is worth stating explicitly: JavaScript never sets a colour, a border or a <code>style</code> property. It toggles one class name and CSS decides what that means. Change the error colour later and you edit one line of CSS, not any JavaScript.</p>
+
+      <h3 class="sub">Replaying the shake animation</h3>
+      <pre>alert.classList.<span class="fn">remove</span>(<span class="str">"is-shown"</span>);
+<span class="kw">void</span> alert.<span class="prop">offsetWidth</span>;              <span class="cm">// force a reflow</span>
+alert.classList.<span class="fn">add</span>(<span class="str">"is-shown"</span>);</pre>
+      <p class="note">Removing and re-adding a class in the same tick does nothing on its own — the browser batches style changes and sees no net difference, so the animation never restarts. Reading a layout property such as <code>offsetWidth</code> forces the browser to recalculate immediately, which splits the change into two steps and makes the animation replay. Submit an invalid form twice and you can see it shake both times.</p>
+    </div>
+  </section>
+
+  <!-- ======================================== AUTH STORAGE -->
+  <section class="section" id="auth-store">
+    <div class="section-title"><span class="dot"></span>App — Storing Accounts &amp; Passwords</div>
+
+    <div class="card">
+      <div class="card-title amber">Two localStorage keys</div>
+      <div class="tbl-wrap"><table>
+        <tr><th>Key</th><th>Holds</th></tr>
+        <tr><td><code>synora-users</code></td><td>An array of every account created in this browser</td></tr>
+        <tr><td><code>synora-session</code></td><td>The one account currently signed in</td></tr>
+        <tr><td><code>synora-theme</code></td><td>(from theme.js) <code>"light"</code> or <code>"dark"</code></td></tr>
+      </table></div>
+
+      <pre><span class="cm">// What actually sits in localStorage after signing up</span>
+<span class="str">"synora-users"</span>: <span class="str">'[{"name":"Manan","username":"manan_07",
+                 "passwordHash":"2196cd84",
+                 "createdAt":"2026-08-02T05:46:19.984Z"}]'</span>
+
+<span class="str">"synora-session"</span>: <span class="str">'{"username":"manan_07","name":"Manan",
+                    "since":"2026-08-02T05:46:19.987Z"}'</span></pre>
+
+      <div class="callout warn"><span class="callout-icon">!</span><div><strong>localStorage stores strings only.</strong> An array of objects has to go through <code>JSON.stringify()</code> on the way in and <code>JSON.parse()</code> on the way out. Skipping that gives you the literal text <code>"[object Object]"</code> — a classic bug worth being able to name.</div></div>
+
+      <pre><span class="kw">function</span> <span class="fn">readUsers</span>() {
+  <span class="kw">var</span> raw = <span class="fn">localStorage</span>.<span class="fn">getItem</span>(USERS_KEY);
+  <span class="kw">if</span> (!raw) <span class="kw">return</span> [];        <span class="cm">// nothing saved yet → empty array</span>
+
+  <span class="kw">try</span> {
+    <span class="kw">return</span> <span class="fn">JSON</span>.<span class="fn">parse</span>(raw);
+  } <span class="kw">catch</span> (err) {
+    <span class="kw">return</span> [];              <span class="cm">// corrupted text → start clean, don't crash</span>
+  }
+}</pre>
+      <p class="note"><code>try/catch</code> matters here because <code>JSON.parse</code> throws on malformed text. Without it, one bad character in localStorage would break every page that loads <code>auth.js</code>.</p>
+
+      <h3 class="sub">Hashing the password</h3>
+      <pre><span class="kw">function</span> <span class="fn">hashPassword</span>(password) {
+  <span class="kw">var</span> hash = <span class="num">5381</span>;                      <span class="cm">// djb2's starting value</span>
+
+  <span class="kw">for</span> (<span class="kw">var</span> i = <span class="num">0</span>; i &lt; password.length; i++) {
+    hash = ((hash * <span class="num">33</span>) ^ password.<span class="fn">charCodeAt</span>(i)) &gt;&gt;&gt; <span class="num">0</span>;
+  }
+
+  <span class="kw">return</span> hash.<span class="fn">toString</span>(<span class="num">16</span>);             <span class="cm">// store it as hex</span>
+}</pre>
+      <ul class="points">
+        <li>A <strong>hash</strong> is a one-way function: the same input always gives the same output, but the output cannot be turned back into the input</li>
+        <li>That is why login works without storing the password — we hash what was typed and compare the two hashes</li>
+        <li><code>charCodeAt(i)</code> gives the numeric character code; <code>^</code> is bitwise XOR</li>
+        <li><code>&gt;&gt;&gt; 0</code> is an unsigned right-shift by zero — it forces the result back into an unsigned 32-bit integer so it never goes negative</li>
+        <li><code>toString(16)</code> converts the number to hexadecimal</li>
+      </ul>
+
+      <div class="callout warn"><span class="callout-icon">!</span><div><strong>Be honest about this in the viva — it is a strength, not a weakness, to say it.</strong> This is a small 32-bit hash with no salt. It proves the principle (we never store the raw password) but it is not real security. A production app hashes on a <em>server</em> with bcrypt or Argon2. Anything stored in a browser can be read by whoever has the device, so client-only storage can never be genuinely secure.</div></div>
+
+      <h3 class="sub">One deliberate security choice you can point to</h3>
+      <pre><span class="kw">if</span> (!user || user.passwordHash !== <span class="fn">hashPassword</span>(password)) {
+  <span class="fn">showAlert</span>(form, <span class="str">"That username and password don't match an account."</span>);
+  <span class="kw">return</span>;
+}</pre>
+      <p class="note">"No such user" and "wrong password" produce the <em>same</em> message on purpose. Distinguishing them would let someone test usernames one by one to discover which accounts exist — that is called <strong>user enumeration</strong>.</p>
+    </div>
+  </section>
+
+  <!-- ======================================== AUTH FLOW -->
+  <section class="section" id="auth-flow">
+    <div class="section-title"><span class="dot"></span>App — The Full Flow</div>
+
+    <div class="card">
+      <div class="card-title sage">Sign up</div>
+      <div class="flow">
+        <span class="flow-step">Submit</span><span class="flow-arrow">→</span>
+        <span class="flow-step">preventDefault()</span><span class="flow-arrow">→</span>
+        <span class="flow-step">Validate 4 fields</span><span class="flow-arrow">→</span>
+        <span class="flow-step">Username free?</span><span class="flow-arrow">→</span>
+        <span class="flow-step">Hash password</span><span class="flow-arrow">→</span>
+        <span class="flow-step">Push to synora-users</span><span class="flow-arrow">→</span>
+        <span class="flow-step">Start session</span><span class="flow-arrow">→</span>
+        <span class="flow-step">Show success panel</span>
+      </div>
+
+      <div class="card-title sage" style="margin-top:20px">Sign in</div>
+      <div class="flow">
+        <span class="flow-step">Submit</span><span class="flow-arrow">→</span>
+        <span class="flow-step">preventDefault()</span><span class="flow-arrow">→</span>
+        <span class="flow-step">Both fields filled?</span><span class="flow-arrow">→</span>
+        <span class="flow-step">findUser()</span><span class="flow-arrow">→</span>
+        <span class="flow-step">Compare hashes</span><span class="flow-arrow">→</span>
+        <span class="flow-step">Start session</span><span class="flow-arrow">→</span>
+        <span class="flow-step">Show success panel</span>
+      </div>
+
+      <h3 class="sub">One script, two pages</h3>
+      <pre><span class="kw">var</span> signupForm = document.<span class="fn">getElementById</span>(<span class="str">"signup-form"</span>);
+<span class="kw">var</span> loginForm  = document.<span class="fn">getElementById</span>(<span class="str">"login-form"</span>);
+
+<span class="cm">// Only one of these exists on any given page; getElementById</span>
+<span class="cm">// returns null for the other, and the if simply skips it.</span>
+<span class="kw">if</span> (signupForm) signupForm.<span class="fn">addEventListener</span>(<span class="str">"submit"</span>, handleSignup);
+<span class="kw">if</span> (loginForm)  loginForm.<span class="fn">addEventListener</span>(<span class="str">"submit"</span>, handleLogin);</pre>
+      <p class="note">This is why <code>auth.js</code> can be one file rather than two. Guarding with <code>if</code> is also what stops a "cannot read property of null" error on the page that lacks the other form.</p>
+
+      <h3 class="sub">Switching views without changing pages</h3>
+      <pre><span class="kw">function</span> <span class="fn">showDone</span>(user, heading) {
+  <span class="kw">if</span> (DASHBOARD_URL) {                 <span class="cm">// set this once the dashboard exists</span>
+    window.location.href = DASHBOARD_URL;
+    <span class="kw">return</span>;
+  }
+
+  document.<span class="fn">getElementById</span>(<span class="str">"form-view"</span>).<span class="prop">hidden</span> = <span class="kw">true</span>;
+  document.<span class="fn">getElementById</span>(<span class="str">"done-view"</span>).classList.<span class="fn">add</span>(<span class="str">"is-shown"</span>);
+}</pre>
+      <ul class="points">
+        <li><code>hidden</code> is a <strong>standard HTML attribute</strong>, and browsers style it as <code>display: none</code> by default. Setting <code>element.hidden = true</code> from JS is cleaner than writing <code>style.display</code>.</li>
+        <li><code>DASHBOARD_URL</code> is a single constant at the top of the file. It is <code>null</code> today, so the success panel shows; set it to <code>"./index.html"</code> once the dashboard is built and both forms redirect there instead. <span class="pill">good answer to "what's next?"</span></li>
+      </ul>
+
+      <div class="callout tip"><span class="callout-icon">*</span><div><strong>How to demo this in the viva:</strong> open <code>signup.html</code>, submit the empty form to show all four errors at once, fill it in properly, and show the success panel. Then open DevTools → Application → Local Storage and point at <code>synora-users</code> — the password is a hash, not the text you typed. Then go to <code>login.html</code>, type a wrong password to show the generic message, then the right one.</div></div>
+    </div>
+  </section>
+
+  <!-- ======================================== QA HTML -->
+  <section class="section" id="qa-html">
+    <div class="section-title"><span class="dot"></span>Viva Q&amp;A — HTML</div>
+
+    <div class="qa"><div class="q">Q. What is semantic HTML and where did you use it?</div>
+    <div class="a">HTML that describes the <em>meaning</em> of content, not its appearance. We use <code>&lt;header&gt;</code>, <code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;section&gt;</code>, <code>&lt;aside&gt;</code>, <code>&lt;footer&gt;</code>, <code>&lt;figure&gt;</code> and <code>&lt;time&gt;</code>. It helps screen readers navigate by landmark, helps search engines rank content, and makes the code readable.</div></div>
+
+    <div class="qa"><div class="q">Q. What does the viewport meta tag do?</div>
+    <div class="a"><code>&lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;</code> tells the browser to lay the page out at the device's real width at 100% zoom. Without it, mobile browsers assume a ~980px wide desktop page and scale it down, so text is tiny and <code>max-width</code> media queries never trigger correctly.</div></div>
+
+    <div class="qa"><div class="q">Q. Explain <code>&lt;details&gt;</code> and <code>&lt;summary&gt;</code>.</div>
+    <div class="a">A native HTML disclosure widget. <code>&lt;summary&gt;</code> is the always-visible label; everything else inside <code>&lt;details&gt;</code> shows only when it is expanded. The browser adds and removes an <code>open</code> attribute, which we style with the attribute selector <code>[open]</code>. It gives us click, keyboard and screen-reader support for free — our five FAQ items need no JavaScript.</div></div>
+
+    <div class="qa"><div class="q">Q. Why is there a checkbox in a page with no form?</div>
+    <div class="a">It is the "checkbox hack" for the mobile menu. A checkbox is the only HTML element that stores an on/off state the browser tracks and that CSS can read, via <code>:checked</code>. The <code>&lt;label for&gt;</code> is the visible hamburger button; clicking it flips the hidden checkbox, and a sibling selector reveals the menu. No JavaScript needed.</div></div>
+
+    <div class="qa"><div class="q">Q. Why inline SVG instead of an icon font or PNGs?</div>
+    <div class="a">Inline SVG is vector, so it stays sharp at any size and on any screen. It needs no extra HTTP request and no CDN, so the page works offline. And because we set <code>stroke="currentColor"</code>, every icon automatically takes the colour of its parent — that is how the same markup gives sage icons in light mode and pale green in dark mode.</div></div>
+
+    <div class="qa"><div class="q">Q. What is a data attribute and where do you use one?</div>
+    <div class="a">A custom attribute starting with <code>data-</code>, valid in HTML5 for storing your own information. We use two: <code>data-theme</code> on <code>&lt;html&gt;</code> holds the current theme and drives all our dark-mode CSS, and <code>data-theme-toggle</code> marks the buttons so JavaScript can find them with one <code>querySelectorAll</code>.</div></div>
+
+    <div class="qa"><div class="q">Q. What is a skip link?</div>
+    <div class="a">The first focusable element on the page, hidden off-screen until focused. A keyboard or screen-reader user presses Tab once and can jump straight to <code>#main</code>, skipping the whole navbar. Ours is <code>.skip-link</code>, translated out of view with <code>transform: translateY(-200%)</code> and brought back on <code>:focus-visible</code>.</div></div>
+
+    <div class="qa"><div class="q">Q. What is the difference between <code>alt=""</code> and no alt attribute?</div>
+    <div class="a"><code>alt=""</code> means "this image is decorative — skip it", and screen readers stay silent. Omitting <code>alt</code> entirely is an error: some readers fall back to announcing the file name. Our three content photos have descriptive alt text; icons are marked <code>aria-hidden="true"</code> instead.</div></div>
+  </section>
+
+  <!-- ======================================== QA CSS -->
+  <section class="section" id="qa-css">
+    <div class="section-title"><span class="dot"></span>Viva Q&amp;A — CSS</div>
+
+    <div class="qa"><div class="q">Q. What is a CSS custom property and why use one?</div>
+    <div class="a">A variable declared with two dashes (<code>--color-brand: #53655C</code>) and read with <code>var(--color-brand)</code>. Unlike a Sass variable it is live in the browser, it inherits down the tree, and it can be changed at runtime. In Synora it is the mechanism behind the whole theme system: <code>[data-theme="dark"]</code> redefines the same names with dark values, and every component updates without a single component rule changing.</div></div>
+
+    <div class="qa"><div class="q">Q. Difference between Flexbox and Grid?</div>
+    <div class="a">Flexbox is one-dimensional — a single row or a single column — and is content-driven: items size themselves. Grid is two-dimensional and container-driven: you define rows and columns first, then place items in them. We use Flexbox for the navbar, buttons and list rows, and Grid for the hero split, card galleries, the stats strip and the week calendar.</div></div>
+
+    <div class="qa"><div class="q">Q. What does <code>minmax(0, 1fr)</code> solve?</div>
+    <div class="a">A <code>1fr</code> grid track has an implicit minimum size of <code>auto</code>, which means it will not shrink below its content. One long word or a wide image can then push the column past its share and break the layout. <code>minmax(0, 1fr)</code> sets the true minimum to 0, so the track stays inside its bounds and content wraps or ellipses instead.</div></div>
+
+    <div class="qa"><div class="q">Q. Explain specificity, with an example from your code.</div>
+    <div class="a">Specificity decides which rule wins when several target the same element. Score it as (IDs, classes/attributes/pseudo-classes, elements); higher wins, and source order only breaks a tie. In our mobile menu the panel contains both nav links and a <code>.btn</code>. We wrote <code>.nav-panel ul a</code> (0,1,2) rather than <code>.nav-panel a</code> (0,1,1) so the link styling is scoped to the list and cannot override the button's appearance.</div></div>
+
+    <div class="qa"><div class="q">Q. What is the difference between a pseudo-class and a pseudo-element?</div>
+    <div class="a">A pseudo-class (one colon: <code>:hover</code>, <code>:checked</code>, <code>:nth-child</code>) selects an existing element that is in a particular <em>state</em> or position. A pseudo-element (two colons: <code>::before</code>, <code>::after</code>) creates a new sub-element that does not exist in the HTML. We use <code>:checked</code> to detect the open menu, and <code>::before</code> to draw the step numerals, the wordmark lozenge and the card hover bar.</div></div>
+
+    <div class="qa"><div class="q">Q. How does <code>position: sticky</code> differ from <code>fixed</code>?</div>
+    <div class="a">A <code>fixed</code> element is removed from the flow and pinned to the viewport from the start. A <code>sticky</code> element stays in normal flow and scrolls with the page until it reaches its offset (<code>top: 0</code> for us), then behaves as fixed while its parent is still on screen. Sticky also requires an offset — without <code>top</code>, <code>bottom</code>, <code>left</code> or <code>right</code> it does nothing.</div></div>
+
+    <div class="qa"><div class="q">Q. What is <code>:has()</code>?</div>
+    <div class="a">The relational pseudo-class — effectively CSS's parent selector. <code>.site-header:has(.nav-checkbox:checked)</code> matches a header that <em>contains</em> a checked checkbox. We use it to make the header background solid while the mobile menu is open. Before <code>:has()</code> this required JavaScript to add a class to the parent.</div></div>
+
+    <div class="qa"><div class="q">Q. How did you implement dark mode?</div>
+    <div class="a">Every colour in the CSS is a custom property defined on <code>:root</code>. A second block, <code>[data-theme="dark"]</code>, redefines the same names with dark values. <code>theme.js</code> sets <code>data-theme</code> on the <code>&lt;html&gt;</code> element and the whole page repaints. Two details matter: the brand green is lightened to <code>#8FA697</code> because the original fails contrast on dark, and shadows are set to <code>none</code> because depth in dark UI comes from borders, not shadows.</div></div>
+
+    <div class="qa"><div class="q">Q. Why does <code>theme.js</code> load in the head without <code>defer</code>?</div>
+    <div class="a">Because it must set <code>data-theme</code> before the first paint. With <code>defer</code> the script runs after HTML parsing, so a dark-mode user would see a flash of the light theme first — a FOUC. Blocking for a millisecond is the right trade-off here.</div></div>
+
+    <div class="qa"><div class="q">Q. What is <code>clamp()</code>?</div>
+    <div class="a"><code>clamp(minimum, preferred, maximum)</code>. Our hero heading is <code>clamp(2.5rem, 5vw, 4rem)</code>: it scales with viewport width but never drops below 2.5rem or above 4rem. It gives fluid typography with no media queries at all.</div></div>
+
+    <div class="qa"><div class="q">Q. Why animate <code>transform</code> rather than <code>width</code> or <code>top</code>?</div>
+    <div class="a"><code>transform</code> and <code>opacity</code> are composited on the GPU and do not trigger layout or paint. Animating <code>width</code>, <code>height</code>, <code>top</code> or <code>margin</code> forces the browser to recalculate layout on every frame, which drops frames on slower devices. Our card hover bar animates <code>scaleX</code> from 0 to 1 instead of animating <code>width</code>.</div></div>
+
+    <div class="qa"><div class="q">Q. How do CSS counters work?</div>
+    <div class="a"><code>counter-reset: step</code> on the parent creates a counter at 0. <code>counter-increment: step</code> on each child adds 1. <code>content: counter(step, decimal-leading-zero)</code> in a <code>::before</code> prints it as 01, 02, 03. The numerals are not in the HTML at all, so adding or reordering steps renumbers automatically.</div></div>
+
+    <div class="qa"><div class="q">Q. How did you choose your breakpoints?</div>
+    <div class="a">By where the design breaks, not by device names. We narrow the browser until something looks wrong and set a breakpoint there. That gave us five: 1024px (the calendar aside gets too cramped), 940px (hero columns get too narrow), 860px (nav links collide with the buttons), 720px (cards need one column), and 400px (reduce container padding).</div></div>
+  </section>
+
+  <!-- ======================================== QA JS -->
+  <section class="section" id="qa-js">
+    <div class="section-title"><span class="dot"></span>Viva Q&amp;A — JavaScript</div>
+
+    <div class="qa"><div class="q">Q. Walk me through your JavaScript.</div>
+    <div class="a">There is one file, <code>theme.js</code>, and one job: remembering the theme. It reads <code>localStorage</code> for a saved choice; if none exists it falls back to the OS setting via <code>window.matchMedia("(prefers-color-scheme: dark)")</code>; then it writes <code>data-theme</code> onto <code>&lt;html&gt;</code>. After <code>DOMContentLoaded</code> it finds every <code>[data-theme-toggle]</code> button and attaches a click handler that flips the attribute and saves the new value. The whole file is about 25 lines.</div></div>
+
+    <div class="qa"><div class="q">Q. What is an IIFE and why use one?</div>
+    <div class="a">Immediately Invoked Function Expression — <code>(function(){ ... })()</code>. It defines a function and runs it at once. Everything declared inside is function-scoped, so <code>STORAGE_KEY</code>, <code>root</code> and <code>theme</code> never become global variables and cannot collide with anything else on the page.</div></div>
+
+    <div class="qa"><div class="q">Q. Why <code>DOMContentLoaded</code>?</div>
+    <div class="a">The script is in <code>&lt;head&gt;</code> and runs before the body is parsed, so the toggle buttons do not exist yet — <code>querySelectorAll</code> would return an empty list. <code>DOMContentLoaded</code> fires as soon as the HTML is fully parsed. (It does <em>not</em> wait for images; <code>window.onload</code> does.)</div></div>
+
+    <div class="qa"><div class="q">Q. Difference between localStorage, sessionStorage and cookies?</div>
+    <div class="a">localStorage persists until it is explicitly cleared and holds ~5–10 MB. sessionStorage is identical but is wiped when the tab closes. Cookies are limited to ~4 KB, can carry an expiry date, and are sent to the server with every HTTP request. We use localStorage because the theme should survive closing the browser and the server never needs to know about it.</div></div>
+
+    <div class="qa"><div class="q">Q. What does <code>saved || (systemPrefersDark ? "dark" : "light")</code> do?</div>
+    <div class="a">Two things at once. The ternary picks <code>"dark"</code> or <code>"light"</code> from the OS preference. The <code>||</code> short-circuits: if <code>saved</code> holds a value it is used and the right-hand side never runs; if <code>saved</code> is <code>null</code> (nothing stored) the fallback is evaluated. It is the standard "use this, otherwise that" idiom.</div></div>
+
+    <div class="qa"><div class="q">Q. <code>querySelector</code> vs <code>querySelectorAll</code> vs <code>getElementById</code>?</div>
+    <div class="a"><code>getElementById</code> takes an id only and returns one element. <code>querySelector</code> takes any CSS selector and returns the <em>first</em> match. <code>querySelectorAll</code> takes any CSS selector and returns a <strong>NodeList</strong> of every match — which is what we need, since there are two theme toggles.</div></div>
+
+    <div class="qa"><div class="q">Q. Why <code>addEventListener</code> instead of <code>onclick</code>?</div>
+    <div class="a"><code>onclick</code> is a single property, so assigning a second handler overwrites the first. <code>addEventListener</code> can attach many handlers to the same event, lets you choose the capture or bubble phase, and can be removed later with <code>removeEventListener</code>. It also keeps behaviour out of the HTML.</div></div>
+
+    <div class="qa"><div class="q">Q. Is your theme JavaScript necessary? Could CSS not do it?</div>
+    <div class="a">CSS alone can respond to the OS setting with <code>@media (prefers-color-scheme: dark)</code>, but it cannot let the user <em>override</em> that and it cannot remember the choice for the next visit. Persistence requires storage, and storage requires JavaScript. That is precisely why it is the only script on the landing page.</div></div>
+
+    <div class="qa"><div class="q">Q. What does <code>event.preventDefault()</code> do in your form handlers?</div>
+    <div class="a">A form's default behaviour on submit is to package the fields and send them to a server, then reload the page. We have no server — the account is stored in the browser — so <code>preventDefault()</code> cancels that and lets our own function handle everything. Without it the page would flash and reload and our code would never finish.</div></div>
+
+    <div class="qa"><div class="q">Q. How does one <code>auth.js</code> serve two different pages?</div>
+    <div class="a">It looks for both form ids and only wires up the one it finds: <code>getElementById("signup-form")</code> returns <code>null</code> on the login page, so the <code>if</code> guard skips it, and vice versa. That guard is also what prevents a "cannot read property of null" error.</div></div>
+
+    <div class="qa"><div class="q">Q. Why validate with your own code when HTML5 already has <code>required</code>?</div>
+    <div class="a">The browser's built-in validation shows an unstyleable grey tooltip, reports one field at a time, and cannot express rules like "this username is already taken" or "the two passwords must match". We set <code>novalidate</code> on the form to switch it off, then run our own checks — every invalid field is highlighted at once, in our own colours and wording. The <code>required</code> and <code>minlength</code> attributes stay in the markup because they still describe the constraints to assistive technology.</div></div>
+
+    <div class="qa"><div class="q">Q. Do you store passwords in plain text?</div>
+    <div class="a">No. Each password is run through a hash function before it is saved, and login works by hashing what was typed and comparing the two hashes — the original text is never stored. That said, ours is a small 32-bit djb2 hash with no salt, so it demonstrates the principle rather than providing real security. A production system would hash on a server with bcrypt or Argon2. Anything kept in a browser can be read by whoever holds the device.</div></div>
+
+    <div class="qa"><div class="q">Q. Why is the login error message the same for a wrong username and a wrong password?</div>
+    <div class="a">On purpose, to prevent <strong>user enumeration</strong>. If "no such user" and "wrong password" gave different messages, someone could try usernames one at a time and learn which accounts exist. One generic message reveals nothing.</div></div>
+
+    <div class="qa"><div class="q">Q. What is <code>void element.offsetWidth</code> doing in your code?</div>
+    <div class="a">Forcing a reflow so an animation can replay. Removing and re-adding a class in the same tick does nothing, because the browser batches style changes and sees no net difference. Reading a layout property like <code>offsetWidth</code> makes it recalculate immediately, which splits the change in two and restarts the shake on the error banner.</div></div>
+
+    <div class="qa"><div class="q">Q. Why is the "Show password" toggle JavaScript when your menu toggle was pure CSS?</div>
+    <div class="a">Because masking is controlled by the input's <code>type</code> attribute, and CSS cannot change an attribute — only read it. The mobile menu only needed a <em>style</em> change, which CSS can do via <code>:checked ~</code>. Switching <code>type="password"</code> to <code>type="text"</code> genuinely requires JavaScript.</div></div>
+  </section>
+
+  <!-- ======================================== QA PROJECT -->
+  <section class="section" id="qa-project">
+    <div class="section-title"><span class="dot"></span>Viva Q&amp;A — Project &amp; Design</div>
+
+    <div class="qa"><div class="q">Q. What is Synora and who is it for?</div>
+    <div class="a">A student productivity web app that puts tasks, assignments, timetable, notes, CGPA and attendance in one workspace instead of six. This page is its landing page. The design goal was "calm" — one accent colour for actions, generous spacing, and nothing competing for attention.</div></div>
+
+    <div class="qa"><div class="q">Q. Do users need an account?</div>
+    <div class="a">Yes. Synora is built around an account — it is what separates one person's tasks and notes from another's on a shared browser, and how the app knows what to load on return. Creating one takes only a username and a password: no email, no verification. The account and its data are stored in the browser's own localStorage on that device; nothing is uploaded to a server.</div></div>
+
+    <div class="qa"><div class="q">Q. Talk me through your colour palette.</div>
+    <div class="a">Five colours with five jobs. Ink <code>#22252B</code> is structure — text, headings, the dark band. Sage <code>#53655C</code> is the brand and marks every action. Taupe <code>#B09F95</code> is the warm accent: stat numbers, step numerals, the gradient tails. Slate <code>#A3AEB1</code> is quiet decoration only, never body text, because it fails contrast. Mist <code>#E5E8EB</code> is every border. Splitting the roles like that is what keeps the page from looking monochrome.</div></div>
+
+    <div class="qa"><div class="q">Q. How is your CSS organised?</div>
+    <div class="a">Five files by responsibility. <code>tokens.css</code> holds nothing but custom properties — the single source of truth. <code>base.css</code> is the reset and default element styling. <code>components.css</code> holds the pieces both the landing page and the auth pages need: buttons, icon buttons and form fields. <code>landing.css</code> and <code>auth.css</code> hold what is specific to those pages. That split is why <code>signup.html</code> can load buttons and inputs without pulling in the entire landing-page layout.</div></div>
+
+    <div class="qa"><div class="q">Q. Walk me through what happens when someone signs up.</div>
+    <div class="a">The submit event fires, <code>preventDefault()</code> stops the page reloading, and we clear any previous errors. Then four checks run — name length, the username regex, whether that username is already taken, password length and composition, and whether the confirmation matches. If any fail, each bad field gets an <code>is-invalid</code> class and a banner shakes at the top. If they all pass, we hash the password, push a user object onto the <code>synora-users</code> array in localStorage, write a <code>synora-session</code> entry, and swap the form for a success panel.</div></div>
+
+    <div class="qa"><div class="q">Q. What happens after the user signs in? Where do they go?</div>
+    <div class="a">Right now they see a success panel confirming who they are signed in as, because the dashboard is not built yet. <code>auth.js</code> has a <code>DASHBOARD_URL</code> constant at the top set to <code>null</code>; once <code>app/index.html</code> exists, setting it to <code>"./index.html"</code> makes both forms redirect there instead. That was deliberate — one line to change rather than hunting through the file.</div></div>
+
+    <div class="qa"><div class="q">Q. Is the site accessible?</div>
+    <div class="a">We covered the main points: semantic landmarks, a skip link, a proper heading hierarchy, descriptive alt text with <code>aria-hidden</code> on decorative icons, a visible <code>:focus-visible</code> ring everywhere, colour contrast checked (which is why the taupe used for text is darkened and slate is never body text), a keyboard-operable mobile menu, and a <code>prefers-reduced-motion</code> block that disables animation.</div></div>
+
+    <div class="qa"><div class="q">Q. Where did the photographs come from?</div>
+    <div class="a">Unsplash, which licenses its photos for free commercial and non-commercial use. We chose images whose own colours — sage green, warm wood, soft neutrals — already matched the palette, then laid a translucent sage/taupe gradient over each one so they sit inside the design rather than fighting it. They are downloaded into <code>assets/img/</code> rather than hot-linked, so the page works with no internet connection. Photographers are credited in the footer.</div></div>
+
+    <div class="qa"><div class="q">Q. What was the hardest part?</div>
+    <div class="a">Two things. First, making the page feel rich while using only five colours — the answer was giving each colour a distinct job and adding depth through gradients, tinted panels and one dark band rather than through more hues. Second, rebuilding the interactive pieces without JavaScript: working out that a hidden checkbox plus <code>:checked ~</code> replaces a menu script, and that <code>&lt;details&gt;</code> replaces an accordion script.</div></div>
+
+    <div class="qa"><div class="q">Q. What would you add next?</div>
+    <div class="a">The dashboard. Sign-up and login are already built, so the next step is <code>app/index.html</code> reading the session, then adding and completing tasks saved to localStorage as JSON, the CGPA and attendance calculators, and rendering the week view from stored data. On the landing page, the honest improvements are serving the photos in WebP with <code>&lt;picture&gt;</code>, and self-hosting the fonts so there is no external request at all.</div></div>
+
+    <div class="qa"><div class="q">Q. Your site has no server — so what does "creating an account" really mean?</div>
+    <div class="a">It means writing a user object into this browser's localStorage under <code>synora-users</code>, and recording who is signed in under <code>synora-session</code>. There is no network request and no database. The honest trade-off is the one stated on the landing page: your workspace does not follow you between browsers or devices, and clearing browser data clears it. What it buys is genuine privacy — nothing ever leaves the machine.</div></div>
+  </section>
+
+  <!-- ======================================== CHEATSHEET -->
+  <section class="section" id="cheatsheet">
+    <div class="section-title"><span class="dot"></span>Final Cheat Sheet</div>
+
+    <div class="card">
+      <div class="card-title sage">If you only remember ten things</div>
+      <ul class="points">
+        <li><strong>Custom properties</strong> in <code>tokens.css</code> are the backbone — they make dark mode a value swap, not a rewrite <span class="pill">most asked</span></li>
+        <li><strong>Grid for layout, Flexbox for lines.</strong> Two dimensions vs one. <span class="pill">most asked</span></li>
+        <li><strong><code>data-theme</code> on <code>&lt;html&gt;</code></strong> is the only bridge between our JS and our CSS</li>
+        <li><strong>The checkbox hack</strong> — hidden <code>input:checked</code> + <code>~</code> sibling selector = a menu with no JS</li>
+        <li><strong><code>&lt;details&gt;/&lt;summary&gt;</code></strong> is a native accordion; style it through <code>[open]</code></li>
+        <li><strong><code>minmax(0, 1fr)</code></strong> stops grid columns blowing out on long content</li>
+        <li><strong>Specificity</strong> = (IDs, classes, elements); source order only breaks ties</li>
+        <li><strong>Animate <code>transform</code>/<code>opacity</code></strong>, never <code>width</code>/<code>top</code> — GPU vs layout reflow</li>
+        <li><strong><code>clamp()</code></strong> gives fluid type with no media query</li>
+        <li><strong>localStorage</strong> persists strings forever; sessionStorage dies with the tab; cookies go to the server</li>
+        <li><strong><code>preventDefault()</code></strong> stops a form reloading the page — the first line of both auth handlers <span class="pill">most asked</span></li>
+        <li><strong>Passwords are hashed, never stored raw</strong> — and say plainly that a real app would do it server-side with bcrypt</li>
+        <li><strong>JS toggles a class, CSS decides what it looks like</strong> — <code>is-invalid</code> is the whole error system</li>
+      </ul>
+
+      <div class="callout success"><span class="callout-icon">+</span><div><strong>Opening line if they say "tell me about your project":</strong> "Synora is a student productivity app — a landing page plus a working sign-up and sign-in flow, in plain HTML, CSS and JavaScript with no frameworks. The design runs off a token system, around seventy CSS custom properties, which is what lets every page switch between light and dark by changing a single attribute on the <code>&lt;html&gt;</code> element. The landing page is deliberately almost all CSS — even the mobile menu and the FAQ accordion need no JavaScript — and the JavaScript we do have is on the auth pages, where validation and storing an account genuinely require it."</div></div>
+
+      <div class="callout tip"><span class="callout-icon">*</span><div><strong>Things to have open in tabs before you start:</strong> the landing page, <code>app/signup.html</code>, DevTools on the Elements panel (to show <code>data-theme</code> changing), the Application panel on Local Storage (to show <code>synora-users</code> and the hashed password), and <code>tokens.css</code>.</div></div>
+    </div>
+  </section>
+
+</main>
+</body>
+</html>

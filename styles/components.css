@@ -1,0 +1,257 @@
+/* =========================================================
+   Synora — Shared components
+   Pieces used by BOTH the landing page and the app pages:
+   buttons, icon buttons, and form fields.
+
+   Kept separate so app/signup.html and app/login.html can
+   load these without dragging in the whole landing layout.
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   Buttons
+   --------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-8);
+  padding: var(--space-12) var(--space-24);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+  line-height: 1.4;
+  white-space: nowrap;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-base) var(--ease-out),
+    transform var(--duration-base) var(--ease-out);
+}
+
+.btn--primary {
+  background-color: var(--color-brand);
+  color: var(--color-on-brand);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn--primary:hover {
+  background-color: var(--color-brand-hover);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.btn--ghost {
+  background-color: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-text);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn--ghost:hover {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+/* Sits on the dark ink band and on the gradient CTA. */
+.btn--onDark {
+  background-color: var(--color-on-ink);
+  color: var(--color-ink);
+}
+
+.btn--onDark:hover {
+  background-color: #FFFFFF;
+  transform: translateY(-1px);
+}
+
+.btn--outline-light {
+  border-color: rgba(255, 255, 255, .35);
+  color: var(--color-on-ink);
+}
+
+.btn--outline-light:hover {
+  border-color: rgba(255, 255, 255, .7);
+  background-color: rgba(255, 255, 255, .08);
+}
+
+.btn--sm {
+  padding: var(--space-8) var(--space-16);
+}
+
+.btn--lg {
+  padding: var(--space-16) var(--space-32);
+  font-size: var(--text-body);
+}
+
+.btn--block {
+  width: 100%;
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+/* ---------------------------------------------------------
+   Icon button (theme toggle, menu)
+   --------------------------------------------------------- */
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition:
+    color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out);
+}
+
+.icon-btn:hover {
+  color: var(--color-brand);
+  border-color: var(--color-border-strong);
+  background-color: var(--color-brand-soft);
+}
+
+/* Theme toggle swaps which glyph is shown — pure CSS, driven by
+   the data-theme attribute that the script sets on <html>. */
+.theme-toggle .icon-moon {
+  display: none;
+}
+
+[data-theme="dark"] .theme-toggle .icon-sun {
+  display: none;
+}
+
+[data-theme="dark"] .theme-toggle .icon-moon {
+  display: block;
+}
+
+/* ---------------------------------------------------------
+   Form fields
+   --------------------------------------------------------- */
+
+.field {
+  margin-bottom: var(--space-16);
+}
+
+.field__label {
+  display: block;
+  margin-bottom: var(--space-8);
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+}
+
+.input {
+  width: 100%;
+  padding: var(--space-12) var(--space-16);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--text-body);
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.input::placeholder {
+  color: var(--color-secondary);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-brand);
+  box-shadow: var(--focus-ring);
+}
+
+/* The hint sits under the input until something goes wrong. */
+.field__hint {
+  margin-top: var(--space-8);
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.field__error {
+  display: none;
+  margin-top: var(--space-8);
+  font-size: 0.8125rem;
+  font-weight: var(--weight-medium);
+  color: var(--status-high);
+}
+
+/* JS adds .is-invalid to the .field wrapper; CSS does the rest. */
+.field.is-invalid .input {
+  border-color: var(--status-high);
+}
+
+.field.is-invalid .field__hint {
+  display: none;
+}
+
+.field.is-invalid .field__error {
+  display: block;
+}
+
+/* ---- Checkbox row (e.g. "Show password") ---- */
+
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+}
+
+.check-row input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-brand);
+  cursor: pointer;
+}
+
+.check-row label {
+  cursor: pointer;
+}
+
+/* ---- Form-level message banner ---- */
+
+.form-alert {
+  display: none;
+  gap: var(--space-12);
+  align-items: flex-start;
+  padding: var(--space-12) var(--space-16);
+  margin-bottom: var(--space-24);
+  border: 1px solid var(--status-high);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+  font-size: var(--text-small);
+  color: var(--color-text);
+}
+
+.form-alert.is-shown {
+  display: flex;
+  animation: shake 400ms var(--ease-out);
+}
+
+.form-alert svg {
+  margin-top: 2px;
+  color: var(--status-high);
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-6px); }
+  40%      { transform: translateX(6px); }
+  60%      { transform: translateX(-4px); }
+  80%      { transform: translateX(4px); }
+}

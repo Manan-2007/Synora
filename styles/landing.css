@@ -1,5 +1,11 @@
 /* =========================================================
    Synora — Landing page layout & components
+
+   Everything interactive on this page is built in CSS:
+     · mobile menu   → hidden checkbox + label ("checkbox hack")
+     · FAQ accordion → native <details> / <summary>
+     · smooth scroll → scroll-behavior in base.css
+   The only JavaScript on the site is the theme toggle.
    ========================================================= */
 
 /* ---------------------------------------------------------
@@ -35,10 +41,29 @@
   font-size: 1.0625rem;
 }
 
+/* A short gradient rule under a heading — sage bleeding into taupe.
+   Small detail, but it is what stops the page reading as one flat colour. */
+.rule {
+  width: 72px;
+  height: 3px;
+  margin-top: var(--space-24);
+  border-radius: var(--radius-pill);
+  background-image: var(--gradient-rule);
+}
+
+.section-head--center .rule {
+  margin-inline: auto;
+}
+
 .eyebrow {
   display: inline-flex;
   align-items: center;
   gap: var(--space-8);
+  padding: var(--space-4) var(--space-12) var(--space-4) var(--space-8);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-sm);
   font-size: var(--text-eyebrow);
   font-weight: var(--weight-semibold);
   letter-spacing: var(--tracking-wide);
@@ -48,104 +73,14 @@
 
 .eyebrow::before {
   content: "";
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: var(--radius-pill);
-  background-color: var(--color-accent);
+  background-color: var(--color-accent-bright);
 }
 
-/* ---- Buttons ---- */
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-8);
-  padding: var(--space-12) var(--space-24);
-  border: 1px solid transparent;
-  border-radius: var(--radius-md);
-  font-size: var(--text-small);
-  font-weight: var(--weight-semibold);
-  line-height: 1.4;
-  white-space: nowrap;
-  transition:
-    background-color var(--duration-fast) var(--ease-out),
-    border-color var(--duration-fast) var(--ease-out),
-    color var(--duration-fast) var(--ease-out),
-    box-shadow var(--duration-base) var(--ease-out),
-    transform var(--duration-base) var(--ease-out);
-}
-
-.btn--primary {
-  background-color: var(--color-brand);
-  color: var(--color-on-brand);
-  box-shadow: var(--shadow-sm);
-}
-
-.btn--primary:hover {
-  background-color: var(--color-brand-hover);
-  box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
-}
-
-.btn--ghost {
-  background-color: var(--color-surface);
-  border-color: var(--color-border);
-  color: var(--color-text);
-  box-shadow: var(--shadow-sm);
-}
-
-.btn--ghost:hover {
-  border-color: var(--color-border-strong);
-  box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
-}
-
-.btn--lg {
-  padding: var(--space-16) var(--space-32);
-  font-size: var(--text-body);
-  border-radius: var(--radius-md);
-}
-
-.btn:active {
-  transform: translateY(0);
-}
-
-/* ---- Icon button (theme toggle, menu) ---- */
-
-.icon-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background-color: var(--color-surface);
-  color: var(--color-text-muted);
-  transition:
-    color var(--duration-fast) var(--ease-out),
-    border-color var(--duration-fast) var(--ease-out),
-    background-color var(--duration-fast) var(--ease-out);
-}
-
-.icon-btn:hover {
-  color: var(--color-text);
-  border-color: var(--color-border-strong);
-}
-
-/* Theme toggle swaps which glyph is shown. */
-.theme-toggle .icon-moon {
-  display: none;
-}
-
-[data-theme="dark"] .theme-toggle .icon-sun {
-  display: none;
-}
-
-[data-theme="dark"] .theme-toggle .icon-moon {
-  display: block;
-}
+/* Buttons, icon buttons and form fields now live in components.css,
+   because the app's sign-up and login pages need them too. */
 
 /* ---------------------------------------------------------
    Navbar
@@ -155,15 +90,10 @@
   position: sticky;
   top: 0;
   z-index: 50;
-  background-color: var(--color-bg);
-  border-bottom: 1px solid transparent;
-  transition:
-    border-color var(--duration-base) var(--ease-out),
-    background-color var(--duration-slow) var(--ease-out);
-}
-
-.site-header.is-scrolled {
-  border-bottom-color: var(--color-border);
+  background-color: color-mix(in srgb, var(--color-bg) 82%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .nav {
@@ -174,11 +104,23 @@
 }
 
 .wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
   font-family: var(--font-heading);
   font-size: 1.25rem;
   font-weight: var(--weight-bold);
   letter-spacing: var(--tracking-tight);
   color: var(--color-text);
+}
+
+/* The little sage/taupe lozenge in front of the word. */
+.wordmark::before {
+  content: "";
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  background-image: var(--gradient-brand);
 }
 
 .nav-links {
@@ -199,13 +141,26 @@
 }
 
 .nav-links a:hover {
-  color: var(--color-text);
+  color: var(--color-brand);
 }
 
 .nav-actions {
   display: flex;
   align-items: center;
   gap: var(--space-8);
+}
+
+/* ---- CSS-only mobile menu ("checkbox hack") ----
+   The checkbox is kept in the DOM (focusable, toggled with Space)
+   but visually hidden; the <label> is the thing you see and tap.
+   Its :checked state drives the panel with a sibling combinator. */
+
+.nav-checkbox {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .nav-toggle {
@@ -216,23 +171,34 @@
   display: none;
 }
 
-.nav-toggle[aria-expanded="true"] .icon-menu {
+.nav-checkbox:checked ~ .nav .nav-toggle .icon-menu {
   display: none;
 }
 
-.nav-toggle[aria-expanded="true"] .icon-close {
+.nav-checkbox:checked ~ .nav .nav-toggle .icon-close {
   display: block;
 }
 
-/* Mobile panel — plain show/hide, no theatrics. */
+/* Keyboard focus lands on the hidden checkbox — show the ring on the label. */
+.nav-checkbox:focus-visible ~ .nav .nav-toggle {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}
+
 .nav-panel {
   display: none;
   padding: var(--space-8) 0 var(--space-24);
   border-top: 1px solid var(--color-border);
 }
 
-.nav-panel.is-open {
+.nav-checkbox:checked ~ .nav-panel {
   display: block;
+}
+
+/* With the menu open the header must be solid, or the page scrolls
+   past behind the links. :has() lets a parent react to a child's state. */
+.site-header:has(.nav-checkbox:checked) {
+  background-color: var(--color-bg);
 }
 
 .nav-panel ul {
@@ -242,7 +208,7 @@
   margin-bottom: var(--space-16);
 }
 
-/* Scoped to the list so it can't outrank .btn on the CTA below it. */
+/* Scoped to the list so it can't outrank .btn on the CTAs below it. */
 .nav-panel ul a {
   display: block;
   padding: var(--space-12) var(--space-8);
@@ -253,11 +219,15 @@
 }
 
 .nav-panel ul a:hover {
-  color: var(--color-text);
+  color: var(--color-brand);
 }
 
 .nav-panel .btn {
   width: 100%;
+}
+
+.nav-panel .btn + .btn {
+  margin-top: var(--space-8);
 }
 
 /* ---------------------------------------------------------
@@ -265,20 +235,29 @@
    --------------------------------------------------------- */
 
 .hero {
-  padding-top: var(--space-96);
-  padding-bottom: var(--space-48);
+  padding-top: var(--space-80);
+  padding-bottom: var(--space-96);
 }
 
-.hero-copy {
-  max-width: 44rem;
+.hero .container {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: var(--space-64);
+  align-items: center;
 }
 
 .hero h1 {
   margin-top: var(--space-24);
 }
 
+/* One word of the headline picked out in the brand colour. */
+.hero h1 em {
+  font-style: normal;
+  color: var(--color-brand);
+}
+
 .hero-sub {
-  max-width: 38rem;
+  max-width: 34rem;
   margin-top: var(--space-24);
   font-size: 1.125rem;
   color: var(--color-text-muted);
@@ -292,13 +271,170 @@
 }
 
 .hero-micro {
-  margin-top: var(--space-16);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-16);
+  margin-top: var(--space-24);
   font-size: var(--text-small);
   color: var(--color-text-muted);
 }
 
+.hero-micro span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.hero-micro svg {
+  color: var(--color-brand);
+}
+
+/* ---- Hero visual: a photo with a live-looking card laid over it ---- */
+
 .hero-visual {
-  margin-top: var(--space-80);
+  position: relative;
+  padding-bottom: var(--space-32);
+}
+
+.hero-photo {
+  position: relative;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-xl);
+}
+
+.hero-photo img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
+/* A sage wash over the photo keeps it inside the palette instead of
+   fighting it. */
+.hero-photo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(
+    160deg,
+    rgba(83, 101, 92, .30) 0%,
+    rgba(176, 159, 149, .18) 55%,
+    rgba(34, 37, 43, .34) 100%
+  );
+}
+
+.hero-card {
+  position: absolute;
+  right: calc(var(--space-24) * -1);
+  bottom: 0;
+  width: min(19rem, 78%);
+  padding: var(--space-16);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-xl);
+}
+
+.hero-card__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: var(--space-12);
+}
+
+.hero-card__head strong {
+  font-family: var(--font-heading);
+  font-size: 0.9375rem;
+}
+
+.hero-card__head span {
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+}
+
+.hero-badge {
+  position: absolute;
+  top: var(--space-24);
+  left: calc(var(--space-16) * -1);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  padding: var(--space-8) var(--space-16);
+  border-radius: var(--radius-pill);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-lg);
+  font-size: 0.75rem;
+  font-weight: var(--weight-semibold);
+}
+
+.hero-badge svg {
+  color: var(--color-accent);
+}
+
+/* A one-shot entrance. No observers, no scroll listeners — the page
+   simply animates in once and is then completely static. */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.hero-copy > *,
+.hero-visual {
+  animation: rise 700ms var(--ease-out) both;
+}
+
+.hero-copy > *:nth-child(2) { animation-delay: 70ms; }
+.hero-copy > *:nth-child(3) { animation-delay: 140ms; }
+.hero-copy > *:nth-child(4) { animation-delay: 210ms; }
+.hero-copy > *:nth-child(5) { animation-delay: 280ms; }
+.hero-visual { animation-delay: 200ms; }
+
+/* ---------------------------------------------------------
+   Stats strip
+   --------------------------------------------------------- */
+
+.stats {
+  border-block: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+}
+
+.stats .container {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-24);
+  padding-block: var(--space-48);
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat strong {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: 2.25rem;
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-accent);
+}
+
+.stat span {
+  display: block;
+  margin-top: var(--space-4);
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+}
+
+/* Thin dividers between stats — slate, the palette's quiet colour. */
+.stat + .stat {
+  border-left: 1px solid var(--color-border);
 }
 
 /* ---------------------------------------------------------
@@ -319,20 +455,27 @@
   gap: var(--space-12);
   padding: var(--space-12) var(--space-16);
   border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-surface-sunken);
 }
 
 .app-frame__bar .wordmark {
   font-size: 0.9375rem;
 }
 
+.app-frame__bar .wordmark::before {
+  width: 14px;
+  height: 14px;
+  border-radius: 5px;
+}
+
 .app-frame__chip {
   margin-left: auto;
   padding: var(--space-4) var(--space-12);
   border-radius: var(--radius-pill);
-  background-color: var(--color-surface-sunken);
+  background-color: var(--color-accent-soft);
+  color: var(--color-accent);
   font-size: 0.75rem;
-  font-weight: var(--weight-medium);
-  color: var(--color-text-muted);
+  font-weight: var(--weight-semibold);
 }
 
 .app-frame__body {
@@ -359,9 +502,9 @@
 }
 
 .app-sidebar li[aria-current] {
-  background-color: var(--color-surface);
-  color: var(--color-text);
-  box-shadow: var(--shadow-sm);
+  background-color: var(--color-brand-soft);
+  color: var(--color-brand);
+  font-weight: var(--weight-semibold);
 }
 
 .app-sidebar svg {
@@ -405,6 +548,7 @@
   gap: var(--space-12);
   padding: var(--space-12);
   border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-status);
   border-radius: var(--radius-md);
   background-color: var(--color-surface);
 }
@@ -442,6 +586,7 @@
   font-size: 0.6875rem;
   font-weight: var(--weight-medium);
   color: var(--color-text-muted);
+  white-space: nowrap;
 }
 
 .task__tag::before {
@@ -456,6 +601,7 @@
 .app-aside {
   padding: var(--space-24) var(--space-16);
   border-left: 1px solid var(--color-border);
+  background-color: var(--color-surface-sunken);
 }
 
 .app-aside__title {
@@ -514,6 +660,8 @@
   flex: none;
   width: 3.25rem;
   font-variant-numeric: tabular-nums;
+  color: var(--color-accent);
+  font-weight: var(--weight-semibold);
 }
 
 .agenda strong {
@@ -532,65 +680,72 @@
 }
 
 .card {
+  position: relative;
   padding: var(--space-32);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   background-color: var(--color-surface);
   box-shadow: var(--shadow-sm);
+  overflow: hidden;
   transition:
     box-shadow var(--duration-base) var(--ease-out),
     border-color var(--duration-base) var(--ease-out),
     transform var(--duration-base) var(--ease-out);
 }
 
+/* A colour bar that grows across the top edge on hover. */
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 3px;
+  background-image: var(--gradient-rule);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--duration-slow) var(--ease-out);
+}
+
 .card:hover {
   border-color: var(--color-border-strong);
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-3px);
 }
 
-.card__icon{
-    width:64px;
-    height:64px;
-
-    display:flex;
-    justify-content:center;
-    align-items:center;
-
-    border-radius:50%;
-    margin-bottom:24px;
-
-    transition:.3s ease;
+.card:hover::before {
+  transform: scaleX(1);
 }
 
-.card__icon svg{
-    width:30px;
-    height:30px;
+.card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: var(--space-24);
+  border-radius: var(--radius-md);
+  background-color: var(--color-brand-soft);
+  color: var(--color-brand);
+}
+
+/* Alternating icon wells so six cards don't read as one green block. */
+.card__icon--taupe {
+  background-color: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+
+.card__icon--ink {
+  background-color: var(--color-ink);
+  color: var(--color-on-ink);
 }
 
 .card h3 {
   margin-bottom: var(--space-8);
 }
 
-.card h3{
-
-    font-size:28px;
-
-    font-weight:700;
-
-    margin:18px 0 14px;
-}
-
 .card p {
   font-size: var(--text-small);
   color: var(--color-text-muted);
-}
-
-.card p{
-
-    color:#5F6C7B;
-
-    line-height:1.8;
 }
 
 .features-note {
@@ -600,55 +755,191 @@
   color: var(--color-text-muted);
 }
 
-.icon-green{
-    background:#EAF8EE;
-    color:#22C55E;
+/* ---------------------------------------------------------
+   Showcase — photo beside prose
+   --------------------------------------------------------- */
+
+.showcase {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-64);
+  align-items: center;
 }
 
-.icon-blue{
-    background:#EDF4FF;
-    color:#3B82F6;
+.showcase + .showcase {
+  margin-top: var(--space-96);
 }
 
-.icon-purple{
-    background:#F3EDFF;
-    color:#8B5CF6;
+/* Second block flips so the eye zig-zags down the page. */
+.showcase--flip .showcase__media {
+  order: 2;
 }
 
-.icon-orange{
-    background:#FFF4E8;
-    color:#F59E0B;
+.showcase__media {
+  position: relative;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
 }
 
-.icon-red{
-    background:#FFECEE;
-    color:#EF4444;
+.showcase__media img {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
 }
 
-.icon-teal{
-    background:#E8FAF8;
-    color:#14B8A6;
+.showcase__media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(
+    200deg,
+    rgba(176, 159, 149, .22),
+    rgba(83, 101, 92, .28)
+  );
+}
+
+.showcase h2 {
+  font-size: clamp(1.5rem, 2.4vw, 2rem);
+}
+
+.showcase > div > p {
+  margin-top: var(--space-16);
+  color: var(--color-text-muted);
+}
+
+.check-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  margin-top: var(--space-24);
+}
+
+.check-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-12);
+  font-size: var(--text-small);
+}
+
+.check-list svg {
+  margin-top: 3px;
+  color: var(--color-brand);
 }
 
 /* ---------------------------------------------------------
-   Why Synora
+   Steps — how you get started
+   --------------------------------------------------------- */
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-32);
+  counter-reset: step;
+}
+
+.step {
+  position: relative;
+  padding: var(--space-32);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface-sage);
+}
+
+.step:nth-child(2) {
+  background-color: var(--color-surface-taupe);
+}
+
+.step:nth-child(3) {
+  background-color: var(--color-surface-sunken);
+}
+
+/* The big outlined numeral is drawn with a CSS counter — no markup. */
+.step::before {
+  counter-increment: step;
+  content: counter(step, decimal-leading-zero);
+  display: block;
+  margin-bottom: var(--space-16);
+  font-family: var(--font-heading);
+  font-size: 1.75rem;
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-accent);
+}
+
+.step h3 {
+  margin-bottom: var(--space-8);
+}
+
+.step p {
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+}
+
+/* ---------------------------------------------------------
+   Why Synora — the dark ink band
    --------------------------------------------------------- */
 
 .why {
-  border-block: 1px solid var(--color-border);
-  background-color: var(--color-surface);
+  position: relative;
+  isolation: isolate;
+  background-color: var(--color-ink);
+  color: var(--color-on-ink);
+  overflow: hidden;
+}
+
+/* Photo, then a veil over it, both as background layers of one
+   pseudo-element. The gradient sits first so it paints on top. */
+.why::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(100deg, var(--ink-veil) 30%, var(--ink-veil-edge) 100%),
+    url("../assets/img/desk-evening.jpg");
+  background-size: cover, cover;
+  background-position: center, center;
+}
+
+.why h2,
+.why h3 {
+  color: var(--color-on-ink);
+}
+
+.why .section-head p {
+  color: var(--color-on-ink-muted);
 }
 
 .why-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-48);
+  gap: var(--space-32);
   margin-top: var(--space-48);
+}
+
+.why-item {
+  padding: var(--space-32);
+  border: 1px solid var(--color-ink-border);
+  border-radius: var(--radius-lg);
+  background-color: color-mix(in srgb, var(--color-ink-raised) 72%, transparent);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
 .why-item__icon {
   display: inline-flex;
-  color: var(--color-brand);
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background-color: rgba(255, 255, 255, .07);
+  color: var(--color-on-ink-muted);
+}
+
+.why-item:nth-child(2) .why-item__icon {
+  color: var(--color-accent-bright);
 }
 
 .why-item h3 {
@@ -657,30 +948,36 @@
 
 .why-item p {
   font-size: var(--text-small);
-  color: var(--color-text-muted);
+  color: var(--color-on-ink-muted);
 }
 
 /* ---------------------------------------------------------
-   FAQ
+   FAQ — native <details>, zero JavaScript
    --------------------------------------------------------- */
 
 .faq-list {
   max-width: 46rem;
   margin-inline: auto;
-  border-top: 1px solid var(--color-border);
 }
 
 .faq-item {
-  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--space-12);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+  overflow: hidden;
+  transition: border-color var(--duration-base) var(--ease-out);
 }
 
-.faq-trigger {
+.faq-item[open] {
+  border-color: var(--color-brand);
+}
+
+.faq-item > summary {
   display: flex;
   align-items: center;
   gap: var(--space-16);
-  width: 100%;
-  padding: var(--space-24) var(--space-4);
-  text-align: left;
+  padding: var(--space-24);
   font-family: var(--font-heading);
   font-size: 1.0625rem;
   font-weight: var(--weight-semibold);
@@ -689,29 +986,26 @@
   transition: color var(--duration-fast) var(--ease-out);
 }
 
-.faq-trigger:hover {
+.faq-item > summary:hover {
   color: var(--color-brand);
 }
 
-.faq-trigger svg {
+.faq-item > summary svg {
   margin-left: auto;
-  color: var(--color-text-muted);
+  color: var(--color-secondary);
   transition: transform var(--duration-base) var(--ease-out);
 }
 
-.faq-trigger[aria-expanded="true"] svg {
+/* [open] is set by the browser itself when the disclosure is expanded. */
+.faq-item[open] > summary svg {
   transform: rotate(180deg);
+  color: var(--color-brand);
 }
 
-.faq-panel {
-  display: none;
-  padding: 0 var(--space-48) var(--space-24) var(--space-4);
+.faq-answer {
+  padding: 0 var(--space-48) var(--space-24) var(--space-24);
   font-size: var(--text-small);
   color: var(--color-text-muted);
-}
-
-.faq-panel.is-open {
-  display: block;
 }
 
 /* ---------------------------------------------------------
@@ -719,22 +1013,54 @@
    --------------------------------------------------------- */
 
 .cta {
-  padding: var(--space-64) var(--space-32);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  background-color: var(--color-surface);
-  box-shadow: var(--shadow-sm);
+  position: relative;
+  padding: var(--space-80) var(--space-32);
+  border-radius: var(--radius-xl);
+  background-image: var(--gradient-brand);
+  color: #FFFFFF;
   text-align: center;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+
+/* Soft light bloom in the corner so the gradient isn't a flat wash. */
+.cta::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(
+    38rem 22rem at 80% 0%,
+    rgba(255, 255, 255, .22),
+    transparent 70%
+  );
+}
+
+.cta > * {
+  position: relative;
+}
+
+.cta h2 {
+  color: #FFFFFF;
 }
 
 .cta p {
   max-width: 34rem;
   margin: var(--space-16) auto 0;
-  color: var(--color-text-muted);
+  color: rgba(255, 255, 255, .82);
 }
 
-.cta .btn {
+.cta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-12);
+  justify-content: center;
   margin-top: var(--space-32);
+}
+
+.cta-micro {
+  margin-top: var(--space-24);
+  font-size: var(--text-small);
+  color: rgba(255, 255, 255, .7);
 }
 
 /* ---------------------------------------------------------
@@ -744,6 +1070,7 @@
 .site-footer {
   border-top: 1px solid var(--color-border);
   padding-block: var(--space-64) var(--space-32);
+  background-color: var(--color-surface);
 }
 
 .footer-top {
@@ -755,7 +1082,7 @@
 
 .footer-brand p {
   max-width: 22rem;
-  margin-top: var(--space-8);
+  margin-top: var(--space-12);
   font-size: var(--text-small);
   color: var(--color-text-muted);
 }
@@ -777,7 +1104,7 @@
 }
 
 .footer-nav a:hover {
-  color: var(--color-text);
+  color: var(--color-brand);
 }
 
 .footer-bottom {
@@ -793,43 +1120,22 @@
   color: var(--color-text-muted);
 }
 
-/* ---------------------------------------------------------
-   Scroll reveal
-   --------------------------------------------------------- */
-
-.reveal {
-  opacity: 0;
-  transform: translateY(12px);
-  transition:
-    opacity var(--duration-slow) var(--ease-out),
-    transform var(--duration-slow) var(--ease-out);
-}
-
-.reveal.is-visible {
-  opacity: 1;
-  transform: none;
-}
-
-/* No JS, or motion turned down: never leave content hidden. */
-.no-js .reveal,
-.no-reveal .reveal {
-  opacity: 1;
-  transform: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .reveal {
-    opacity: 1;
-    transform: none;
-  }
+.footer-credit {
+  flex-basis: 100%;
+  font-size: 0.75rem;
+  color: var(--color-secondary);
 }
 
 /* ---------------------------------------------------------
    Responsive
    --------------------------------------------------------- */
 
-/* The calendar sliver is the first thing to go — it needs real width. */
 @media (max-width: 1024px) {
+  .hero .container {
+    gap: var(--space-48);
+  }
+
+  /* The calendar sliver needs real width — it is the first thing to go. */
   .app-frame__body {
     grid-template-columns: 152px minmax(0, 1fr);
   }
@@ -838,14 +1144,46 @@
     display: none;
   }
 
-  .why-grid {
-    gap: var(--space-32);
+  .showcase {
+    gap: var(--space-48);
   }
 }
 
 @media (max-width: 940px) {
+  .hero .container {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hero-sub {
+    max-width: none;
+  }
+
+  .hero-visual {
+    max-width: 34rem;
+  }
+
   .card-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .stats .container {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-32);
+  }
+
+  /* Row-based dividers make no sense in a 2x2 grid. */
+  .stat + .stat {
+    border-left: 0;
+  }
+
+  .steps {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-16);
+  }
+
+  .why-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-16);
   }
 }
 
@@ -874,10 +1212,6 @@
     margin-bottom: var(--space-48);
   }
 
-  .hero-visual {
-    margin-top: var(--space-48);
-  }
-
   .app-frame__body {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -890,13 +1224,28 @@
     padding: var(--space-16);
   }
 
-  .card-grid,
-  .why-grid {
+  .card-grid {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .card {
+  .card,
+  .step,
+  .why-item {
     padding: var(--space-24);
+  }
+
+  .showcase {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-32);
+  }
+
+  /* Photo always leads on a phone, regardless of the desktop flip. */
+  .showcase--flip .showcase__media {
+    order: 0;
+  }
+
+  .showcase + .showcase {
+    margin-top: var(--space-64);
   }
 
   .cta {
@@ -907,7 +1256,22 @@
     flex: 1 1 auto;
   }
 
-  .faq-panel {
+  .hero-card {
+    position: static;
+    width: 100%;
+    margin-top: var(--space-16);
+  }
+
+  .hero-badge {
+    left: var(--space-16);
+  }
+
+  .faq-item > summary,
+  .faq-answer {
+    padding-inline: var(--space-16);
+  }
+
+  .faq-answer {
     padding-right: var(--space-24);
   }
 }
