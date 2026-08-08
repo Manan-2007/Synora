@@ -1,0 +1,1397 @@
+<!--
+  Synora — CGPA Calculator Section (all-in-one build)
+  Paste this whole block directly into your page, wherever you want the
+  calculator to appear. CSS and JS are inlined here specifically to rule
+  out file-path/linking issues — nothing to link, nothing to 404 on.
+-->
+<style>
+/* ==========================================================================
+   Synora — CGPA Calculator Section
+   Premium SaaS aesthetic: sage green accent, soft shadows, generous
+   whitespace, Manrope + Inter type. Namespaced under .cgpa-section so it
+   can drop into an existing page without leaking styles.
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
+
+.cgpa-section {
+  /* ---- color tokens ---- */
+  --sage: #7C9A78;
+  --sage-dark: #5B7857;
+  --sage-deep: #445E42;
+  --sage-soft: #E7EFE4;
+  --sage-tint: #F3F7F1;
+  --bg-page: #FAFAF8;
+  --white: #FFFFFF;
+  --border: #E6E8E2;
+  --border-soft: #EFF1EC;
+  --text-primary: #1E2420;
+  --text-muted: #6B7268;
+  --text-faint: #9AA096;
+  --shadow-sm: 0 1px 2px rgba(30, 36, 32, 0.05), 0 1px 1px rgba(30, 36, 32, 0.03);
+  --shadow-md: 0 8px 24px rgba(30, 36, 32, 0.07), 0 2px 6px rgba(30, 36, 32, 0.04);
+  --shadow-lg: 0 20px 48px rgba(30, 36, 32, 0.10), 0 4px 12px rgba(30, 36, 32, 0.05);
+  --shadow-glow: 0 0 0 4px rgba(124, 154, 120, 0.12);
+
+  /* ---- type tokens ---- */
+  --font-display: 'Manrope', 'Inter', -apple-system, sans-serif;
+  --font-body: 'Inter', -apple-system, sans-serif;
+
+  /* ---- radius tokens ---- */
+  --r-lg: 24px;
+  --r-md: 20px;
+  --r-sm: 14px;
+  --r-pill: 999px;
+
+  /* ---- motion tokens ---- */
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
+
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-page);
+  padding: 120px 24px;
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+.cgpa-section *,
+.cgpa-section *::before,
+.cgpa-section *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.cgpa-section ul {
+  list-style: none;
+}
+
+.cgpa-section svg {
+  display: block;
+}
+
+/* ambient background blobs */
+.cgpa-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.cgpa-blob--a {
+  width: 480px;
+  height: 480px;
+  top: -180px;
+  left: -160px;
+  background: radial-gradient(circle, var(--sage-soft), transparent 70%);
+}
+
+.cgpa-blob--b {
+  width: 420px;
+  height: 420px;
+  bottom: -160px;
+  right: -140px;
+  background: radial-gradient(circle, var(--sage-tint), transparent 70%);
+}
+
+.cgpa-container {
+  position: relative;
+  z-index: 1;
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+.cgpa-grid {
+  display: grid;
+  grid-template-columns: 0.85fr 1.15fr;
+  gap: 80px;
+  align-items: center;
+}
+
+/* ==========================================================================
+   LEFT — intro
+   ========================================================================== */
+
+.cgpa-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  animation: cgpa-rise 0.7s var(--ease) both;
+}
+
+.cgpa-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 16px;
+  border-radius: var(--r-pill);
+  background: var(--sage-soft);
+  color: var(--sage-deep);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  margin-bottom: 22px;
+}
+
+.cgpa-heading {
+  font-family: var(--font-display);
+  font-size: clamp(34px, 4vw, 48px);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-bottom: 20px;
+}
+
+.cgpa-description {
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  max-width: 420px;
+  margin-bottom: 36px;
+}
+
+.cgpa-feature-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cgpa-feature {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.cgpa-feature__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--sage-soft);
+  color: var(--sage-dark);
+  flex-shrink: 0;
+}
+
+.cgpa-feature__icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ==========================================================================
+   RIGHT — dashboard
+   ========================================================================== */
+
+.cgpa-dashboard {
+  position: relative;
+  animation: cgpa-rise 0.7s var(--ease) 0.1s both;
+}
+
+/* floating mini widgets */
+.cgpa-float {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 14px 18px;
+  border-radius: var(--r-sm);
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: var(--shadow-md);
+  z-index: 3;
+  animation: cgpa-float 6s ease-in-out infinite;
+  animation-delay: var(--float-delay, 0s);
+}
+
+.cgpa-float__label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.cgpa-float__value {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--sage-deep);
+}
+
+.cgpa-float--goal   { top: -28px;  left: -36px; }
+.cgpa-float--high   { top: 64px;   right: -44px; }
+.cgpa-float--credits{ bottom: 128px; left: -52px; }
+.cgpa-float--avg    { bottom: -22px; right: -30px; }
+
+/* main card */
+.cgpa-card {
+  position: relative;
+  z-index: 2;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 32px;
+  box-shadow: var(--shadow-lg);
+}
+
+.cgpa-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.cgpa-card__eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--sage-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.cgpa-card__title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.cgpa-info {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--white);
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: color 0.2s var(--ease-soft), border-color 0.2s var(--ease-soft);
+}
+
+.cgpa-info svg { width: 16px; height: 16px; }
+
+.cgpa-info:hover,
+.cgpa-info:focus-visible {
+  color: var(--sage-dark);
+  border-color: var(--sage);
+}
+
+.cgpa-tooltip {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 220px;
+  padding: 10px 14px;
+  border-radius: var(--r-sm);
+  background: var(--text-primary);
+  color: var(--white);
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.5;
+  text-align: left;
+  opacity: 0;
+  transform: translateY(-4px);
+  pointer-events: none;
+  transition: opacity 0.2s var(--ease-soft), transform 0.2s var(--ease-soft);
+  z-index: 5;
+}
+
+.cgpa-info:hover .cgpa-tooltip,
+.cgpa-info:focus-visible .cgpa-tooltip {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* semester list */
+.cgpa-semesters {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.cgpa-semester {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  border-radius: var(--r-md);
+  background: var(--sage-tint);
+  border: 1px solid var(--border-soft);
+  animation: cgpa-slide-in 0.35s var(--ease) both;
+}
+
+.cgpa-semester.is-removing {
+  animation: cgpa-slide-out 0.25s var(--ease-soft) forwards;
+}
+
+.cgpa-semester__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cgpa-semester__number {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--sage-deep);
+}
+
+.cgpa-semester__delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: background 0.2s var(--ease-soft), color 0.2s var(--ease-soft), transform 0.2s var(--ease-soft);
+}
+
+.cgpa-semester__delete svg { width: 13px; height: 13px; }
+
+.cgpa-semester__delete:hover {
+  background: rgba(220, 90, 80, 0.1);
+  color: #C25B4F;
+  transform: scale(1.08);
+}
+
+.cgpa-semester__inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* floating-label inputs */
+.cgpa-field {
+  position: relative;
+  display: block;
+}
+
+.cgpa-field__input {
+  width: 100%;
+  padding: 16px 14px 8px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: var(--white);
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.2s var(--ease-soft), box-shadow 0.2s var(--ease-soft);
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.cgpa-field__input::-webkit-outer-spin-button,
+.cgpa-field__input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.cgpa-field__input:focus {
+  border-color: var(--sage);
+  box-shadow: var(--shadow-glow);
+}
+
+.cgpa-field__label {
+  position: absolute;
+  left: 14px;
+  top: 15px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-faint);
+  pointer-events: none;
+  transform-origin: left top;
+  transition: transform 0.18s var(--ease-soft), color 0.18s var(--ease-soft), top 0.18s var(--ease-soft);
+}
+
+.cgpa-field__input:focus + .cgpa-field__label,
+.cgpa-field__input:not(:placeholder-shown) + .cgpa-field__label {
+  top: 7px;
+  transform: scale(0.78);
+  color: var(--sage-dark);
+}
+
+/* empty state */
+.cgpa-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  padding: 40px 20px;
+  color: var(--text-faint);
+  animation: cgpa-fade 0.4s var(--ease-soft) both;
+}
+
+.cgpa-empty__art {
+  width: 88px;
+  height: 66px;
+  color: var(--sage);
+  margin-bottom: 10px;
+}
+
+.cgpa-empty__text {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.cgpa-empty__subtext {
+  font-size: 13.5px;
+  max-width: 240px;
+}
+
+/* action row: Add Semester + Calculate CGPA */
+.cgpa-actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+/* add semester button */
+.cgpa-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex: 1;
+  padding: 13px;
+  border-radius: var(--r-sm);
+  border: 1.5px dashed var(--sage);
+  background: transparent;
+  color: var(--sage-dark);
+  font-family: var(--font-body);
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s var(--ease-soft), transform 0.15s var(--ease-soft), border-style 0.2s var(--ease-soft);
+}
+
+.cgpa-add-btn svg { width: 15px; height: 15px; }
+
+.cgpa-add-btn:hover {
+  background: var(--sage-soft);
+  transform: translateY(-1px);
+}
+
+.cgpa-add-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* calculate button — primary CTA, filled sage, with a success-state swap */
+.cgpa-calculate-btn {
+  position: relative;
+  flex: 1.3;
+  padding: 13px;
+  border-radius: var(--r-sm);
+  border: none;
+  background: linear-gradient(180deg, var(--sage) 0%, var(--sage-dark) 100%);
+  color: var(--white);
+  font-family: var(--font-body);
+  font-size: 14.5px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(91, 120, 87, 0.28), var(--shadow-sm);
+  overflow: hidden;
+  transition: transform 0.15s var(--ease-soft), box-shadow 0.2s var(--ease-soft);
+}
+
+.cgpa-calculate-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(91, 120, 87, 0.34), var(--shadow-sm);
+}
+
+.cgpa-calculate-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.cgpa-calculate-btn__face {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: opacity 0.25s var(--ease-soft), transform 0.25s var(--ease-soft);
+}
+
+.cgpa-calculate-btn__face svg { width: 15px; height: 15px; }
+
+.cgpa-calculate-btn__face--success {
+  position: absolute;
+  inset: 0;
+  align-items: center;
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.cgpa-calculate-btn.is-success .cgpa-calculate-btn__face--default {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+.cgpa-calculate-btn.is-success .cgpa-calculate-btn__face--success {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.cgpa-calculate-btn.is-success {
+  background: linear-gradient(180deg, var(--sage-dark) 0%, var(--sage-deep) 100%);
+}
+
+/* ==========================================================================
+   Results panel
+   ========================================================================== */
+
+.cgpa-result {
+  position: relative;
+  border-radius: var(--r-md);
+  padding: 30px 26px 26px;
+  background: linear-gradient(180deg, var(--sage-tint) 0%, var(--white) 65%);
+  border: 1px solid var(--border-soft);
+  overflow: hidden;
+}
+
+/* animated soft gradient ring around the result card */
+.cgpa-result::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(from var(--angle, 0deg), var(--sage-soft), var(--sage), var(--sage-soft) 60%, var(--sage-soft));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.55;
+  animation: cgpa-rotate-border 7s linear infinite;
+  pointer-events: none;
+}
+
+@property --angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.cgpa-result__ring-wrap {
+  position: relative;
+  width: 168px;
+  height: 168px;
+  margin: 0 auto 18px;
+}
+
+.cgpa-ring {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.cgpa-ring__track {
+  fill: none;
+  stroke: var(--border-soft);
+  stroke-width: 10;
+}
+
+.cgpa-ring__fill {
+  fill: none;
+  stroke: var(--sage);
+  stroke-width: 10;
+  stroke-linecap: round;
+  stroke-dasharray: 452.4;
+  stroke-dashoffset: 452.4;
+  transition: stroke-dashoffset 1s var(--ease), stroke 0.4s var(--ease-soft);
+}
+
+.cgpa-ring__center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.cgpa-ring__value {
+  font-family: var(--font-display);
+  font-size: 34px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.cgpa-ring__caption {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 2px;
+}
+
+.cgpa-standing {
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--sage-deep);
+  margin-bottom: 22px;
+  transition: color 0.3s var(--ease-soft);
+}
+
+.cgpa-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.cgpa-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 14px 8px;
+  border-radius: var(--r-sm);
+  background: var(--white);
+  border: 1px solid var(--border-soft);
+}
+
+.cgpa-stat__value {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.cgpa-stat__label {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  text-align: center;
+}
+
+/* mini trend chart */
+.cgpa-trend {
+  padding-top: 18px;
+  border-top: 1px solid var(--border-soft);
+}
+
+.cgpa-trend__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.cgpa-trend__delta {
+  color: var(--sage-dark);
+  font-weight: 700;
+}
+
+.cgpa-trend__chart {
+  width: 100%;
+  height: 48px;
+  overflow: visible;
+}
+
+/* ==========================================================================
+   Confetti
+   ========================================================================== */
+
+.cgpa-confetti {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 60;
+}
+
+.cgpa-confetti__piece {
+  position: absolute;
+  top: -20px;
+  width: 8px;
+  height: 14px;
+  border-radius: 2px;
+  animation: cgpa-confetti-fall linear forwards;
+}
+
+/* ==========================================================================
+   Keyframes
+   ========================================================================== */
+
+@keyframes cgpa-rise {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes cgpa-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes cgpa-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+
+@keyframes cgpa-slide-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes cgpa-slide-out {
+  to { opacity: 0; transform: translateY(-8px) scale(0.96); max-height: 0; }
+}
+
+@keyframes cgpa-rotate-border {
+  to { --angle: 360deg; }
+}
+
+@keyframes cgpa-confetti-fall {
+  to { transform: translateY(420px) rotate(540deg); opacity: 0; }
+}
+
+@keyframes cgpa-pop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+.cgpa-ring__value.is-popping { animation: cgpa-pop 0.4s var(--ease-soft); }
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+
+@media (max-width: 1024px) {
+  .cgpa-grid {
+    grid-template-columns: 1fr;
+    gap: 56px;
+  }
+
+  .cgpa-intro { align-items: flex-start; text-align: left; }
+
+  .cgpa-dashboard { max-width: 560px; margin: 0 auto; width: 100%; }
+
+  .cgpa-float { display: none; }
+
+  .cgpa-float--goal,
+  .cgpa-float--avg {
+    display: flex;
+    position: static;
+    margin-bottom: 12px;
+  }
+}
+
+@media (max-width: 640px) {
+  .cgpa-section { padding: 80px 16px; }
+
+  .cgpa-card { padding: 22px; }
+
+  .cgpa-semester__inputs { grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .cgpa-actions { flex-direction: column; }
+
+  .cgpa-stats { grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+
+  .cgpa-float--goal,
+  .cgpa-float--avg { display: flex; }
+
+  .cgpa-result__ring-wrap { width: 140px; height: 140px; }
+}
+
+/* respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .cgpa-section *,
+  .cgpa-section *::before,
+  .cgpa-section *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* visible keyboard focus */
+.cgpa-section button:focus-visible,
+.cgpa-section input:focus-visible {
+  outline: 2px solid var(--sage-dark);
+  outline-offset: 2px;
+}
+
+</style>
+
+<!--
+  Synora — CGPA Calculator Section
+  Drop this section's markup into your page where you want the calculator to
+  appear, then include cgpa-calculator.css and cgpa-calculator.js.
+  This snippet is self-contained and namespaced under .cgpa-section so it
+  won't collide with the rest of the site's styles or scripts.
+-->
+
+<section class="cgpa-section" id="cgpa-calculator">
+
+  <!-- soft ambient background blobs, purely decorative -->
+  <div class="cgpa-blob cgpa-blob--a" aria-hidden="true"></div>
+  <div class="cgpa-blob cgpa-blob--b" aria-hidden="true"></div>
+
+  <div class="cgpa-container">
+    <div class="cgpa-grid">
+
+      <!-- ================= LEFT: INTRO ================= -->
+      <div class="cgpa-intro">
+        <span class="cgpa-badge">Academic Tools</span>
+
+        <h2 class="cgpa-heading">CGPA Calculator</h2>
+
+        <p class="cgpa-description">
+          Know exactly where your academic journey is heading.
+          Calculate your CGPA semester by semester in seconds.
+        </p>
+
+        <ul class="cgpa-feature-list">
+          <li class="cgpa-feature">
+            <span class="cgpa-feature__icon">
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M4 10.5L8 14.5L16 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            Unlimited semesters
+          </li>
+          <li class="cgpa-feature">
+            <span class="cgpa-feature__icon">
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M4 10.5L8 14.5L16 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            Instant calculation
+          </li>
+          <li class="cgpa-feature">
+            <span class="cgpa-feature__icon">
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M4 10.5L8 14.5L16 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            Accurate results
+          </li>
+        </ul>
+      </div>
+
+      <!-- ================= RIGHT: DASHBOARD ================= -->
+      <div class="cgpa-dashboard">
+
+        <!-- floating mini widgets -->
+        <div class="cgpa-float cgpa-float--goal" style="--float-delay: 0s;">
+          <span class="cgpa-float__label">Current Goal</span>
+          <span class="cgpa-float__value">9.50</span>
+        </div>
+
+        <div class="cgpa-float cgpa-float--high" style="--float-delay: .6s;">
+          <span class="cgpa-float__label">Highest SGPA</span>
+          <span class="cgpa-float__value" id="highestSgpaWidget">—</span>
+        </div>
+
+        <div class="cgpa-float cgpa-float--credits" style="--float-delay: 1.2s;">
+          <span class="cgpa-float__label">Credits Completed</span>
+          <span class="cgpa-float__value" id="creditsWidget">0</span>
+        </div>
+
+        <div class="cgpa-float cgpa-float--avg" style="--float-delay: 1.8s;">
+          <span class="cgpa-float__label">Semester Average</span>
+          <span class="cgpa-float__value" id="avgWidget">—</span>
+        </div>
+
+        <!-- main calculator card -->
+        <div class="cgpa-card" id="cgpaCard">
+
+          <div class="cgpa-card__header">
+            <div>
+              <p class="cgpa-card__eyebrow">Dashboard</p>
+              <h3 class="cgpa-card__title">Semester Overview</h3>
+            </div>
+            <button type="button" class="cgpa-info" id="creditsInfo" aria-describedby="creditsTooltip">
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <circle cx="10" cy="10" r="8.25" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M10 9v4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <circle cx="10" cy="6.5" r="0.9" fill="currentColor"/>
+              </svg>
+              <span class="cgpa-tooltip" id="creditsTooltip" role="tooltip">
+                Credits reflect each course's weight — usually set by your institution.
+              </span>
+            </button>
+          </div>
+
+          <!-- semester cards render here -->
+          <div class="cgpa-semesters" id="semesterList"></div>
+
+          <!-- empty state, shown when no semesters exist -->
+          <div class="cgpa-empty" id="emptyState" hidden>
+            <svg class="cgpa-empty__art" viewBox="0 0 120 90" fill="none" aria-hidden="true">
+              <rect x="14" y="18" width="92" height="62" rx="12" stroke="currentColor" stroke-width="2" opacity="0.35"/>
+              <path d="M30 44h60M30 56h40" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.35"/>
+              <circle cx="88" cy="30" r="10" stroke="currentColor" stroke-width="2" opacity="0.5"/>
+              <path d="M84 30h8M88 26v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+            </svg>
+            <p class="cgpa-empty__text">No semesters yet</p>
+            <p class="cgpa-empty__subtext">Add your first semester to see your CGPA take shape.</p>
+          </div>
+
+          <div class="cgpa-actions">
+            <button type="button" class="cgpa-add-btn" id="addSemesterBtn">
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              Add Semester
+            </button>
+
+            <button type="button" class="cgpa-calculate-btn" id="calculateBtn">
+              <span class="cgpa-calculate-btn__face cgpa-calculate-btn__face--default">
+                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <rect x="4" y="2.5" width="12" height="15" rx="2.5" stroke="currentColor" stroke-width="1.6"/>
+                  <path d="M7 6.5h6M7 10h1.4M11.6 10H13M7 13h1.4M11.6 13H13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                </svg>
+                Calculate CGPA
+              </span>
+              <span class="cgpa-calculate-btn__face cgpa-calculate-btn__face--success">
+                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <path d="M4 10.5L8 14.5L16 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Calculated
+              </span>
+            </button>
+          </div>
+
+          <!-- results panel -->
+          <div class="cgpa-result" id="resultPanel">
+            <div class="cgpa-result__ring-wrap">
+              <svg class="cgpa-ring" viewBox="0 0 168 168" aria-hidden="true">
+                <circle class="cgpa-ring__track" cx="84" cy="84" r="72"/>
+                <circle class="cgpa-ring__fill" id="ringFill" cx="84" cy="84" r="72"/>
+              </svg>
+              <div class="cgpa-ring__center">
+                <span class="cgpa-ring__value" id="cgpaValue">0.00</span>
+                <span class="cgpa-ring__caption">CGPA</span>
+              </div>
+            </div>
+
+            <p class="cgpa-standing" id="standingLabel">Add a semester to begin</p>
+
+            <div class="cgpa-stats">
+              <div class="cgpa-stat">
+                <span class="cgpa-stat__value" id="totalCredits">0</span>
+                <span class="cgpa-stat__label">Total Credits</span>
+              </div>
+              <div class="cgpa-stat">
+                <span class="cgpa-stat__value" id="totalSemesters">0</span>
+                <span class="cgpa-stat__label">Semesters</span>
+              </div>
+              <div class="cgpa-stat">
+                <span class="cgpa-stat__value" id="standingShort">—</span>
+                <span class="cgpa-stat__label">Academic Standing</span>
+              </div>
+            </div>
+
+            <div class="cgpa-trend">
+              <div class="cgpa-trend__header">
+                <span>SGPA Trend</span>
+                <span id="trendDelta" class="cgpa-trend__delta"></span>
+              </div>
+              <svg class="cgpa-trend__chart" id="trendChart" viewBox="0 0 240 64" preserveAspectRatio="none" aria-hidden="true"></svg>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- confetti pieces are injected here on high-achievement moments -->
+  <div class="cgpa-confetti" id="confettiLayer" aria-hidden="true"></div>
+
+  <!-- reusable template for a semester card, cloned by JS -->
+  <template id="semesterTemplate">
+    <div class="cgpa-semester" data-id="">
+      <div class="cgpa-semester__header">
+        <span class="cgpa-semester__number"></span>
+        <button type="button" class="cgpa-semester__delete" aria-label="Delete semester">
+          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="cgpa-semester__inputs">
+        <label class="cgpa-field">
+          <input type="number" class="cgpa-field__input cgpa-credits-input" placeholder=" " min="0" max="60" step="0.5" inputmode="decimal" />
+          <span class="cgpa-field__label">Credits</span>
+        </label>
+        <label class="cgpa-field">
+          <input type="number" class="cgpa-field__input cgpa-sgpa-input" placeholder=" " min="0" max="10" step="0.01" inputmode="decimal" />
+          <span class="cgpa-field__label">SGPA</span>
+        </label>
+      </div>
+    </div>
+  </template>
+
+</section>
+
+
+<script>
+/* ==========================================================================
+   Synora — CGPA Calculator Section
+   Vanilla JS, no dependencies. Wrapped in an IIFE so nothing leaks into the
+   global scope beyond what the page already exposes.
+   ========================================================================== */
+
+(function () {
+  'use strict';
+
+  const section = document.getElementById('cgpa-calculator');
+  if (!section) return; // section not on this page, nothing to do
+
+  /* ------------------------------------------------------------------ *
+   *  DOM references
+   * ------------------------------------------------------------------ */
+  const semesterList   = document.getElementById('semesterList');
+  const emptyState     = document.getElementById('emptyState');
+  const addSemesterBtn = document.getElementById('addSemesterBtn');
+  const calculateBtn   = document.getElementById('calculateBtn');
+  const semesterTpl    = document.getElementById('semesterTemplate');
+
+  const cgpaValueEl    = document.getElementById('cgpaValue');
+  const standingLabel  = document.getElementById('standingLabel');
+  const totalCreditsEl = document.getElementById('totalCredits');
+  const totalSemsEl    = document.getElementById('totalSemesters');
+  const standingShort  = document.getElementById('standingShort');
+  const ringFill       = document.getElementById('ringFill');
+  const trendChart     = document.getElementById('trendChart');
+  const trendDelta     = document.getElementById('trendDelta');
+  const confettiLayer  = document.getElementById('confettiLayer');
+
+  const highestSgpaWidget = document.getElementById('highestSgpaWidget');
+  const creditsWidget     = document.getElementById('creditsWidget');
+  const avgWidget         = document.getElementById('avgWidget');
+
+  /* ------------------------------------------------------------------ *
+   *  State
+   * ------------------------------------------------------------------ */
+  let semesters = []; // { id, credits, sgpa }
+  let idCounter = 0;
+  let lastCgpa = 0;
+  let hasCelebrated = false; // prevents confetti re-firing on every keystroke
+
+  const RING_CIRCUMFERENCE = 2 * Math.PI * 72; // matches r=72 in the SVG
+
+  /* ------------------------------------------------------------------ *
+   *  Academic standing bands
+   * ------------------------------------------------------------------ */
+  function getStanding(cgpa) {
+    if (cgpa >= 9.5) return { label: 'Outstanding Performance', short: 'Outstanding', emoji: '🎉' };
+    if (cgpa >= 9.0) return { label: 'Excellent Performance', short: 'Excellent', emoji: '🎉' };
+    if (cgpa >= 8.0) return { label: 'Very Good Performance', short: 'Very Good', emoji: '✨' };
+    if (cgpa >= 7.0) return { label: 'Good Performance', short: 'Good', emoji: '👍' };
+    if (cgpa >= 6.0) return { label: 'Satisfactory Performance', short: 'Satisfactory', emoji: '' };
+    if (cgpa > 0)    return { label: 'Needs Improvement', short: 'Needs Work', emoji: '' };
+    return { label: 'Add a semester to begin', short: '—', emoji: '' };
+  }
+
+  /* ------------------------------------------------------------------ *
+   *  Semester CRUD
+   * ------------------------------------------------------------------ */
+  function addSemester() {
+    idCounter += 1;
+    semesters.push({ id: idCounter, credits: null, sgpa: null });
+    renderSemesters();
+  }
+
+  function removeSemester(id) {
+    const card = semesterList.querySelector(`[data-id="${id}"]`);
+    if (card) {
+      card.classList.add('is-removing');
+      card.addEventListener('animationend', () => {
+        semesters = semesters.filter((s) => s.id !== id);
+        renderSemesters();
+      }, { once: true });
+    } else {
+      semesters = semesters.filter((s) => s.id !== id);
+      renderSemesters();
+    }
+  }
+
+  function updateSemester(id, field, value) {
+    const sem = semesters.find((s) => s.id === id);
+    if (!sem) return;
+    sem[field] = value === '' ? null : parseFloat(value);
+    // typing refreshes the small dashboard widgets only — the official
+    // CGPA, ring, and standing wait for an explicit "Calculate CGPA" click
+    updateLiveWidgets();
+  }
+
+  /* ------------------------------------------------------------------ *
+   *  Rendering semester cards
+   * ------------------------------------------------------------------ */
+  function renderSemesters() {
+    semesterList.innerHTML = '';
+
+    emptyState.hidden = semesters.length > 0;
+
+    semesters.forEach((sem, index) => {
+      const node = semesterTpl.content.firstElementChild.cloneNode(true);
+      node.dataset.id = sem.id;
+      node.querySelector('.cgpa-semester__number').textContent = `Semester ${index + 1}`;
+
+      const creditsInput = node.querySelector('.cgpa-credits-input');
+      const sgpaInput = node.querySelector('.cgpa-sgpa-input');
+      // both inputs sit inside a <label>, so wrapping already provides the
+      // accessible name — no separate id/for pairing needed
+      creditsInput.id = `credits-${sem.id}`;
+      sgpaInput.id = `sgpa-${sem.id}`;
+
+      if (sem.credits !== null) creditsInput.value = sem.credits;
+      if (sem.sgpa !== null) sgpaInput.value = sem.sgpa;
+
+      creditsInput.addEventListener('input', (e) => updateSemester(sem.id, 'credits', e.target.value));
+      sgpaInput.addEventListener('input', (e) => updateSemester(sem.id, 'sgpa', e.target.value));
+
+      node.querySelector('.cgpa-semester__delete').addEventListener('click', () => removeSemester(sem.id));
+
+      semesterList.appendChild(node);
+    });
+
+    updateLiveWidgets();
+  }
+
+  /* ------------------------------------------------------------------ *
+   *  Calculation
+   * ------------------------------------------------------------------ */
+  function calculate() {
+    const valid = semesters.filter((s) => s.credits > 0 && s.sgpa !== null && s.sgpa >= 0);
+    const totalCredits = valid.reduce((sum, s) => sum + s.credits, 0);
+    const weightedSum = valid.reduce((sum, s) => sum + s.credits * s.sgpa, 0);
+    const cgpa = totalCredits > 0 ? weightedSum / totalCredits : 0;
+
+    const sgpaValues = valid.map((s) => s.sgpa);
+    const highestSgpa = sgpaValues.length ? Math.max(...sgpaValues) : null;
+    const avgSgpa = sgpaValues.length ? sgpaValues.reduce((a, b) => a + b, 0) / sgpaValues.length : null;
+
+    return { cgpa, totalCredits, semesterCount: valid.length, highestSgpa, avgSgpa, sgpaValues };
+  }
+
+  /* ------------------------------------------------------------------ *
+   *  Animated number counting
+   * ------------------------------------------------------------------ */
+  function animateNumber(el, from, to, duration = 700, decimals = 2) {
+    const start = performance.now();
+    const diff = to - from;
+
+    function tick(now) {
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+      const current = from + diff * eased;
+      el.textContent = current.toFixed(decimals);
+      if (progress < 1) {
+        requestAnimationFrame(tick);
+      } else {
+        el.textContent = to.toFixed(decimals);
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+
+  /* ------------------------------------------------------------------ *
+   *  Progress ring
+   * ------------------------------------------------------------------ */
+  function updateRing(cgpa) {
+    const percent = Math.max(0, Math.min(cgpa / 10, 1));
+    const offset = RING_CIRCUMFERENCE * (1 - percent);
+    ringFill.style.strokeDasharray = String(RING_CIRCUMFERENCE);
+    ringFill.style.strokeDashoffset = String(offset);
+
+    // color shifts subtly with performance, staying within the sage family
+    if (cgpa >= 9) {
+      ringFill.style.stroke = '#5B7857';
+    } else if (cgpa >= 7) {
+      ringFill.style.stroke = '#7C9A78';
+    } else {
+      ringFill.style.stroke = '#A9C2A5';
+    }
+  }
+
+  /* ------------------------------------------------------------------ *
+   *  Mini SGPA trend chart (pure SVG, drawn manually)
+   * ------------------------------------------------------------------ */
+  function updateTrendChart(values) {
+    trendChart.innerHTML = '';
+
+    if (values.length < 2) {
+      trendDelta.textContent = '';
+      return;
+    }
+
+    const width = 240;
+    const height = 64;
+    const padding = 6;
+    const min = Math.min(...values, 0);
+    const max = Math.max(...values, 10);
+    const range = max - min || 1;
+
+    const points = values.map((v, i) => {
+      const x = padding + (i / (values.length - 1)) * (width - padding * 2);
+      const y = height - padding - ((v - min) / range) * (height - padding * 2);
+      return [x, y];
+    });
+
+    const pathD = points.map((p, i) => (i === 0 ? `M${p[0]},${p[1]}` : `L${p[0]},${p[1]}`)).join(' ');
+    const areaD = `${pathD} L${points[points.length - 1][0]},${height} L${points[0][0]},${height} Z`;
+
+    const ns = 'http://www.w3.org/2000/svg';
+
+    const area = document.createElementNS(ns, 'path');
+    area.setAttribute('d', areaD);
+    area.setAttribute('fill', 'rgba(124, 154, 120, 0.12)');
+    area.setAttribute('stroke', 'none');
+    trendChart.appendChild(area);
+
+    const line = document.createElementNS(ns, 'path');
+    line.setAttribute('d', pathD);
+    line.setAttribute('fill', 'none');
+    line.setAttribute('stroke', '#7C9A78');
+    line.setAttribute('stroke-width', '2');
+    line.setAttribute('stroke-linecap', 'round');
+    line.setAttribute('stroke-linejoin', 'round');
+    trendChart.appendChild(line);
+
+    points.forEach(([x, y], i) => {
+      const dot = document.createElementNS(ns, 'circle');
+      dot.setAttribute('cx', x);
+      dot.setAttribute('cy', y);
+      dot.setAttribute('r', i === points.length - 1 ? 3.5 : 2.5);
+      dot.setAttribute('fill', i === points.length - 1 ? '#5B7857' : '#A9C2A5');
+      trendChart.appendChild(dot);
+    });
+
+    const delta = values[values.length - 1] - values[values.length - 2];
+    const arrow = delta > 0 ? '↑' : delta < 0 ? '↓' : '→';
+    trendDelta.textContent = `${arrow} ${Math.abs(delta).toFixed(2)}`;
+  }
+
+  /* ------------------------------------------------------------------ *
+   *  Confetti (fires once when CGPA crosses 9.5)
+   * ------------------------------------------------------------------ */
+  function launchConfetti() {
+    const colors = ['#7C9A78', '#A9C2A5', '#E7EFE4', '#5B7857'];
+    const pieceCount = 36;
+
+    for (let i = 0; i < pieceCount; i += 1) {
+      const piece = document.createElement('span');
+      piece.className = 'cgpa-confetti__piece';
+      piece.style.left = `${Math.random() * 100}vw`;
+      piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+      piece.style.animationDuration = `${1.6 + Math.random() * 1.2}s`;
+      piece.style.animationDelay = `${Math.random() * 0.4}s`;
+      piece.style.opacity = String(0.7 + Math.random() * 0.3);
+      confettiLayer.appendChild(piece);
+      piece.addEventListener('animationend', () => piece.remove());
+    }
+  }
+
+  /* ------------------------------------------------------------------ *
+   *  Live widgets — cheap refresh that runs on every keystroke, add,
+   *  or delete. Only touches the small floating dashboard widgets, not
+   *  the official result panel.
+   * ------------------------------------------------------------------ */
+  function updateLiveWidgets() {
+    const { totalCredits, highestSgpa, avgSgpa } = calculate();
+    highestSgpaWidget.textContent = highestSgpa !== null ? highestSgpa.toFixed(2) : '—';
+    creditsWidget.textContent = totalCredits.toFixed(totalCredits % 1 === 0 ? 0 : 1);
+    avgWidget.textContent = avgSgpa !== null ? avgSgpa.toFixed(2) : '—';
+  }
+
+  /* ------------------------------------------------------------------ *
+   *  Full calculation — runs when "Calculate CGPA" is pressed. Refreshes
+   *  the ring, the big CGPA number, the standing message, the result
+   *  stats, and the trend chart, then plays the button's success state.
+   * ------------------------------------------------------------------ */
+  function performCalculation() {
+    const { cgpa, totalCredits, semesterCount, sgpaValues } = calculate();
+    const standing = getStanding(cgpa);
+
+    animateNumber(cgpaValueEl, lastCgpa, cgpa, 700, 2);
+    cgpaValueEl.classList.remove('is-popping');
+    void cgpaValueEl.offsetWidth; // restart animation
+    cgpaValueEl.classList.add('is-popping');
+
+    standingLabel.textContent = semesterCount > 0
+      ? `${standing.label}${standing.emoji ? ' ' + standing.emoji : ''}`
+      : standing.label;
+
+    animateNumber(totalCreditsEl, parseFloat(totalCreditsEl.textContent) || 0, totalCredits, 500, 0);
+    animateNumber(totalSemsEl, parseFloat(totalSemsEl.textContent) || 0, semesterCount, 400, 0);
+    standingShort.textContent = standing.short;
+
+    updateRing(cgpa);
+    updateTrendChart(sgpaValues);
+    updateLiveWidgets();
+
+    if (cgpa > 9.5 && !hasCelebrated) {
+      launchConfetti();
+      hasCelebrated = true;
+    } else if (cgpa <= 9.5) {
+      hasCelebrated = false;
+    }
+
+    lastCgpa = cgpa;
+  }
+
+  function handleCalculateClick() {
+    performCalculation();
+
+    // button success micro-interaction, felt only on an actual click
+    calculateBtn.classList.add('is-success');
+    window.clearTimeout(handleCalculateClick._resetTimer);
+    handleCalculateClick._resetTimer = window.setTimeout(() => {
+      calculateBtn.classList.remove('is-success');
+    }, 1400);
+  }
+
+  /* ------------------------------------------------------------------ *
+   *  Init
+   * ------------------------------------------------------------------ */
+  addSemesterBtn.addEventListener('click', addSemester);
+  calculateBtn.addEventListener('click', handleCalculateClick);
+
+  // start with two semesters pre-filled so the dashboard never looks empty
+  semesters = [
+    { id: 1, credits: 24, sgpa: 9.3 },
+    { id: 2, credits: 20, sgpa: 9.65 },
+  ];
+  idCounter = 2;
+  renderSemesters();
+  performCalculation(); // show a real result immediately on load, no button flash
+})();
+
+</script>
