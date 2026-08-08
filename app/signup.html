@@ -20,8 +20,9 @@
 
   <!-- Runs before first paint so the saved theme applies with no flash. -->
   <script src="../scripts/theme.js"></script>
-  <!-- Form validation and account storage. Deferred: it only needs
-       to run once the form exists. -->
+  <!-- Data layer, then form validation and account storage.
+       Deferred: they only need to run once the form exists. -->
+  <script src="../scripts/storage.js" defer></script>
   <script src="../scripts/auth.js" defer></script>
 </head>
 

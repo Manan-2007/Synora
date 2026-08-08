@@ -20,8 +20,9 @@
 
   <!-- Runs before first paint so the saved theme applies with no flash. -->
   <script src="../scripts/theme.js"></script>
-  <!-- Same file as the sign-up page. It picks the flow to run by
-       checking which form id is on the page. -->
+  <!-- Data layer, then the auth flow. Same auth.js as the sign-up
+       page — it picks the flow by checking which form is present. -->
+  <script src="../scripts/storage.js" defer></script>
   <script src="../scripts/auth.js" defer></script>
 </head>
 

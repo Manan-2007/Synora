@@ -238,11 +238,22 @@
   <a href="#auth-store">Accounts &amp; Passwords</a>
   <a href="#auth-flow">The Full Flow</a>
 
+  <div class="nav-section">The App — Modules</div>
+  <a href="#app-overview">Overview &amp; Architecture</a>
+  <a href="#app-data">Data Layer &amp; Storage</a>
+  <a href="#app-shell">Shell, Toasts &amp; Modals</a>
+  <a href="#app-tasks">Tasks &amp; Calendar</a>
+  <a href="#app-cgpa">CGPA Calculation</a>
+  <a href="#app-attendance">Attendance Calculation</a>
+  <a href="#app-engines">Achievements &amp; Notifications</a>
+
   <div class="nav-section">Viva Q&amp;A</div>
   <a href="#qa-html">HTML Questions</a>
   <a href="#qa-css">CSS Questions</a>
   <a href="#qa-js">JavaScript Questions</a>
   <a href="#qa-project">Project Questions</a>
+  <a href="#qa-app">Application Questions</a>
+  <a href="#app-demo">Demo Sequence</a>
   <a href="#cheatsheet">Final Cheat Sheet</a>
 </nav>
 
@@ -1897,7 +1908,7 @@ alert.classList.<span class="fn">add</span>(<span class="str">"is-shown"</span>)
     <div class="a">The submit event fires, <code>preventDefault()</code> stops the page reloading, and we clear any previous errors. Then four checks run — name length, the username regex, whether that username is already taken, password length and composition, and whether the confirmation matches. If any fail, each bad field gets an <code>is-invalid</code> class and a banner shakes at the top. If they all pass, we hash the password, push a user object onto the <code>synora-users</code> array in localStorage, write a <code>synora-session</code> entry, and swap the form for a success panel.</div></div>
 
     <div class="qa"><div class="q">Q. What happens after the user signs in? Where do they go?</div>
-    <div class="a">Right now they see a success panel confirming who they are signed in as, because the dashboard is not built yet. <code>auth.js</code> has a <code>DASHBOARD_URL</code> constant at the top set to <code>null</code>; once <code>app/index.html</code> exists, setting it to <code>"./index.html"</code> makes both forms redirect there instead. That was deliberate — one line to change rather than hunting through the file.</div></div>
+    <div class="a">They briefly see a success panel, then <code>auth.js</code> redirects them to <code>app/dashboard.html</code> — the app's command centre. The redirect target is a <code>DASHBOARD</code> constant at the top of <code>auth.js</code>, so it's a one-line change if the entry page ever moves. On the dashboard, <code>app.js</code> runs an auth guard: if there's no <code>synora-session</code> it sends you back to login, so app pages can't be opened without signing in.</div></div>
 
     <div class="qa"><div class="q">Q. Is the site accessible?</div>
     <div class="a">We covered the main points: semantic landmarks, a skip link, a proper heading hierarchy, descriptive alt text with <code>aria-hidden</code> on decorative icons, a visible <code>:focus-visible</code> ring everywhere, colour contrast checked (which is why the taupe used for text is darkened and slate is never body text), a keyboard-operable mobile menu, and a <code>prefers-reduced-motion</code> block that disables animation.</div></div>
@@ -1909,7 +1920,7 @@ alert.classList.<span class="fn">add</span>(<span class="str">"is-shown"</span>)
     <div class="a">Two things. First, making the page feel rich while using only five colours — the answer was giving each colour a distinct job and adding depth through gradients, tinted panels and one dark band rather than through more hues. Second, rebuilding the interactive pieces without JavaScript: working out that a hidden checkbox plus <code>:checked ~</code> replaces a menu script, and that <code>&lt;details&gt;</code> replaces an accordion script.</div></div>
 
     <div class="qa"><div class="q">Q. What would you add next?</div>
-    <div class="a">The dashboard. Sign-up and login are already built, so the next step is <code>app/index.html</code> reading the session, then adding and completing tasks saved to localStorage as JSON, the CGPA and attendance calculators, and rendering the week view from stored data. On the landing page, the honest improvements are serving the photos in WebP with <code>&lt;picture&gt;</code>, and self-hosting the fonts so there is no external request at all.</div></div>
+    <div class="a">A real backend. The whole app is built and working against <code>localStorage</code>; the honest next step is a server with proper accounts (salted, server-side password hashing) and a database, so a student's workspace syncs across devices instead of living in one browser. After that: real push/browser notifications, importing a timetable or syllabus, and an AI study planner. On the landing page, serving photos as WebP with <code>&lt;picture&gt;</code> and self-hosting the fonts remove the last external requests.</div></div>
 
     <div class="qa"><div class="q">Q. Your site has no server — so what does "creating an account" really mean?</div>
     <div class="a">It means writing a user object into this browser's localStorage under <code>synora-users</code>, and recording who is signed in under <code>synora-session</code>. There is no network request and no database. The honest trade-off is the one stated on the landing page: your workspace does not follow you between browsers or devices, and clearing browser data clears it. What it buys is genuine privacy — nothing ever leaves the machine.</div></div>
@@ -1941,6 +1952,199 @@ alert.classList.<span class="fn">add</span>(<span class="str">"is-shown"</span>)
 
       <div class="callout tip"><span class="callout-icon">*</span><div><strong>Things to have open in tabs before you start:</strong> the landing page, <code>app/signup.html</code>, DevTools on the Elements panel (to show <code>data-theme</code> changing), the Application panel on Local Storage (to show <code>synora-users</code> and the hashed password), and <code>tokens.css</code>.</div></div>
     </div>
+  </section>
+
+  <!-- ==================================================== APP: OVERVIEW -->
+  <section class="section" id="app-overview">
+    <div class="section-title"><span class="dot"></span>The App — Overview &amp; Architecture</div>
+    <p>Beyond the landing page and auth flow, Synora is a full single-user product: a dashboard plus nine feature pages, all sharing one shell and one data layer. It is still only HTML, CSS and vanilla JavaScript — no framework, no build step.</p>
+
+    <p><strong>The pages</strong> (all in <code>app/</code>): dashboard, tasks, calendar, notes, timetable, cgpa, attendance, achievements, notifications, settings.</p>
+
+    <p><strong>The one-line architecture:</strong></p>
+    <pre><span class="cm">HTML (structure) → tokens.css (look) → storage.js (data)
+            → app.js (shell + engines) → &lt;page&gt;.js (that page's behaviour)</span></pre>
+
+    <ul>
+      <li><strong>storage.js</strong> — the only file that touches <code>localStorage</code>. Everyone else calls <code>Synora.store</code>.</li>
+      <li><strong>app.js</strong> — builds the sidebar and topbar from a single <code>NAV</code> model, runs the auth guard, and provides toasts, modals, and the notifications / achievements / streak engines.</li>
+      <li><strong>Each page's script</strong> waits for a <code>synora:ready</code> event, then renders into a placeholder element (e.g. <code>[data-tasks-page]</code>).</li>
+    </ul>
+
+    <div class="callout success"><span class="callout-icon">+</span><div><strong>Why one shell in JS, not copied into every HTML file:</strong> the nav lives in one array in <code>app.js</code>. Add a page once, and the sidebar link, the active-state highlight and the mobile drawer all update everywhere. No page repeats the chrome.</div></div>
+
+    <div class="callout warn"><span class="callout-icon">!</span><div><strong>A real bug we fixed — script order.</strong> Deferred scripts run with <code>document.readyState === "interactive"</code>, and the feature scripts load <em>after</em> <code>app.js</code>. So <code>app.js</code> waits for <code>DOMContentLoaded</code> before firing <code>synora:ready</code> — otherwise it would fire before the pages had registered their listeners, and nothing would render. Good "tell me about a bug you hit" answer.</div></div>
+  </section>
+
+  <!-- ==================================================== APP: DATA -->
+  <section class="section" id="app-data">
+    <div class="section-title"><span class="dot"></span>Data Layer &amp; Storage</div>
+    <p><strong>What.</strong> A single module (<code>storage.js</code>) that reads and writes everything through <code>localStorage</code>. <strong>Why.</strong> One place to serialise, one place to namespace by user, one place to handle corrupted data — so the data shape stays consistent across ten pages. <strong>How.</strong> Objects go in with <code>JSON.stringify</code> and come back with <code>JSON.parse</code>.</p>
+
+    <p><strong>The keys:</strong></p>
+    <pre><span class="cm">Global:   synora-users      all accounts
+          synora-session    { username } — who's signed in
+          synora-theme      "light" | "dark"
+
+Per user: synora:&lt;username&gt;:tasks         synora:&lt;username&gt;:notes
+          synora:&lt;username&gt;:timetable     synora:&lt;username&gt;:attendance
+          synora:&lt;username&gt;:cgpa          synora:&lt;username&gt;:achievements
+          synora:&lt;username&gt;:notifications synora:&lt;username&gt;:profile
+          synora:&lt;username&gt;:meta</span></pre>
+
+    <ul>
+      <li><strong>Namespacing</strong> by username means two accounts on the same browser never see each other's data.</li>
+      <li><strong>Safe reads</strong> — <code>JSON.parse</code> is wrapped in try/catch, returning a typed default so a corrupted value can't crash a page.</li>
+      <li><strong>Persistence proof:</strong> add a task → refresh → it's still there, because <code>save()</code> writes the array back to <code>localStorage</code> immediately.</li>
+    </ul>
+
+    <div class="callout info"><span class="callout-icon">i</span><div><strong>localStorage vs sessionStorage vs cookies:</strong> localStorage persists until cleared and is never sent to a server; sessionStorage dies with the tab; cookies are sent on every request. We want per-device persistence with no server, so localStorage is exactly right. Limit is ~5&nbsp;MB of strings — plenty for text.</div></div>
+  </section>
+
+  <!-- ==================================================== APP: SHELL -->
+  <section class="section" id="app-shell">
+    <div class="section-title"><span class="dot"></span>Shell — Toasts, Modals &amp; the Guard</div>
+    <p>The shared UI in <code>app.js</code>:</p>
+    <ul>
+      <li><strong>Auth guard</strong> — every app page checks <code>Synora.session.isAuthed()</code> on boot; no session → redirect to login. You can't deep-link into the app signed out.</li>
+      <li><strong>Toasts</strong> — <code>Synora.toast.success(title, msg)</code> drops a non-blocking message bottom-right that auto-dismisses. Used instead of <code>alert()</code>.</li>
+      <li><strong>Modals</strong> — <code>Synora.openModal({title, content, footer})</code> builds a dialog with a backdrop, Escape-to-close and focus handling. <code>Synora.confirm()</code> wraps it in a Promise for delete confirmations.</li>
+      <li><strong>Theme</strong> — the topbar toggle flips <code>data-theme</code> on <code>&lt;html&gt;</code> and saves it; <code>theme.js</code> applies it before first paint to avoid a flash.</li>
+    </ul>
+    <div class="callout tip"><span class="callout-icon">*</span><div>Why not <code>alert()</code>/<code>confirm()</code>? They block the whole page, can't be styled, and feel like an error. Toasts and modals are the SaaS-standard replacements — and showing you chose them deliberately is a good design answer.</div></div>
+  </section>
+
+  <!-- ==================================================== APP: TASKS -->
+  <section class="section" id="app-tasks">
+    <div class="section-title"><span class="dot"></span>Tasks &amp; Calendar</div>
+    <p><strong>Task shape:</strong></p>
+    <pre><span class="cm">{ id, title, subject, description, deadline (YYYY-MM-DD),
+  priority: critical|high|medium|low,
+  status:   not-started|in-progress|completed,
+  createdAt, completedAt }</span></pre>
+    <ul>
+      <li><strong>CRUD</strong> — add / edit / delete / complete / reopen, all through <code>Synora.tasks</code>, which is reused by the Tasks page, the dashboard quick-add and the calendar.</li>
+      <li><strong>Views</strong> — All, Today, Upcoming, Overdue, Completed are computed by comparing each deadline to today with a <code>daysUntil()</code> helper built on the <code>Date</code> API.</li>
+      <li><strong>Search &amp; sort</strong> — filter by title/subject text; sort by deadline, priority order, or newest.</li>
+      <li><strong>Calendar integration</strong> — the calendar reads the <em>same</em> task store, so any task with a deadline appears on its day. One data source, two views — never two disconnected systems.</li>
+    </ul>
+    <div class="callout success"><span class="callout-icon">+</span><div><strong>Priority isn't colour-only.</strong> Each badge shows a coloured dot <em>and</em> a word ("High"), so it still reads for colour-blind users and in greyscale. Accessibility point worth making.</div></div>
+  </section>
+
+  <!-- ==================================================== APP: CGPA -->
+  <section class="section" id="app-cgpa">
+    <div class="section-title"><span class="dot"></span>CGPA Calculation</div>
+    <p><strong>What.</strong> A credit-weighted grade average. <strong>Why.</strong> Not every subject is worth the same credits, so a plain average would be wrong. <strong>How.</strong></p>
+    <pre>CGPA = Σ(credit × grade point) / Σ(credits)</pre>
+    <p>Grade letters map to points via the chosen scale (10-point Indian, or 4.0 GPA). <strong>Worked example</strong> (the sample data, 10-point scale):</p>
+    <pre><span class="cm">DBMS               4 credits × A  (9)  = 36
+Computer Networks  3 credits × A+ (10) = 30
+Operating Systems  4 credits × B+ (8)  = 32
+                   ----------------------
+                   11 credits   98 points
+
+CGPA = 98 / 11 = 8.91</span></pre>
+    <p>Invalid rows (no grade, zero credits) are skipped, not counted as zero, so a half-filled table still gives a correct partial CGPA. The value updates live as you type, drives a ring, and a bar chart shows grade points per subject.</p>
+  </section>
+
+  <!-- ==================================================== APP: ATTENDANCE -->
+  <section class="section" id="app-attendance">
+    <div class="section-title"><span class="dot"></span>Attendance Calculation</div>
+    <p><strong>What.</strong> Current percentage plus the two questions students actually ask. <strong>How.</strong></p>
+    <pre>attendance % = attended / total × 100</pre>
+    <p><strong>If below target</strong> — how many classes must I attend in a row to reach it? Solve <code>(attended + n)/(total + n) ≥ target/100</code>:</p>
+    <pre>n = ceil( (target·total − 100·attended) / (100 − target) )
+
+Example: 26/38 attended, target 75%
+n = ceil((75·38 − 100·26) / (100 − 75)) = ceil(250/25) = 10
+Check: (26+10)/(38+10) = 36/48 = 75%  ✓</pre>
+    <p><strong>If at/above target</strong> — how many can I safely miss? Solve <code>attended/(total + x) ≥ target/100</code>:</p>
+    <pre>x = floor( attended·100/target − total )
+
+Example: 34/40 attended (85%), target 75%
+x = floor(34·100/75 − 40) = floor(5.33) = 5</pre>
+    <div class="callout warn"><span class="callout-icon">!</span><div>Edge cases handled: zero classes held (no divide-by-zero — shows a prompt instead), a 100% target (no "can miss" is possible), and attended capped at total.</div></div>
+  </section>
+
+  <!-- ==================================================== APP: ENGINES -->
+  <section class="section" id="app-engines">
+    <div class="section-title"><span class="dot"></span>Achievements, Notifications &amp; Streak</div>
+    <p>Three cross-cutting engines in <code>app.js</code>. Any data change calls <code>Synora.refresh()</code>, which re-runs them so badges and alerts stay in sync.</p>
+    <ul>
+      <li><strong>Achievements</strong> — each badge has a <code>measure(context)</code> and a <code>goal</code> (e.g. complete 5 tasks, reach a 3-day streak, add a timetable). When <code>measure ≥ goal</code> and it isn't already unlocked, it's recorded with a timestamp and announced with a toast. <em>Nothing is a fake static badge</em> — they all read real data.</li>
+      <li><strong>Notifications</strong> — generated from data (due-today, overdue, attendance below target) plus events (achievement unlocked). Each has a stable <code>key</code> so the same alert is never added twice. The bell shows an unseen count.</li>
+      <li><strong>Streak</strong> — completing a task on a new day increments <code>meta.streak</code>; a gap resets it. Only "live" if it includes today or yesterday.</li>
+    </ul>
+    <div class="callout tip"><span class="callout-icon">*</span><div>Dedupe by key is the trick to know: without it, every page load would re-add "DBMS is due tomorrow". The key <code>due:&lt;taskId&gt;:&lt;deadline&gt;</code> makes it idempotent.</div></div>
+  </section>
+
+  <!-- ==================================================== APP: Q&A -->
+  <section class="section" id="qa-app">
+    <div class="section-title"><span class="dot"></span>Viva Q&amp;A — The Application</div>
+
+    <div class="qa"><div class="q">Q. How does data persist without a backend?</div>
+    <div class="a">Every module reads and writes through <code>storage.js</code>, which serialises objects to the browser's <code>localStorage</code> with <code>JSON.stringify</code> and reads them back with <code>JSON.parse</code>. Add a task, refresh, and it's still there because it was written to disk immediately.</div></div>
+
+    <div class="qa"><div class="q">Q. Why namespace keys by username?</div>
+    <div class="a">So two accounts on one browser stay separate. Keys look like <code>synora:manan_07:tasks</code>. The signed-in username comes from <code>synora-session</code>, and every per-user read/write is prefixed with it.</div></div>
+
+    <div class="qa"><div class="q">Q. What happens if localStorage is cleared?</div>
+    <div class="a">Everything for that browser is gone — accounts and all their data — because there is no server copy. That's the honest trade-off of a frontend-only app; Settings offers a JSON export as a manual backup.</div></div>
+
+    <div class="qa"><div class="q">Q. How is the CGPA calculated?</div>
+    <div class="a">Credit-weighted: <code>Σ(credit × grade point) / Σ(credits)</code>. Grades map to points through the selected scale. For the sample data that's (4×9 + 3×10 + 4×8) / 11 = 98/11 = 8.91.</div></div>
+
+    <div class="qa"><div class="q">Q. How do you work out how many classes a student can miss?</div>
+    <div class="a">Solve <code>attended/(total + x) ≥ target/100</code> for x, giving <code>x = floor(attended·100/target − total)</code>. If they're below target, I instead solve for classes to attend in a row: <code>n = ceil((target·total − 100·attended)/(100 − target))</code>.</div></div>
+
+    <div class="qa"><div class="q">Q. How do achievements unlock — are they hard-coded?</div>
+    <div class="a">No. Each has a <code>measure(context)</code> that counts real data (tasks completed, streak length, notes written) against a <code>goal</code>. When the measure reaches the goal it's recorded with a timestamp and can't re-fire. Delete data and the count reflects it.</div></div>
+
+    <div class="qa"><div class="q">Q. How does the calendar relate to tasks?</div>
+    <div class="a">It reads the same task collection. A task's <code>deadline</code> places it on that day; there's no separate calendar data. That's why adding a task on the calendar and on the Tasks page both show up everywhere.</div></div>
+
+    <div class="qa"><div class="q">Q. How is the sidebar built for every page?</div>
+    <div class="a"><code>app.js</code> holds one <code>NAV</code> array and renders the sidebar and topbar into placeholder elements on each page. The active link is decided by <code>document.body.dataset.page</code>. One array is the single source of truth for navigation.</div></div>
+
+    <div class="qa"><div class="q">Q. Why did you replace alert() and confirm()?</div>
+    <div class="a">They block the page, can't be styled, and read as errors. I built a toast system for feedback and a modal-based <code>Synora.confirm()</code> that returns a Promise for destructive actions — the same pattern real products use.</div></div>
+
+    <div class="qa"><div class="q">Q. How does the app stay signed-in-only?</div>
+    <div class="a">On boot, <code>app.js</code> checks for a <code>synora-session</code>. If there isn't one, it redirects to the login page before rendering anything, so app pages can't be used while signed out.</div></div>
+
+    <div class="qa"><div class="q">Q. How is the app responsive?</div>
+    <div class="a">Desktop uses a fixed sidebar; below 900px CSS turns it into an off-canvas drawer with a hamburger and a backdrop, so navigation is never lost and nothing scrolls sideways. The timetable switches from a 7-column grid to stacked day cards, and cards reflow with CSS Grid <code>auto-fit</code>.</div></div>
+
+    <div class="qa"><div class="q">Q. What was a real bug you fixed?</div>
+    <div class="a">Deferred scripts run before <code>DOMContentLoaded</code> but in order, so <code>app.js</code> was firing its <code>synora:ready</code> event before the later page scripts had added their listeners — nothing rendered. Fixing it to dispatch on <code>DOMContentLoaded</code> made every page render. (Also an early copy-paste bug: a double-quote inside a double-quoted HTML string, caught by running <code>node --check</code>.)</div></div>
+
+    <div class="qa"><div class="q">Q. Is the password storage secure?</div>
+    <div class="a">Honestly, no — and I'd say so. It's hashed rather than stored raw, but it's client-side, so it's obfuscation, not security. A real app hashes on a server with a salted algorithm like bcrypt. I used a client hash because there is no server and I didn't want plaintext in localStorage.</div></div>
+
+    <div class="qa"><div class="q">Q. How would you add a backend?</div>
+    <div class="a">Swap the <code>storage.js</code> layer for <code>fetch</code> calls to a REST API, move accounts and hashing server-side, and put the data in a database. Because every module already goes through that one layer, the pages barely change.</div></div>
+
+    <div class="qa"><div class="q">Q. Why vanilla JavaScript and no framework?</div>
+    <div class="a">The brief required it, and for a project this size it's the right call: no build step, no dependencies, it runs by opening a file, and it forces you to actually understand the DOM, events and state rather than leaning on a library. The trade-off is more manual rendering, which the shared shell and per-page render functions keep under control.</div></div>
+  </section>
+
+  <!-- ==================================================== APP: DEMO -->
+  <section class="section" id="app-demo">
+    <div class="section-title"><span class="dot"></span>How to Demonstrate Synora in a Viva</div>
+    <p>A logical sequence that shows every feature and the persistence story:</p>
+    <ol style="padding-left:1.2em;line-height:1.9">
+      <li>Open the <strong>landing page</strong> — say the design runs off a token system with light/dark from one attribute.</li>
+      <li><strong>Create an account</strong> — show the validation (bad username, mismatched passwords), then submit. Point out the redirect to the dashboard and the auth guard.</li>
+      <li><strong>Dashboard</strong> — "this answers what's due today." Note the live counts, the progress donut, and the academic snapshot (attendance % and CGPA computed from real data).</li>
+      <li><strong>Tasks</strong> — add a task, complete one (a toast fires, the streak/achievement updates), switch views, search.</li>
+      <li><strong>Calendar</strong> — show the task on its deadline day; click the day to add another — prove it's the same data.</li>
+      <li><strong>CGPA</strong> — walk the formula on screen; change a grade and watch the ring update.</li>
+      <li><strong>Attendance</strong> — show a subject below target ("attend N in a row") and one above ("can miss N").</li>
+      <li><strong>Timetable / Notes</strong> — add a class and a note; open DevTools → Application → Local Storage to show them saved as JSON.</li>
+      <li><strong>Achievements / Notifications</strong> — show badges unlocked by what you just did, and the bell count.</li>
+      <li><strong>Refresh the page</strong> — everything is still there. Toggle dark mode. Resize to a phone width to show the drawer. Done.</li>
+    </ol>
+    <div class="callout success"><span class="callout-icon">+</span><div><strong>One-line summary to open with:</strong> "Synora is a student productivity app — dashboard, tasks, calendar, notes, timetable, CGPA, attendance, achievements and notifications — built in plain HTML, CSS and JavaScript with no frameworks, all persisting to the browser's localStorage through a single data layer."</div></div>
   </section>
 
 </main>

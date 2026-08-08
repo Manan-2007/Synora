@@ -27,6 +27,38 @@
 </head>
 
 <body>
+  <!-- Loading screen: removed by the inline script below once the DOM is ready. -->
+  <div class="loader" id="app-loader">
+    <span class="loader__mark">Synora</span>
+    <span class="loader__tag">organize · focus · progress</span>
+    <span class="loader__dots" aria-hidden="true"><span></span><span></span><span></span></span>
+  </div>
+  <script>
+    // Show the splash for a brief minimum time so it's actually seen, then
+    // hide it once the page is also ready. Kept short on purpose.
+    (function () {
+      var MIN_MS = 1400;              // minimum time the splash stays visible
+      var start = Date.now();
+      var ready = false, timeUp = false;
+
+      function tryHide() {
+        if (!ready || !timeUp) return;
+        var l = document.getElementById("app-loader");
+        if (!l) return;
+        l.classList.add("is-hidden");
+        setTimeout(function () { if (l.parentNode) l.remove(); }, 500);
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", function () { ready = true; tryHide(); });
+      } else {
+        ready = true;
+      }
+
+      setTimeout(function () { timeUp = true; tryHide(); }, MIN_MS - (Date.now() - start));
+    })();
+  </script>
+
   <a class="skip-link" href="#main">Skip to content</a>
 
   <!-- ===================================================== NAVBAR -->

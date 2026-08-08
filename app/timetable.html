@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Timetable — Synora</title>
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700&display=swap">
+  <link rel="stylesheet" href="../styles/tokens.css">
+  <link rel="stylesheet" href="../styles/base.css">
+  <link rel="stylesheet" href="../styles/components.css">
+  <link rel="stylesheet" href="../styles/app.css">
+  <script src="../scripts/theme.js"></script>
+  <script src="../scripts/storage.js" defer></script>
+  <script src="../scripts/app.js" defer></script>
+  <script src="../scripts/timetable.js" defer></script>
+</head>
+<body class="app" data-page="timetable">
+  <div class="app-shell">
+    <aside data-sidebar></aside>
+    <div class="app-content">
+      <header data-topbar></header>
+      <main class="page">
+        <div class="page__header">
+          <p class="page__subtitle">Your week of classes at a glance. Tap any class to edit it.</p>
+          <div class="page__actions">
+            <button type="button" class="btn btn--primary" data-add-class>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+              Add class
+            </button>
+          </div>
+        </div>
+        <div data-timetable-page></div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

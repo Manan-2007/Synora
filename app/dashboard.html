@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard — Synora</title>
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700&display=swap">
+
+  <link rel="stylesheet" href="../styles/tokens.css">
+  <link rel="stylesheet" href="../styles/base.css">
+  <link rel="stylesheet" href="../styles/components.css">
+  <link rel="stylesheet" href="../styles/app.css">
+
+  <script src="../scripts/theme.js"></script>
+  <script src="../scripts/storage.js" defer></script>
+  <script src="../scripts/app.js" defer></script>
+  <script src="../scripts/tasks.js" defer></script>
+  <script src="../scripts/dashboard.js" defer></script>
+</head>
+
+<body class="app" data-page="dashboard">
+  <!-- Loading screen: removed by dashboard.js once the shell is ready. -->
+  <div class="loader" id="app-loader">
+    <span class="loader__mark">Synora</span>
+    <span class="loader__tag">organize · focus · progress</span>
+    <span class="loader__dots" aria-hidden="true"><span></span><span></span><span></span></span>
+  </div>
+
+  <div class="app-shell">
+    <aside data-sidebar></aside>
+    <div class="app-content">
+      <header data-topbar></header>
+      <main class="page">
+        <div data-dashboard></div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

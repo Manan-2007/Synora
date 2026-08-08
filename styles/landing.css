@@ -1281,3 +1281,70 @@
     --container-pad: var(--space-16);
   }
 }
+
+/* =========================================================
+   Landing loading screen
+   A brief, branded splash shown while index.html loads.
+   Removed by a small inline script once the DOM is ready.
+   ========================================================= */
+
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--space-16);
+  background-color: var(--color-bg);
+  background-image: var(--gradient-page);
+  transition: opacity var(--duration-slow) var(--ease-out),
+              visibility var(--duration-slow) var(--ease-out);
+}
+
+.loader.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.loader__mark {
+  font-family: var(--font-heading);
+  font-weight: var(--weight-bold);
+  font-size: 2rem;
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text);
+}
+
+.loader__tag {
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+  letter-spacing: var(--tracking-wide);
+  text-transform: lowercase;
+}
+
+.loader__dots {
+  display: flex;
+  gap: 6px;
+  margin-top: var(--space-8);
+}
+
+.loader__dots span {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-brand);
+  animation: loader-pulse 1s var(--ease-out) infinite;
+}
+
+.loader__dots span:nth-child(2) { animation-delay: 0.15s; }
+.loader__dots span:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes loader-pulse {
+  0%, 100% { opacity: 0.25; transform: translateY(0); }
+  50%      { opacity: 1;    transform: translateY(-4px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loader { transition: none; }
+  .loader__dots span { animation: none; opacity: 0.6; }
+}
