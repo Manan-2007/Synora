@@ -8,6 +8,8 @@
   <meta name="color-scheme" content="light dark">
 
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="../assets/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="../assets/favicon-180.png">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,6 +25,7 @@
   <!-- Data layer, then the auth flow. Same auth.js as the sign-up
        page — it picks the flow by checking which form is present. -->
   <script src="../scripts/storage.js" defer></script>
+  <script src="../scripts/demo-data.js" defer></script>
   <script src="../scripts/auth.js" defer></script>
 </head>
 
@@ -32,7 +35,10 @@
     <!-- ================================================= FORM SIDE -->
     <main class="auth-main">
       <div class="auth-topbar">
-        <a class="wordmark" href="../index.html">Synora</a>
+        <a class="logo logo--lockup" href="../index.html" aria-label="Synora — back to the home page">
+          <img class="logo__light" src="../assets/logo-lockup-light.png" alt="Synora" width="1040" height="267">
+          <img class="logo__dark" src="../assets/logo-lockup-dark.png" alt="" aria-hidden="true" width="1040" height="267">
+        </a>
 
         <button type="button" class="icon-btn theme-toggle" data-theme-toggle aria-label="Toggle dark mode">
           <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -46,12 +52,6 @@
       </div>
 
       <div class="auth-body">
-
-        <!-- Revealed by auth.js only when a session already exists. -->
-        <p class="session-bar" id="session-bar" hidden>
-          Signed in as <strong data-session-name></strong>
-          <button type="button" id="sign-out">Sign out</button>
-        </p>
 
         <!-- ---------- The form ---------- -->
         <div class="auth-view" id="form-view">
@@ -95,6 +95,19 @@
             <button type="submit" class="btn btn--primary btn--lg btn--block">Sign in</button>
           </form>
 
+          <!-- Demo account. The credential below is local to this project
+               and unlocks nothing but this browser's localStorage. -->
+          <div class="auth-demo">
+            <p class="auth-demo__title">Just looking around?</p>
+            <p class="auth-demo__text">
+              Open the sample workspace for <strong>Arshpreet Kaur</strong> —
+              a semester's worth of tasks, notes, attendance and grades already in place.
+            </p>
+            <button type="button" class="btn btn--ghost btn--block" id="use-demo">
+              Use the demo account
+            </button>
+          </div>
+
           <p class="auth-alt">
             New to Synora? <a href="./signup.html">Create an account</a>
           </p>
@@ -107,18 +120,28 @@
               <path d="M20 6 9 17l-5-5"></path>
             </svg>
           </span>
-          <h2 data-done-heading>Welcome back</h2>
-          <p>You're signed in as <strong data-done-name></strong>. Your workspace is ready when the dashboard is.</p>
-          <a class="btn btn--primary btn--lg btn--block" href="../index.html">Back to Synora</a>
-          <p class="auth-done__note">
-            The dashboard is the next piece to build. Your session is saved
-            under <code>synora-session</code> in this browser's local storage.
+          <h2 data-done-heading>You're signed in.</h2>
+          <p class="auth-done__lead">
+            Welcome back, <strong data-done-name></strong>.
           </p>
+          <p>Let's get your workspace ready.</p>
+
+          <!-- Two real choices, and the page waits for one of them.
+               There is no timer here on purpose: a screen that moves
+               on by itself is not a choice, it is an announcement. -->
+          <div class="auth-done__choices">
+            <a class="btn btn--primary btn--lg btn--block" data-go-dashboard href="./dashboard.html">
+              Go to dashboard
+            </a>
+            <a class="btn btn--ghost btn--lg btn--block" data-go-onboarding href="./onboarding.html">
+              Personalize my workspace
+            </a>
+          </div>
         </div>
 
       </div>
 
-      <p class="auth-foot">© 2026 Synora. Built by Manan.</p>
+      <p class="auth-foot">© 2026 Synora</p>
     </main>
 
     <!-- ================================================= PHOTO SIDE -->

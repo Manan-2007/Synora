@@ -10,6 +10,8 @@
   <meta name="color-scheme" content="light dark">
 
   <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="./assets/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="./assets/favicon-180.png">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,41 +23,75 @@
   <link rel="stylesheet" href="./styles/components.css">
   <link rel="stylesheet" href="./styles/landing.css">
 
-  <!-- The site's only script. Runs before first paint so the saved
-       theme is applied with no flash of the wrong colours. -->
+  <!-- Runs before first paint so the saved theme is applied with no
+       flash of the wrong colours. -->
   <script src="./scripts/theme.js"></script>
+  <!-- Contact details and Get in Touch validation. Deferred: it only
+       needs to run once the form exists. -->
+  <script src="./scripts/contact.js" defer></script>
 </head>
 
 <body>
-  <!-- Loading screen: removed by the inline script below once the DOM is ready. -->
+  <!-- Loading screen. Removed by the inline script below once the page
+       is ready; the class it adds to <body> hands the page its entrance. -->
   <div class="loader" id="app-loader">
-    <span class="loader__mark">Synora</span>
+    <div class="loader__stage">
+      <span class="loader__glow" aria-hidden="true"></span>
+      <span class="loader__ring" aria-hidden="true"></span>
+      <span class="loader__badge">
+        <span class="logo logo--mark loader__logo">
+          <img class="logo__light" src="./assets/logo-mark-light.png" alt="Synora" width="289" height="266">
+          <img class="logo__dark" src="./assets/logo-mark-dark.png" alt="" aria-hidden="true" width="289" height="266">
+        </span>
+      </span>
+    </div>
+    <span class="loader__word">Synora</span>
     <span class="loader__tag">organize · focus · progress</span>
-    <span class="loader__dots" aria-hidden="true"><span></span><span></span><span></span></span>
   </div>
   <script>
-    // Show the splash for a brief minimum time so it's actually seen, then
-    // hide it once the page is also ready. Kept short on purpose.
+    /* The splash, and the handover to the page behind it.
+
+       Two things have to be true before it leaves: the page is ready,
+       and it has been visible long enough to read. The minimum is
+       2000ms — a little longer than it was, enough for the mark to
+       settle rather than blink, and still short enough that Synora
+       feels like it opens rather than loads.
+
+       Leaving is not a cut. The splash fades and lifts, and .is-ready
+       on <body> starts the hero's staggered entrance underneath, so
+       the two movements overlap into one. Anyone who has asked for
+       reduced motion gets the same sequence with the motion removed
+       and the wait cut short. */
     (function () {
-      var MIN_MS = 1400;              // minimum time the splash stays visible
+      var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      var MIN_MS = reduced ? 600 : 2000;
       var start = Date.now();
       var ready = false, timeUp = false;
 
-      function tryHide() {
+      function reveal() {
         if (!ready || !timeUp) return;
-        var l = document.getElementById("app-loader");
-        if (!l) return;
-        l.classList.add("is-hidden");
-        setTimeout(function () { if (l.parentNode) l.remove(); }, 500);
+        var loader = document.getElementById("app-loader");
+        if (!loader) return;
+
+        // The page begins arriving while the splash is still on its way out.
+        document.body.classList.add("is-ready");
+        loader.classList.add("is-hidden");
+
+        window.setTimeout(function () {
+          if (loader.parentNode) loader.remove();
+        }, reduced ? 100 : 800);
       }
 
       if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", function () { ready = true; tryHide(); });
+        document.addEventListener("DOMContentLoaded", function () { ready = true; reveal(); });
       } else {
         ready = true;
       }
 
-      setTimeout(function () { timeUp = true; tryHide(); }, MIN_MS - (Date.now() - start));
+      window.setTimeout(function () { timeUp = true; reveal(); }, MIN_MS - (Date.now() - start));
+
+      // Never let a stalled asset trap someone on the splash.
+      window.setTimeout(function () { ready = true; timeUp = true; reveal(); }, MIN_MS + 4000);
     })();
   </script>
 
@@ -70,14 +106,21 @@
            can reach them. No JavaScript involved. -->
       <input class="nav-checkbox" type="checkbox" id="nav-open" aria-label="Toggle navigation menu">
 
+      <!-- Three tracks: brand, links, actions. The middle one is
+           centred in the header regardless of how wide the outer two
+           are — see .nav in landing.css. -->
       <nav class="nav" aria-label="Primary">
-        <a class="wordmark" href="#top">Synora</a>
+        <a class="logo logo--lockup nav-brand" href="#top" aria-label="Synora — top of page">
+          <img class="logo__light" src="./assets/logo-lockup-light.png" alt="Synora" width="1040" height="267">
+          <img class="logo__dark" src="./assets/logo-lockup-dark.png" alt="" aria-hidden="true" width="1040" height="267">
+        </a>
 
         <ul class="nav-links">
           <li><a href="#features">Features</a></li>
           <li><a href="#how">How it works</a></li>
           <li><a href="#why">Why Synora</a></li>
           <li><a href="#faq">FAQ</a></li>
+          <li><a href="#contact">Contact Us</a></li>
         </ul>
 
         <div class="nav-actions">
@@ -119,6 +162,7 @@
           <li><a href="#how">How it works</a></li>
           <li><a href="#why">Why Synora</a></li>
           <li><a href="#faq">FAQ</a></li>
+          <li><a href="#contact">Contact Us</a></li>
         </ul>
         <a class="btn btn--primary" href="./app/signup.html">Create account</a>
         <a class="btn btn--ghost" href="./app/login.html">Sign in</a>
@@ -237,7 +281,7 @@
               </svg>
             </span>
             <h3>Tasks &amp; Assignments</h3>
-            <p>Capture every to-do and deadline, sorted by what matters now.</p>
+            <p>Priorities, deadlines and status. Overdue, due today and upcoming are worked out from the date &mdash; never a stale label.</p>
           </li>
 
           <li class="card">
@@ -249,7 +293,7 @@
               </svg>
             </span>
             <h3>Calendar &amp; Timetable</h3>
-            <p>See your week at a glance, from classes to due dates.</p>
+            <p>Your classes on a weekly grid and your deadlines on a month view. Room and instructor are optional &mdash; add them only if you want them.</p>
           </li>
 
           <li class="card">
@@ -261,7 +305,7 @@
               </svg>
             </span>
             <h3>Quick Notes</h3>
-            <p>Jot ideas and lecture notes without breaking your flow.</p>
+            <p>Formulas, a lecturer&rsquo;s aside, a checklist. Filed by subject and searchable as you type.</p>
           </li>
 
           <li class="card">
@@ -274,7 +318,7 @@
               </svg>
             </span>
             <h3>CGPA Calculator</h3>
-            <p>Track your grades and see where you're headed.</p>
+            <p>Credit-weighted across every subject, on a 10-point scale with real failure states &mdash; E1, E2 and E3, each shown separately.</p>
           </li>
 
           <li class="card">
@@ -287,7 +331,7 @@
               </svg>
             </span>
             <h3>Attendance Calculator</h3>
-            <p>Know exactly how many classes you can afford to miss.</p>
+            <p>Plus and minus as classes happen, and a straight answer: how many you can still miss, or how many in a row you must attend.</p>
           </li>
 
           <li class="card">
@@ -299,13 +343,54 @@
               </svg>
             </span>
             <h3>Achievements</h3>
-            <p>Small wins, marked — stay motivated as you go.</p>
+            <p>Earned from what you actually did &mdash; tasks finished before their deadline, notes written, a streak kept.</p>
           </li>
         </ul>
 
         <p class="features-note">
           Plus a unified dashboard, light &amp; dark themes, and your data kept private on your own device.
         </p>
+      </div>
+    </section>
+
+    <!-- =================================================== HOW IT WORKS -->
+    <section class="section section--tight how" id="how" aria-labelledby="how-title">
+      <div class="container">
+        <div class="section-head section-head--center">
+          <h2 id="how-title">How it works</h2>
+          <p>Three steps between opening Synora and having your week in one place.</p>
+          <div class="rule" aria-hidden="true"></div>
+        </div>
+
+        <ol class="how-steps">
+          <li class="how-step">
+            <span class="how-step__num" aria-hidden="true">1</span>
+            <h3>Create your account</h3>
+            <p>
+              First name, last name, a username, an email and a password.
+              It lives in this browser — there is no server to sign up to.
+            </p>
+          </li>
+
+          <li class="how-step">
+            <span class="how-step__num" aria-hidden="true">2</span>
+            <h3>Make Synora yours</h3>
+            <p>
+              Pick an avatar, tell us your program and semester, then add your
+              subjects &mdash; credits, and whether each one takes a register at all.
+              Set the attendance you're aiming for and you're done.
+            </p>
+          </li>
+
+          <li class="how-step">
+            <span class="how-step__num" aria-hidden="true">3</span>
+            <h3>Start with a clear week</h3>
+            <p>
+              Your dashboard opens already knowing your subjects, so attendance,
+              CGPA and your timetable are one dropdown away — not another form.
+            </p>
+          </li>
+        </ol>
       </div>
     </section>
 
@@ -395,107 +480,27 @@
     </section>
 
     <!-- =================================================== APP PREVIEW -->
+    <!-- One real screenshot of the running app, signed in as the demo
+         account — not a drawing of it. -->
     <section class="section section--tight" aria-labelledby="preview-title">
       <div class="container">
         <div class="section-head section-head--center">
-          <h2 id="preview-title">A look inside</h2>
-          <p>One dashboard: what's due, what's next, and nothing else shouting for attention.</p>
+          <p class="eyebrow">A look inside</p>
+          <h2 id="preview-title">Your week, already added up</h2>
+          <p>A real screen from a real workspace — deadlines, attendance and grades
+             worked out for you, not just stored.</p>
           <div class="rule" aria-hidden="true"></div>
         </div>
 
-        <div class="app-frame" role="img"
-          aria-label="A preview of the Synora workspace: a sidebar, today's task list, and a week view.">
-          <div class="app-frame__bar" aria-hidden="true">
-            <span class="wordmark">Synora</span>
-            <span class="app-frame__chip">Week 6</span>
-          </div>
-
-          <div class="app-frame__body" aria-hidden="true">
-            <ul class="app-sidebar">
-              <li aria-current="page">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="3" width="7" height="7" rx="2"></rect>
-                  <rect x="14" y="3" width="7" height="7" rx="2"></rect>
-                  <rect x="3" y="14" width="7" height="7" rx="2"></rect>
-                  <rect x="14" y="14" width="7" height="7" rx="2"></rect>
-                </svg>
-                Dashboard
-              </li>
-              <li>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <path d="m9 11 3 3L22 4"></path>
-                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-                </svg>
-                Tasks
-              </li>
-              <li>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="4" width="18" height="18" rx="2"></rect>
-                  <path d="M16 2v4M8 2v4M3 10h18"></path>
-                </svg>
-                Calendar
-              </li>
-              <li>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M15.5 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h9.5L21 14.5V5a2 2 0 0 0-2-2Z"></path>
-                  <path d="M15 21v-5a1 1 0 0 1 1-1h5"></path>
-                </svg>
-                Notes
-              </li>
-              <li>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
-                  <polyline points="16 7 22 7 22 13"></polyline>
-                </svg>
-                Grades
-              </li>
-            </ul>
-
-            <div class="app-main">
-              <p class="app-main__title">Today</p>
-              <p class="app-main__meta">3 tasks · 1 due</p>
-
-              <div class="task-list">
-                <div class="task" style="--color-status: var(--status-high)">
-                  <span class="task__box"></span>
-                  <span class="task__label">DBMS assignment 4</span>
-                  <span class="task__tag">Due 6pm</span>
-                </div>
-                <div class="task" style="--color-status: var(--status-medium)">
-                  <span class="task__box"></span>
-                  <span class="task__label">Read Ch. 7 — Networks</span>
-                  <span class="task__tag">Tomorrow</span>
-                </div>
-                <div class="task task--done" style="--color-status: var(--status-done)">
-                  <span class="task__box"></span>
-                  <span class="task__label">Submit lab record</span>
-                  <span class="task__tag">Done</span>
-                </div>
-              </div>
-            </div>
-
-            <aside class="app-aside">
-              <p class="app-aside__title">This week</p>
-              <div class="week">
-                <div><span>M</span><span>10</span></div>
-                <div><span>T</span><span>11</span></div>
-                <div aria-current="date"><span>W</span><span>12</span></div>
-                <div><span>T</span><span>13</span></div>
-                <div><span>F</span><span>14</span></div>
-                <div><span>S</span><span>15</span></div>
-                <div><span>S</span><span>16</span></div>
-              </div>
-              <ul class="agenda">
-                <li><time>09:00</time><span><strong>Networks</strong><br>LT-3</span></li>
-                <li><time>11:30</time><span><strong>DBMS Lab</strong><br>Block C</span></li>
-                <li><time>16:00</time><span><strong>Study block</strong><br>Library</span></li>
-              </ul>
-            </aside>
+        <div class="shots">
+          <div class="shots__stage">
+            <!-- ?v=2 busts the browser cache: the file was updated in place
+                 (same name), so without a new query string a browser keeps
+                 serving the old screenshot. Bump this if it changes again. -->
+            <img src="./assets/preview/dashboard.png?v=4" width="1700" height="1100"
+                 alt="The Synora dashboard: a greeting with the student's program and semester,
+                      counts for total, due-today, overdue and upcoming tasks, today's task list,
+                      a progress donut and a month calendar.">
           </div>
         </div>
       </div>
@@ -619,19 +624,139 @@
             </div>
           </details>
 
-          <details class="faq-item">
-            <summary>
-              Is there a dark mode?
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="m6 9 6 6 6-6"></path>
-              </svg>
-            </summary>
-            <div class="faq-answer">
-              <p>There is. Synora follows your system setting on first visit, and remembers your choice if you switch it
-                yourself using the toggle in the header.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================== CONTACT -->
+    <section class="section contact" id="contact" aria-labelledby="contact-title">
+      <div class="container">
+        <div class="section-head section-head--center">
+          <h2 id="contact-title">Contact Us</h2>
+          <p>Questions, ideas, or something not working? We'd like to hear it.</p>
+          <div class="rule" aria-hidden="true"></div>
+        </div>
+
+        <div class="contact-grid">
+
+          <!-- ---------- Contact details ----------
+               Every value here is filled in by CONTACT_INFO in
+               scripts/contact.js — one object to edit, rather than
+               the same details repeated across the markup. -->
+          <div class="contact-info">
+            <h3>Contact information</h3>
+            <p class="contact-info__lead">
+              We're a small student project, so it's usually one of us replying
+              rather than a support desk.
+            </p>
+
+            <ul class="contact-list">
+              <li class="contact-item">
+                <span class="contact-item__icon" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.09 4.18 2 2 0 0 1 4.08 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"></path>
+                  </svg>
+                </span>
+                <span class="contact-item__body">
+                  <span class="contact-item__label">Phone</span>
+                  <a class="contact-item__value" data-contact-phone href="#">—</a>
+                  <span class="contact-item__note">Mon–Fri, 10am–6pm IST</span>
+                </span>
+              </li>
+
+              <li class="contact-item">
+                <span class="contact-item__icon" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                    <path d="m2 7 10 6 10-6"></path>
+                  </svg>
+                </span>
+                <span class="contact-item__body">
+                  <span class="contact-item__label">Email</span>
+                  <a class="contact-item__value" data-contact-email href="#">—</a>
+                  <span class="contact-item__note">We usually reply within a day or two</span>
+                </span>
+              </li>
+
+              <li class="contact-item">
+                <span class="contact-item__icon" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                  </svg>
+                </span>
+                <span class="contact-item__body">
+                  <span class="contact-item__label">Office</span>
+                  <span class="contact-item__value" data-contact-office>—</span>
+                  <a class="contact-item__link" data-contact-map href="#" target="_blank" rel="noopener noreferrer">
+                    View location
+                  </a>
+                </span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- ---------- The form ---------- -->
+          <div class="contact-form-card">
+            <h3>Get in Touch</h3>
+
+            <!-- novalidate hands validation to contact.js, so the messages
+                 match the rest of Synora instead of the browser's bubbles. -->
+            <form class="contact-form" id="contact-form" novalidate>
+
+              <div class="field" data-field="name">
+                <label class="field__label" for="contact-name">Name</label>
+                <input class="input" type="text" id="contact-name" name="name"
+                       autocomplete="name" placeholder="Your name" required>
+                <p class="field__error"></p>
+              </div>
+
+              <div class="field" data-field="email">
+                <label class="field__label" for="contact-email">Email</label>
+                <input class="input" type="email" id="contact-email" name="email"
+                       autocomplete="email" placeholder="you@example.com" required>
+                <p class="field__error"></p>
+              </div>
+
+              <div class="field" data-field="phone">
+                <label class="field__label" for="contact-phone">Phone Number</label>
+                <input class="input" type="tel" id="contact-phone" name="phone"
+                       autocomplete="tel" placeholder="+91 98765 43210" required>
+                <p class="field__error"></p>
+              </div>
+
+              <div class="field" data-field="message">
+                <label class="field__label" for="contact-message">Message</label>
+                <textarea class="input contact-form__textarea" id="contact-message" name="message"
+                          rows="5" placeholder="What's on your mind?" required></textarea>
+                <p class="field__error"></p>
+              </div>
+
+              <div class="contact-form__actions">
+                <button type="submit" class="btn btn--primary">Send Message</button>
+                <button type="reset" class="btn btn--ghost">Clear</button>
+              </div>
+            </form>
+
+            <!-- Swapped in for the form on a successful submit. -->
+            <div class="contact-sent" data-contact-sent hidden>
+              <span class="contact-sent__mark" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 6 9 17l-5-5"></path>
+                </svg>
+              </span>
+              <h4 tabindex="-1">Message sent successfully.</h4>
+              <p>We'll get back to you soon.</p>
+              <button type="button" class="btn btn--ghost btn--sm" data-contact-again>
+                Send another message
+              </button>
             </div>
-          </details>
+          </div>
+
         </div>
       </div>
     </section>
@@ -657,7 +782,10 @@
     <div class="container">
       <div class="footer-top">
         <div class="footer-brand">
-          <span class="wordmark">Synora</span>
+          <span class="logo logo--lockup">
+            <img class="logo__light" src="./assets/logo-lockup-light.png" alt="Synora" width="1040" height="267">
+            <img class="logo__dark" src="./assets/logo-lockup-dark.png" alt="" aria-hidden="true" width="1040" height="267">
+          </span>
           <p>A calm, private workspace for everything you're studying.</p>
         </div>
 
@@ -666,35 +794,12 @@
           <a href="#how">How it works</a>
           <a href="#why">Why Synora</a>
           <a href="#faq">FAQ</a>
-          <a href="./notes.html">Project notes</a>
-          <a href="https://github.com/Manan-2007" target="_blank" rel="noopener noreferrer">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path
-                d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4">
-              </path>
-              <path d="M9 18c-4.51 2-5-2-7-2"></path>
-            </svg>
-            GitHub
-          </a>
+          <a href="#contact">Contact Us</a>
         </nav>
       </div>
 
       <div class="footer-bottom">
         <p>© 2026 Synora</p>
-        <button type="button" class="icon-btn theme-toggle" data-theme-toggle aria-label="Toggle dark mode">
-          <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="4"></circle>
-            <path
-              d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41">
-            </path>
-          </svg>
-          <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
-          </svg>
-        </button>
       </div>
     </div>
   </footer>

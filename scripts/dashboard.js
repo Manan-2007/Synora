@@ -86,9 +86,8 @@
     var root = document.querySelector("[data-dashboard]");
     if (!root) return;
 
-    var profile = store.get("profile");
-    var user = Synora.session.user() || {};
-    var name = (profile.fullName || user.fullName || user.username || "there").split(" ")[0];
+    var profile = Synora.profile.get();
+    var name = profile.firstName || profile.username || "there";
     var stats = Synora.derive.taskStats();
     var streak = Synora.streak.current();
     var classes = Synora.derive.todaysClasses();
@@ -117,11 +116,37 @@
 
     var html = "";
 
-    /* Greeting hero */
+    /* Unfinished setup is OFFERED here, not enforced by a redirect.
+
+       The dashboard used to be unreachable until Personalize Synora was
+       finished, which made "Go to dashboard" and "Skip for now" into
+       buttons that bounced straight back. The guard is gone; this card
+       takes its place — visible, dismissable by simply finishing, and
+       gone the moment setup completes. */
+    if (!profile.onboarded) {
+      html += '<div class="card card--pad dash-setup">' +
+          "<div>" +
+            '<p class="dash-setup__title">Finish setting up your workspace</p>' +
+            '<p class="dash-setup__text muted text-small">' +
+              "Add your subjects, credits and attendance target and the pages below " +
+              "start filling themselves in. It takes about a minute, and you can " +
+              "leave halfway — your answers are kept." +
+            "</p>" +
+          "</div>" +
+          '<a class="btn btn--primary" href="onboarding.html">Personalize Synora</a>' +
+        "</div>";
+    }
+
+    /* Greeting hero — the first thing the dashboard says should be
+       who this workspace belongs to, using what onboarding collected. */
+    var course = [profile.program, profile.semester ? "Semester " + profile.semester : ""]
+      .filter(Boolean).join(" · ");
+
     html += '<div class="dash-hero">' +
-        '<span class="avatar avatar--lg">' + util.escapeHTML(initials(profile.fullName || user.username)) + "</span>" +
+        Synora.avatarHTML(52, "avatar--lg") +
         "<div>" +
           '<div class="dash-hero__greet">' + greeting() + ", " + util.escapeHTML(name) + "</div>" +
+          (course ? '<div class="dash-hero__course">' + util.escapeHTML(course) + "</div>" : "") +
           '<div class="dash-hero__sub">' + heroSub(stats) + "</div>" +
         "</div>" +
         '<div class="dash-hero__streak">' +
@@ -270,12 +295,6 @@
     return "<" + tag + ' class="quick-action" ' + attrs + ">" +
       '<span class="quick-action__icon">' + Synora.icon(iconName, 18) + "</span>" +
       '<span class="quick-action__label">' + label + "</span></" + tag + ">";
-  }
-
-  function initials(name) {
-    if (!name) return "S";
-    var p = name.trim().split(/\s+/);
-    return (p.length === 1 ? p[0].slice(0, 2) : p[0][0] + p[p.length - 1][0]).toUpperCase();
   }
 
   function wire(root) {

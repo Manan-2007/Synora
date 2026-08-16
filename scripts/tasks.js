@@ -92,8 +92,17 @@ window.Synora = window.Synora || {};
         '<p class="field__error"></p>' +
       "</div>" +
       '<div class="form-grid">' +
+        /* A datalist rather than a select: it offers the user's own subjects
+           so they aren't retyped, while still allowing a task that belongs
+           to none of them ("Hostel form", "Scholarship application"). */
         '<div class="field" style="margin:0"><label class="field__label" for="tf-subject">Subject</label>' +
-          '<input class="input" id="tf-subject" value="' + util.escapeHTML(t.subject) + '" placeholder="e.g. DBMS"></div>' +
+          '<input class="input" id="tf-subject" list="tf-subjects" autocomplete="off" ' +
+            'value="' + util.escapeHTML(t.subject) + '" placeholder="e.g. DBMS">' +
+          '<datalist id="tf-subjects">' +
+            store.subjects.all().map(function (s) {
+              return '<option value="' + util.escapeHTML(s.name) + '"></option>';
+            }).join("") +
+          "</datalist></div>" +
         '<div class="field" style="margin:0"><label class="field__label" for="tf-deadline">Deadline</label>' +
           '<input class="input" type="date" id="tf-deadline" value="' + util.escapeHTML(t.deadline || "") + '"></div>' +
       "</div>" +

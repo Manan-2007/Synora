@@ -88,15 +88,43 @@ window.Synora = window.Synora || {};
     ]}
   ];
 
-  function initials(name) {
-    if (!name) return "S";
-    var parts = name.trim().split(/\s+/);
-    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  /* =======================================================
+     The user's face, wherever it appears.
+
+     One function builds it, so the sidebar, topbar, dashboard
+     and settings can never disagree. If an avatar was chosen it
+     is shown; otherwise the fallback is the person's initials,
+     taken from their FIRST and LAST name — "Manan Kochhar" is
+     MK, never MA.
+     ======================================================= */
+
+  function avatarHTML(size, className) {
+    var profile = Synora.profile.get();
+    var px = size || 36;
+    var cls = "avatar" + (className ? " " + className : "");
+
+    /* avatars.js decides between an illustration and initials and
+       falls back on its own, so there is no branch to get wrong here. */
+    return '<span class="' + cls + ' avatar--art" style="width:' + px + "px;height:" + px + 'px">' +
+             Synora.avatars.html(profile.avatar, px, profile.initials) +
+           "</span>";
   }
 
   /* =======================================================
      Auth guard.
+
+     ONE gate: are you signed in? If not, the sign-in page.
+
+     There used to be a second gate that bounced anyone who
+     hadn't finished Personalize Synora back into it. That made
+     the two choices on the confirmation screen a lie — "Go to
+     dashboard" sent you to the dashboard, which immediately
+     sent you to onboarding — and it did the same to "Skip for
+     now". Setting up a workspace is an offer, not a toll gate.
+
+     An unfinished setup is surfaced instead of enforced: the
+     dashboard shows a card offering to finish it, and Settings
+     keeps the same route open indefinitely.
      ======================================================= */
 
   function guard() {
@@ -116,15 +144,18 @@ window.Synora = window.Synora || {};
     if (!host) return;
 
     var page = document.body.dataset.page;
-    var user = Synora.session.user() || {};
-    var profile = store.get("profile");
-    var name = profile.fullName || user.fullName || user.username || "Student";
-    var sub = [profile.program, profile.semester ? "Sem " + profile.semester : ""]
-      .filter(Boolean).join(" · ") || "Student";
+    var profile = Synora.profile.get();
+    var name = profile.fullName || profile.username;
+
+    /* The old sidebar said "Student" under every name, which told the
+       person nothing they didn't already know. Their handle does. */
+    var sub = profile.username ? "@" + profile.username : profile.program;
 
     var html = "";
-    html += '<a class="sidebar__brand" href="dashboard.html">' +
-              '<span class="sidebar__brand-dot" aria-hidden="true"></span>Synora</a>';
+    html += '<a class="sidebar__brand logo logo--lockup" href="dashboard.html" aria-label="Synora — dashboard">' +
+              '<img class="logo__light" src="../assets/logo-lockup-light.png" alt="Synora" width="1040" height="267">' +
+              '<img class="logo__dark" src="../assets/logo-lockup-dark.png" alt="" aria-hidden="true" width="1040" height="267">' +
+            "</a>";
 
     html += '<nav class="sidebar__nav" aria-label="Primary">';
     NAV.forEach(function (section) {
@@ -145,13 +176,13 @@ window.Synora = window.Synora || {};
     html += "</nav>";
 
     html += '<div class="sidebar__footer">' +
-              '<div class="sidebar-user">' +
-                '<span class="avatar">' + util.escapeHTML(initials(name)) + "</span>" +
+              '<a class="sidebar-user" href="settings.html">' +
+                avatarHTML(38) +
                 '<span class="sidebar-user__meta">' +
                   '<span class="sidebar-user__name">' + util.escapeHTML(name) + "</span>" +
                   '<span class="sidebar-user__sub">' + util.escapeHTML(sub) + "</span>" +
                 "</span>" +
-              "</div>" +
+              "</a>" +
             "</div>";
 
     host.innerHTML = html;
@@ -168,10 +199,26 @@ window.Synora = window.Synora || {};
 
     var page = document.body.dataset.page;
     var title = document.body.dataset.title || titleFor(page) || "Synora";
-    var user = Synora.session.user() || {};
-    var profile = store.get("profile");
-    var name = profile.fullName || user.fullName || user.username || "Student";
-    var program = profile.program || "Student";
+    var profile = Synora.profile.get();
+    var name = profile.fullName || profile.username;
+    /* Program and semester are TWO lines, not one joined string.
+
+       Joined with " · " they were a single run of text in a 250px
+       dropdown, so the browser wrapped wherever it ran out of room —
+       which for "B.E CSE AIML · Semester 3" meant orphaning the "3"
+       onto its own line. Splitting them means each wraps only at its
+       own boundary, and it works for any length of program name.
+
+       Falls back to the handle when neither is set, so a profile that
+       skipped onboarding still shows something. */
+    var subLines = [];
+    if (profile.program) subLines.push(profile.program);
+    if (profile.semester) subLines.push("Semester " + profile.semester);
+    if (!subLines.length) subLines.push("@" + profile.username);
+
+    var subHTML = subLines.map(function (line) {
+      return '<span class="profile-pop__line">' + util.escapeHTML(line) + "</span>";
+    }).join("");
 
     var html = "";
     html += '<button type="button" class="icon-btn menu-btn" data-menu-toggle aria-label="Open menu">' + icon("menu", 18) + "</button>";
@@ -202,14 +249,16 @@ window.Synora = window.Synora || {};
     // Profile chip + dropdown
     html += '<div class="bell" data-profile-wrap>' +
               '<button type="button" class="profile-chip" data-profile aria-haspopup="true">' +
-                '<span class="avatar" style="width:30px;height:30px;font-size:.75rem">' + util.escapeHTML(initials(name)) + "</span>" +
+                avatarHTML(30) +
                 '<span class="profile-chip__name">' + util.escapeHTML(name) + "</span>" +
               "</button>" +
-              '<div class="menu-pop" data-profile-pop role="menu" style="width:240px">' +
+              '<div class="menu-pop" data-profile-pop role="menu" style="width:250px">' +
                 '<div class="menu-pop__head" style="gap:10px">' +
-                  '<span class="avatar">' + util.escapeHTML(initials(name)) + "</span>" +
-                  '<span style="min-width:0"><strong style="display:block">' + util.escapeHTML(name) + "</strong>" +
-                  '<span class="text-small muted">' + util.escapeHTML(program) + "</span></span>" +
+                  avatarHTML(38) +
+                  '<span class="profile-pop__who">' +
+                    '<strong class="profile-pop__name">' + util.escapeHTML(name) + "</strong>" +
+                    '<span class="profile-pop__meta">' + subHTML + "</span>" +
+                  "</span>" +
                 "</div>" +
                 '<a class="menu-link" href="settings.html">' + icon("settings", 16) + "Settings</a>" +
                 '<a class="menu-link" href="../index.html">' + icon("grid", 16) + "Landing page</a>" +
@@ -531,6 +580,17 @@ window.Synora = window.Synora || {};
       return store.get("notifications").filter(function (n) { return !n.seen; }).length;
     },
 
+    /* Remove every notification matching a key prefix. Used to retire
+       alerts whose cause has gone away — see the attendance pass below. */
+    dropByPrefix: function (prefix, keepKeys) {
+      store.update("notifications", function (list) {
+        return list.filter(function (n) {
+          if (!n.key || n.key.indexOf(prefix) !== 0) return true;
+          return keepKeys.indexOf(n.key) !== -1;
+        });
+      });
+    },
+
     // Scan data and create any new deadline / overdue / attendance alerts.
     refresh: function () {
       var tasks = store.get("tasks");
@@ -562,21 +622,53 @@ window.Synora = window.Synora || {};
         }
       });
 
-      // Attendance below target
-      var profile = store.get("profile");
-      var target = Number(profile.targetAttendance) || 75;
-      store.get("attendance").forEach(function (a) {
-        if (!a.total) return;
-        var pct = (a.attended / a.total) * 100;
-        if (pct < target) {
-          notifications.add({
-            key: "attn:" + a.id + ":below",
-            type: "warning",
-            title: "Attendance warning",
-            body: a.subject + " is at " + pct.toFixed(0) + "% (target " + target + "%)."
-          });
-        }
+      /* ---- Attendance below target -------------------------------
+         This used to fire the moment a row existed, which is why
+         adding or renaming a subject produced "… is at 0%": a row
+         mid-edit has a class count but nothing attended yet, and the
+         alert it raised was never taken back once the numbers were
+         filled in.
+
+         Two changes fix it at the source rather than hiding it:
+
+         1. A row only counts as real data when it is attached to a
+            named subject AND has classes held. A half-typed row is
+            not a warning, it is a row being typed.
+
+         2. The alerts are reconciled, not just added. Every pass
+            works out which subjects are genuinely below target and
+            drops any older "attn:" notification not in that set — so
+            fixing your attendance, editing the subject or deleting it
+            clears the warning instead of leaving it stuck. The alert
+            also carries the percentage in its key, so a subject that
+            drops further re-announces itself with the new number. */
+      var attendance = derive.attendance();
+      var target = attendance.target;
+      var liveKeys = [];
+
+      /* derive.attendance() already walks ONLY the subjects with
+         trackAttendance = true, so a subject the student opted out of
+         can never reach this loop — which is what stopped alerts like
+         "Cyber Security is at 0%" being raised for a subject nobody
+         ever takes a register for. */
+      attendance.subjects.forEach(function (row) {
+        // No classes recorded yet is not a warning, it is an empty row.
+        if (!row.recorded) return;
+        if (row.pct >= target) return;
+
+        var key = "attn:" + row.subjectId + ":" + Math.round(row.pct);
+        liveKeys.push(key);
+
+        notifications.add({
+          key: key,
+          type: "warning",
+          title: "Attendance warning",
+          body: row.subject + " is at " + row.pct.toFixed(0) +
+                "% — below your " + target + "% target."
+        });
       });
+
+      notifications.dropByPrefix("attn:", liveKeys);
     }
   };
 
@@ -659,19 +751,61 @@ window.Synora = window.Synora || {};
      Shared derived data (used by the dashboard & others).
      ======================================================= */
 
-  /* Grade scales — shared by the CGPA page and the dashboard. */
-  var GRADE_SCALES = {
-    "10": {
-      label: "10-point (Indian)",
-      max: 10,
-      points: { "A+": 10, "A": 9, "B+": 8, "B": 7, "C+": 6, "C": 5, "D": 4, "F": 0 }
-    },
-    "4": {
-      label: "4.0 GPA (US)",
-      max: 4,
-      points: { "A": 4, "A-": 3.7, "B+": 3.3, "B": 3, "B-": 2.7, "C+": 2.3, "C": 2, "C-": 1.7, "D": 1, "F": 0 }
-    }
+  /* Grade scales — shared by the CGPA page, its chart and the dashboard.
+
+     The 10-point scale follows the usual Indian letter set, with O
+     (Outstanding) at the top. `ladder` is the order the chart plots
+     from the bottom up: B, B+, A, A+, O. Grades below B still count
+     towards the CGPA — they simply sit under the chart's floor, which
+     is what the "at least a pass" band is for. */
+  /* ---- The Synora grading system -----------------------------
+     One 10-point scale. A single grade carries the whole result,
+     pass or fail, which is why there is no separate "exam status"
+     field any more: two controls describing one outcome could
+     disagree with each other, and did.
+
+       PASSES          FAILURES
+       O  = 10         E1  failed the internals
+       A+ =  9         E2  failed the end-term exam
+       A  =  8         E3  failed both
+       B+ =  7
+       B  =  6
+
+     Grade points for E1/E2/E3
+     -------------------------
+     A failure earns ZERO grade points but still carries its
+     credits into the denominator — the standard way a backlog
+     drags a CGPA down, and the assumption this project states
+     openly rather than leaving implied. It is not a positive
+     grade and must never be plotted as one.                    */
+
+  var GRADES = {
+    "O":  { point: 10, pass: true,  label: "Outstanding" },
+    "A+": { point: 9,  pass: true,  label: "Excellent" },
+    "A":  { point: 8,  pass: true,  label: "Very good" },
+    "B+": { point: 7,  pass: true,  label: "Good" },
+    "B":  { point: 6,  pass: true,  label: "Above average" },
+    "E1": { point: 0,  pass: false, label: "Failed in Internals" },
+    "E2": { point: 0,  pass: false, label: "Failed in End Term Exam" },
+    "E3": { point: 0,  pass: false, label: "Failed in Both Internals and End Term" }
   };
+
+  /* Reading upwards from the baseline — the positive Y axis. */
+  var GRADE_LADDER = ["B", "B+", "A", "A+", "O"];
+
+  /* Hanging below the baseline — the negative Y axis. Three distinct
+     results, never collapsed into one "E1/E2/E3" label. */
+  var FAIL_LADDER = ["E1", "E2", "E3"];
+
+  var GRADE_MAX = 10;
+
+  function gradePoint(grade) {
+    return GRADES[grade] ? GRADES[grade].point : undefined;
+  }
+
+  function isFailGrade(grade) {
+    return !!GRADES[grade] && !GRADES[grade].pass;
+  }
 
   var derive = {
     taskStats: function () {
@@ -696,46 +830,111 @@ window.Synora = window.Synora || {};
         .slice(0, limit || 5);
     },
 
+    /* Today's classes, with each entry's subject name resolved from the
+       central list. Entries store a subjectId, never a name. */
     todaysClasses: function () {
       var dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
       var today = dayNames[new Date().getDay()];
       return store.get("timetable")
         .filter(function (c) { return c.day === today; })
-        .sort(function (a, b) { return (a.start || "") < (b.start || "") ? -1 : 1; });
+        .map(function (c) {
+          var subject = store.subjects.byId(c.subjectId);
+          return {
+            id: c.id,
+            subject: subject ? subject.name : "",
+            start: c.startTime || "",
+            end: c.endTime || "",
+            room: c.room || "",
+            teacher: c.teacher || ""
+          };
+        })
+        .filter(function (c) { return c.subject; })
+        .sort(function (a, b) { return a.start < b.start ? -1 : 1; });
     },
 
-    // Weighted CGPA from the stored subjects, or null if none valid.
+    /* Weighted CGPA, or null if nothing is gradeable yet.
+
+         CGPA = Σ(credits × grade point) / Σ(credits)
+
+       Credits come from the subject record, the grade from the CGPA
+       record — so changing a subject's credits in one place updates
+       the CGPA everywhere, with no second copy to keep in step. */
+    /* Every graded subject counts, whether or not its attendance is
+       tracked. CGPA and attendance are independent systems — a subject
+       you don't keep a register for still has credits and a grade. */
     cgpa: function () {
       var data = store.get("cgpa");
-      var scale = GRADE_SCALES[data.scaleId] || GRADE_SCALES["10"];
-      var totalCredits = 0, weighted = 0, counted = 0;
-      (data.subjects || []).forEach(function (s) {
-        var credits = Number(s.credits);
-        var point = scale.points[s.grade];
+      var totalCredits = 0, weighted = 0, counted = 0, failed = 0;
+
+      (data.subjects || []).forEach(function (row) {
+        var subject = store.subjects.byId(row.subjectId);
+        if (!subject) return;
+        var credits = Number(subject.credits);
+        var point = gradePoint(row.grade);
         if (credits > 0 && point !== undefined) {
           totalCredits += credits;
           weighted += credits * point;
           counted++;
+          if (isFailGrade(row.grade)) failed++;
         }
       });
+
       if (!totalCredits) return null;
-      return { value: weighted / totalCredits, totalCredits: totalCredits, count: counted, max: scale.max };
+      return {
+        value: weighted / totalCredits,
+        totalCredits: totalCredits,
+        count: counted,
+        failed: failed,
+        max: GRADE_MAX
+      };
     },
 
-    // Overall attendance across all subjects, plus each subject's %.
+    /* Overall attendance plus a per-subject breakdown.
+
+         attendance % = attended / held × 100
+
+       Percentages are computed here, never stored — there is one set
+       of counts, and everything else is derived from it. */
+    /* Driven by the SUBJECT list, not by the attendance list.
+
+       The subjects with trackAttendance = true are the definition of
+       what attendance covers; the stored rows only hold counts. Walking
+       the subjects means a newly-added subject appears immediately at
+       0/0, and — the part that matters — a subject whose tracking is
+       switched off disappears from the page, the chart and the warnings
+       at the same instant, with no stale row left behind to explain.
+
+       A subject with trackAttendance = false is not represented here at
+       all, so nothing downstream has to remember to exclude it. */
     attendance: function () {
-      var list = store.get("attendance");
-      var target = Number(store.get("profile").targetAttendance) || 75;
+      var target = Number(Synora.profile.get().targetAttendance) || 75;
+      var counts = {};
+      store.get("attendance").forEach(function (a) { counts[a.subjectId] = a; });
+
       var totalHeld = 0, totalAttended = 0;
-      var subjects = list.map(function (a) {
-        totalHeld += Number(a.total) || 0;
-        totalAttended += Number(a.attended) || 0;
-        return { subject: a.subject, pct: a.total ? (a.attended / a.total) * 100 : 0 };
+
+      var rows = store.subjects.tracked().map(function (s) {
+        var a = counts[s.id] || {};
+        var total = Math.max(0, Number(a.total) || 0);
+        var attended = util.clamp(Number(a.attended) || 0, 0, total);
+        totalHeld += total;
+        totalAttended += attended;
+        return {
+          id: a.id || null,
+          subjectId: s.id,
+          subject: s.name,
+          total: total,
+          attended: attended,
+          /* held = 0 is "nothing recorded", not 0% and never NaN. */
+          pct: total ? (attended / total) * 100 : 0,
+          recorded: total > 0
+        };
       });
+
       return {
         overall: totalHeld ? (totalAttended / totalHeld) * 100 : null,
         target: target,
-        subjects: subjects
+        subjects: rows
       };
     }
   };
@@ -780,51 +979,6 @@ window.Synora = window.Synora || {};
   }
 
   /* =======================================================
-     Sample data for brand-new accounts (real, editable data —
-     not fake UI). Called once from auth.js on sign-up.
-     ======================================================= */
-
-  Synora.seedSampleData = function () {
-    var meta = store.get("meta");
-    if (meta.seeded) return;
-
-    var d = function (offset) { return util.toISODate(new Date(Date.now() + offset * 86400000)); };
-
-    store.set("tasks", [
-      { id: util.uid("tsk"), title: "Finish DBMS assignment 4", subject: "DBMS", description: "Normalization exercises, Q1–Q6.", deadline: d(1), priority: "high", status: "in-progress", createdAt: new Date().toISOString(), completedAt: null },
-      { id: util.uid("tsk"), title: "Read Chapter 7 — Computer Networks", subject: "Networks", description: "", deadline: d(3), priority: "medium", status: "not-started", createdAt: new Date().toISOString(), completedAt: null },
-      { id: util.uid("tsk"), title: "Prepare for OS quiz", subject: "Operating Systems", description: "Scheduling + deadlocks.", deadline: d(5), priority: "critical", status: "not-started", createdAt: new Date().toISOString(), completedAt: null },
-      { id: util.uid("tsk"), title: "Submit lab record", subject: "DBMS", description: "", deadline: d(-1), priority: "low", status: "completed", createdAt: new Date().toISOString(), completedAt: new Date().toISOString() }
-    ]);
-
-    store.set("notes", [
-      { id: util.uid("nte"), title: "Networks — key terms", body: "OSI vs TCP/IP layers. Remember: encapsulation adds headers at each layer.", category: "Networks", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-      { id: util.uid("nte"), title: "Weekend plan", body: "Sat: revise OS.\nSun: DBMS practice problems.", category: "Personal", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
-    ]);
-
-    store.set("timetable", [
-      { id: util.uid("cls"), day: "Monday", start: "09:00", end: "10:00", subject: "Computer Networks", room: "LT-3", teacher: "Dr. Rao", note: "" },
-      { id: util.uid("cls"), day: "Monday", start: "11:30", end: "13:00", subject: "DBMS Lab", room: "Block C", teacher: "Prof. Iyer", note: "" },
-      { id: util.uid("cls"), day: "Wednesday", start: "10:00", end: "11:00", subject: "Operating Systems", room: "LT-1", teacher: "Dr. Menon", note: "" },
-      { id: util.uid("cls"), day: "Friday", start: "14:00", end: "15:30", subject: "Networks Lab", room: "Block C", teacher: "Dr. Rao", note: "" }
-    ]);
-
-    store.set("attendance", [
-      { id: util.uid("att"), subject: "Computer Networks", total: 40, attended: 34, target: 75 },
-      { id: util.uid("att"), subject: "DBMS", total: 38, attended: 26, target: 75 },
-      { id: util.uid("att"), subject: "Operating Systems", total: 42, attended: 39, target: 75 }
-    ]);
-
-    store.set("cgpa", { scaleId: "10", subjects: [
-      { id: util.uid("sub"), name: "DBMS", credits: 4, grade: "A" },
-      { id: util.uid("sub"), name: "Computer Networks", credits: 3, grade: "A+" },
-      { id: util.uid("sub"), name: "Operating Systems", credits: 4, grade: "B+" }
-    ]});
-
-    store.update("meta", function (m) { m.seeded = true; return m; });
-  };
-
-  /* =======================================================
      Public refresh — call after any data change.
      ======================================================= */
 
@@ -840,7 +994,13 @@ window.Synora = window.Synora || {};
      ======================================================= */
 
   Synora.icon = icon;
-  Synora.GRADE_SCALES = GRADE_SCALES;
+  Synora.avatarHTML = avatarHTML;
+  Synora.GRADES = GRADES;
+  Synora.GRADE_LADDER = GRADE_LADDER;
+  Synora.FAIL_LADDER = FAIL_LADDER;
+  Synora.GRADE_MAX = GRADE_MAX;
+  Synora.gradePoint = gradePoint;
+  Synora.isFailGrade = isFailGrade;
   Synora.toast = toast;
   Synora.openModal = openModal;
   Synora.confirm = confirmDialog;
@@ -852,9 +1012,11 @@ window.Synora = window.Synora || {};
 
   function boot() {
     if (!guard()) return;
-    // First app entry for a new account: add starter data once.
-    // (auth.js can't do this — app.js isn't loaded on the auth pages.)
-    if (!store.get("meta").seeded) Synora.seedSampleData();
+
+    /* Nothing is seeded here. A new account's workspace is empty until
+       the person fills it — the only pre-filled data in Synora belongs
+       to the arsh2309 demo account, and demo-data.js writes that when
+       that specific account signs in. */
     buildSidebar();
     buildTopbar();
     wireShell();

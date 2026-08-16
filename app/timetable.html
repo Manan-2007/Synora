@@ -6,6 +6,8 @@
   <title>Timetable — Synora</title>
   <meta name="color-scheme" content="light dark">
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="../assets/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="../assets/favicon-180.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700&display=swap">
@@ -15,6 +17,7 @@
   <link rel="stylesheet" href="../styles/app.css">
   <script src="../scripts/theme.js"></script>
   <script src="../scripts/storage.js" defer></script>
+  <script src="../scripts/avatars.js" defer></script>
   <script src="../scripts/app.js" defer></script>
   <script src="../scripts/timetable.js" defer></script>
 </head>
@@ -27,9 +30,14 @@
         <div class="page__header">
           <p class="page__subtitle">Your week of classes at a glance. Tap any class to edit it.</p>
           <div class="page__actions">
-            <button type="button" class="btn btn--primary" data-add-class>
+            <button type="button" class="btn btn--ghost" data-add-class>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
               Add class
+            </button>
+            <!-- The guided way in: walk the week day by day. -->
+            <button type="button" class="btn btn--primary" data-set-timetable>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg>
+              Set Timetable
             </button>
           </div>
         </div>

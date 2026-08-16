@@ -118,23 +118,11 @@ body.app {
   border-right: 1px solid var(--color-border);
 }
 
+/* The brand is the logo lockup. Height sets the size; the margin
+   below it does the spacing that the old text padding used to. */
 .sidebar__brand {
-  display: flex;
-  align-items: center;
-  gap: var(--space-8);
-  padding: 0 var(--space-8) var(--space-24);
-  font-family: var(--font-heading);
-  font-weight: var(--weight-bold);
-  font-size: 1.35rem;
-  letter-spacing: var(--tracking-tight);
-  color: var(--color-text);
-}
-
-.sidebar__brand-dot {
-  width: 22px;
-  height: 22px;
-  border-radius: 7px;
-  background: var(--gradient-brand);
+  height: 28px;
+  margin: 0 var(--space-8) var(--space-24);
 }
 
 .sidebar__nav {
@@ -206,11 +194,21 @@ body.app {
   gap: var(--space-12);
   padding: var(--space-8);
   border-radius: var(--radius-md);
+  transition: background-color var(--duration-fast) var(--ease-out);
 }
 
-.sidebar-user__meta { min-width: 0; }
+.sidebar-user:hover {
+  background-color: var(--color-surface-sunken);
+}
+
+.sidebar-user__meta {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
 
 .sidebar-user__name {
+  display: block;
   font-size: var(--text-small);
   font-weight: var(--weight-semibold);
   color: var(--color-text);
@@ -220,6 +218,7 @@ body.app {
 }
 
 .sidebar-user__sub {
+  display: block;
   font-size: 0.75rem;
   color: var(--color-text-muted);
   white-space: nowrap;
@@ -244,6 +243,26 @@ body.app {
 }
 
 .avatar--lg { width: 52px; height: 52px; font-size: 1.1rem; }
+
+/* When an avatar illustration is chosen, the circle is the artwork
+   itself — no gradient behind it, and no text to centre. */
+.avatar--art {
+  background: none;
+  overflow: hidden;
+  padding: 0;
+}
+
+/* Both kinds of avatar fill the circle: an <img> for the twelve
+   illustrations, an inline <svg> for the initials. */
+.avatar--art svg,
+.avatar--art img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  border-radius: inherit;
+}
 
 /* Off-canvas drawer backdrop (mobile only) */
 .drawer-backdrop {
@@ -481,9 +500,16 @@ body.app {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: var(--space-12);
   padding: var(--space-16) var(--space-24);
   border-bottom: 1px solid var(--color-border);
+}
+
+/* A header's title must be allowed to shrink, or a long one pushes
+   the control next to it past the edge of the page. */
+.card__header .card__title {
+  min-width: 0;
 }
 
 .card__title {
@@ -617,8 +643,8 @@ textarea.input { min-height: 96px; resize: vertical; line-height: var(--leading-
 .toolbar {
   display: flex;
   align-items: center;
-  gap: var(--space-12);
   flex-wrap: wrap;
+  gap: var(--space-12);
   margin-bottom: var(--space-16);
 }
 
@@ -638,6 +664,9 @@ textarea.input { min-height: 96px; resize: vertical; line-height: var(--leading-
 .search .input { padding-left: var(--space-32); }
 
 /* Segmented view switcher */
+/* Scrolls its own buttons on a narrow screen. max-width matters as
+   much as overflow-x: without it the element still claims its full
+   content width from the layout, and the page scrolls instead. */
 .segmented {
   display: inline-flex;
   padding: 3px;
@@ -646,6 +675,8 @@ textarea.input { min-height: 96px; resize: vertical; line-height: var(--leading-
   border-radius: var(--radius-md);
   background-color: var(--color-surface-sunken);
   overflow-x: auto;
+  max-width: 100%;
+  scrollbar-width: thin;
 }
 
 .segmented button {
@@ -665,7 +696,15 @@ textarea.input { min-height: 96px; resize: vertical; line-height: var(--leading-
 
 /* ============================ 9. TABLES ============== */
 
-.table-wrap { overflow-x: auto; }
+/* Wide tables scroll inside their card rather than widening the page.
+   max-width: 100% is what stops the table's intrinsic width leaking
+   out to the layout; min-width: 0 lets the wrapper shrink inside a
+   flex or grid parent. */
+.table-wrap {
+  overflow-x: auto;
+  max-width: 100%;
+  min-width: 0;
+}
 
 .table {
   width: 100%;
@@ -819,12 +858,78 @@ textarea.input { min-height: 96px; resize: vertical; line-height: var(--leading-
 .ring__fill  { fill: none; stroke: var(--color-brand); stroke-linecap: round;
                transition: stroke-dashoffset var(--duration-slow) var(--ease-out); }
 
-.ring-wrap { position: relative; display: inline-grid; place-items: center; }
-.ring-wrap__center {
-  position: absolute; text-align: center;
+/* ---- Ring with a value inside it -------------------------------
+   The two spans used to be inline with no box of their own, so
+   "8.60" and "of 10" ran together on one line and spilled across
+   the ring's stroke. Stacking them in a column and capping the
+   column at the ring's INNER diameter is what keeps the text off
+   the ring: the circle is 128px across with a 12px stroke, so the
+   clear space inside is 128 − (2 × 12) ≈ 104px, and 92px leaves a
+   comfortable margin at every value from "0.00" to "100%". */
+
+/* The ring's box is stated, not inferred.
+
+   base.css gives every <svg> `max-width: 100%`. Inside a shrink-to-fit
+   grid that is circular — the SVG waits for the container's width and
+   the container waits for the SVG's — and the pair collapsed to zero
+   width (the rotated 0x128 box still measured 128 across, which is why
+   it could look almost right while being wrong). Fixing the wrapper at
+   the ring's real size breaks the cycle, and `flex: none` stops the
+   summary row from squeezing it. */
+.ring-wrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 128px;
+  height: 128px;
 }
-.ring-wrap__value { font-family: var(--font-heading); font-size: 1.6rem; font-weight: var(--weight-bold); line-height: 1; }
-.ring-wrap__label { font-size: 0.75rem; color: var(--color-text-muted); }
+
+.ring-wrap > svg.ring {
+  width: 128px;
+  height: 128px;
+  max-width: none;
+}
+
+.ring-wrap__center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 100%;
+  max-width: 92px;
+  margin-inline: auto;
+  text-align: center;
+  pointer-events: none;
+}
+
+.ring-wrap__value {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: var(--weight-bold);
+  line-height: 1.05;
+  letter-spacing: var(--tracking-tight);
+}
+
+.ring-wrap__label {
+  display: block;
+  font-size: 0.7rem;
+  line-height: 1.1;
+  color: var(--color-text-muted);
+}
+
+/* The ring and the stats beside it. */
+.summary-row {
+  display: flex;
+  gap: var(--space-32);
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+}
 
 /* Pie legend */
 .legend { display: flex; flex-direction: column; gap: var(--space-8); }
@@ -866,7 +971,11 @@ textarea.input { min-height: 96px; resize: vertical; line-height: var(--leading-
 .cal__month { font-family: var(--font-heading); font-size: 1.125rem; font-weight: var(--weight-semibold); }
 .cal__nav { display: flex; gap: var(--space-8); }
 
-.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+/* minmax(0, 1fr), not 1fr: a 1fr track won't shrink below its content's
+   minimum width, and a long task title inside a day cell would push the
+   whole grid — and the page with it — wider than the viewport. Setting
+   the minimum to zero lets the cells stay equal and the chips ellipsis. */
+.cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
 .cal-dow { text-align: center; font-size: 0.6875rem; font-weight: var(--weight-semibold); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--color-secondary); padding-bottom: var(--space-8); }
 
 .cal-cell {
@@ -888,6 +997,8 @@ textarea.input { min-height: 96px; resize: vertical; line-height: var(--leading-
 .cal-cell--today .cal-cell__num { color: var(--color-brand); }
 
 .cal-chip {
+  min-width: 0;
+  max-width: 100%;
   font-size: 0.6875rem;
   padding: 2px 6px;
   border-radius: var(--radius-sm);
@@ -1061,7 +1172,14 @@ textarea.input { min-height: 96px; resize: vertical; line-height: var(--leading-
   border: 1px solid var(--color-border);
 }
 .dash-hero__greet { font-family: var(--font-heading); font-size: 1.25rem; font-weight: var(--weight-bold); }
-.dash-hero__sub { font-size: var(--text-small); color: var(--color-text-muted); }
+.dash-hero__course {
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+  color: var(--color-brand);
+  margin-top: 1px;
+}
+
+.dash-hero__sub { font-size: var(--text-small); color: var(--color-text-muted); margin-top: 2px; }
 .dash-hero__streak { margin-left: auto; }
 
 /* ============================ 16. RESPONSIVE ========= */
@@ -1102,3 +1220,646 @@ textarea.input { min-height: 96px; resize: vertical; line-height: var(--leading-
   .toast-region { left: var(--space-16); right: var(--space-16); bottom: var(--space-16); }
   .toast { min-width: 0; width: 100%; }
 }
+
+/* =========================================================
+   Charts
+   ---------------------------------------------------------
+   One layout serves both the attendance and the CGPA chart:
+
+     ┌──────┬────────────────────┐
+     │  y   │       plot         │
+     ├──────┼────────────────────┤
+     │      │       x labels     │
+     └──────┴────────────────────┘
+
+   It is HTML and CSS rather than a stretched SVG, because a
+   viewBox scaled to fit its container distorts the text with
+   it. Here the bars scale and the labels stay upright.
+
+   Bars are sized as a percentage of the plot's height, and the
+   plot's height is fixed — so 0–100% means 0–100% of the box,
+   always. Neither chart rescales itself to its tallest bar.
+   ========================================================= */
+
+.chart {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: 220px auto;
+  gap: var(--space-8);
+}
+
+/* Ticks are spread top-to-bottom and nudged up by half a line so
+   each label sits ON its gridline rather than under it. */
+.chart__y {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  font-size: 0.6875rem;
+  color: var(--color-secondary);
+  font-variant-numeric: tabular-nums;
+  transform: translateY(-0.4em);
+  padding-right: var(--space-4);
+}
+
+.chart__plot {
+  grid-column: 2;
+  grid-row: 1;
+  position: relative;
+  border-left: 1px solid var(--color-border-strong);
+  border-bottom: 1px solid var(--color-border-strong);
+}
+
+.chart__grid {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.chart__grid i {
+  display: block;
+  height: 1px;
+  background-color: var(--color-border);
+}
+
+/* The target line. Dashed and labelled so it reads as a threshold
+   rather than as another series. */
+.chart__target {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 2px dashed var(--color-accent);
+  pointer-events: none;
+}
+
+.chart__target-tag {
+  position: absolute;
+  right: 0;
+  top: -0.85em;
+  padding: 1px var(--space-8);
+  border-radius: var(--radius-pill);
+  background-color: var(--color-accent-soft);
+  color: var(--color-accent);
+  font-size: 0.625rem;
+  font-weight: var(--weight-semibold);
+}
+
+.chart__bars {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-8);
+  padding: 0 var(--space-8);
+}
+
+.chart__col {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.chart__value {
+  font-size: 0.6875rem;
+  font-weight: var(--weight-semibold);
+  margin-bottom: 2px;
+  white-space: nowrap;
+}
+
+.chart__bar {
+  width: 100%;
+  max-width: 54px;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  background: linear-gradient(180deg, var(--color-brand), var(--color-brand-hover));
+  transition: height var(--duration-slow) var(--ease-out);
+}
+
+.chart__bar--danger {
+  background: linear-gradient(180deg, var(--status-high), var(--status-overdue));
+}
+
+.chart__bar--accent {
+  background: linear-gradient(180deg, var(--color-accent-bright), var(--color-accent));
+}
+
+.chart__corner {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+/* The x labels use the same flex rhythm as the bars, so each one
+   lines up under its own column. */
+.chart__x {
+  grid-column: 2;
+  grid-row: 2;
+  display: flex;
+  gap: var(--space-8);
+  padding: var(--space-8) var(--space-8) 0;
+}
+
+.chart__x span {
+  flex: 1 1 0;
+  min-width: 0;
+  text-align: center;
+  font-size: 0.6875rem;
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chart__caption {
+  margin-top: var(--space-16);
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  line-height: var(--leading-body);
+}
+
+/* ---------------------------------------------------------
+   Split chart (CGPA)
+   Grades rise above a baseline; the examination status hangs
+   below it. Two different kinds of fact, so they are given
+   two different directions rather than one confusing scale.
+   --------------------------------------------------------- */
+
+.chart--split {
+  grid-template-rows: 200px 96px auto;
+}
+
+/* The two charts space their axes differently, and it matters.
+
+   Attendance is a continuous scale: 0% and 100% are the ends of the
+   box, so its six ticks sit space-between, from edge to edge.
+
+   Grades are bands, not points on a line. Five grades over the plot
+   means each one owns a fifth of the height, and a bar for that grade
+   rises to the TOP of its band. So each label and gridline is pinned
+   to its own band's edge — otherwise the "A+" label floats a little
+   above the bar that is supposed to be an A+, which is exactly the
+   kind of small lie that makes a chart untrustworthy. */
+.chart--split .chart__y {
+  grid-row: 1;
+  justify-content: flex-start;
+}
+
+.chart--split .chart__y span {
+  flex: 1 1 0;
+}
+
+.chart--split .chart__grid i {
+  flex: 1 1 0;
+  height: auto;
+  background: none;
+  border-top: 1px solid var(--color-border);
+}
+
+/* Below the line the bars hang downwards, so each label pins to the
+   BOTTOM of its band — where that examination's bar ends. */
+.chart--split .chart__y-neg {
+  grid-column: 1;
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 0.6875rem;
+  color: var(--color-secondary);
+  transform: translateY(0.4em);
+  padding-right: var(--space-4);
+}
+
+.chart--split .chart__y-neg span {
+  flex: 1 1 0;
+  display: flex;
+  align-items: flex-end;
+}
+
+.chart__plot-neg .chart__grid i {
+  flex: 1 1 0;
+  height: auto;
+  background: none;
+  border-top: 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.chart--split .chart__plot { grid-row: 1; border-bottom: 2px solid var(--color-border-strong); }
+
+/* The lower half: same column rhythm, growing downwards. */
+.chart__plot-neg {
+  grid-column: 2;
+  grid-row: 2;
+  position: relative;
+  border-left: 1px solid var(--color-border-strong);
+}
+
+
+.chart__bars-neg {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-8);
+  padding: 0 var(--space-8);
+}
+
+.chart__col-neg {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.chart__bar-neg {
+  width: 100%;
+  max-width: 54px;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  background: linear-gradient(180deg, var(--color-ink-raised), var(--color-secondary));
+  transition: height var(--duration-slow) var(--ease-out);
+}
+
+.chart__exam {
+  margin-top: 3px;
+  font-size: 0.6875rem;
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-muted);
+}
+
+.chart--split .chart__corner { grid-row: 3; }
+.chart--split .chart__x { grid-row: 3; }
+
+/* On a phone the plot gets shorter rather than the bars thinner. */
+@media (max-width: 560px) {
+  .chart { grid-template-rows: 180px auto; }
+  .chart--split { grid-template-rows: 160px 80px auto; }
+  .chart__bars, .chart__bars-neg, .chart__x { gap: var(--space-4); }
+  .chart__x span { font-size: 0.625rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chart__bar,
+  .chart__bar-neg {
+    transition: none;
+  }
+}
+
+/* =========================================================
+   Set Timetable — the day-by-day setup dialog
+   ========================================================= */
+
+.setup-day__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-12);
+  padding-bottom: var(--space-12);
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--space-16);
+}
+
+.setup-day__head strong {
+  font-family: var(--font-heading);
+  font-size: 1.125rem;
+}
+
+.setup-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-bottom: var(--space-16);
+}
+
+.setup-row {
+  display: grid;
+  grid-template-columns: 100px minmax(0, 1fr) 36px;
+  gap: var(--space-12);
+  align-items: center;
+  padding: var(--space-8);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface-sunken);
+  font-size: var(--text-small);
+}
+
+.setup-row time {
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+}
+
+.setup-row .icon-btn { width: 30px; height: 30px; }
+
+.setup-empty {
+  padding: var(--space-24) 0;
+  text-align: center;
+}
+
+/* =========================================================
+   Settings
+   ========================================================= */
+
+.settings-identity {
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+  flex-wrap: wrap;
+  padding-bottom: var(--space-24);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.settings-identity__name {
+  font-family: var(--font-heading);
+  font-size: 1.125rem;
+  font-weight: var(--weight-semibold);
+}
+
+.settings-identity__handle {
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+}
+
+/* A value that is shown but not editable — styled like an input so
+   the row still reads as a form, without pretending to be one. */
+.settings-static {
+  padding: var(--space-12) var(--space-16);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-sunken);
+  color: var(--color-text-muted);
+  font-size: var(--text-body);
+}
+
+/* ---------------------------------------------------------
+   Attendance subject cards
+
+   A card per tracked subject, each carrying the two counts it
+   is made of and the buttons that change them. Cards rather
+   than table rows because every subject now has interactive
+   controls, and a row of steppers inside a <td> is cramped on
+   a phone and awkward to hit.
+
+   Credits are deliberately absent: they belong to CGPA and
+   say nothing about whether you turned up.
+   --------------------------------------------------------- */
+
+.att-grid {
+  display: grid;
+  /* minmax(0, 1fr) so a long subject name scrolls inside its own
+     card instead of widening the whole grid. */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: var(--space-16);
+}
+
+.att-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  padding: var(--space-16);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface);
+}
+
+/* Below target gets a warm edge as well as the red percentage,
+   so the state is never carried by colour alone. */
+.att-card--danger {
+  border-color: color-mix(in srgb, var(--status-high) 45%, var(--color-border));
+}
+
+.att-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-8);
+}
+
+.att-card__name {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: var(--weight-bold);
+  line-height: 1.3;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.att-card__actions {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.att-card__counts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+/* ---- One stepper: label, −, value, + ---- */
+
+.att-step {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12);
+}
+
+.att-step__label {
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+}
+
+.att-step__controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.att-step__btn {
+  display: grid;
+  place-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out);
+}
+
+.att-step__btn:hover {
+  background-color: var(--color-brand-soft);
+  border-color: var(--color-brand);
+}
+
+.att-step__btn:focus-visible { outline: var(--focus-ring); outline-offset: 2px; }
+
+/* Tabular figures so the number doesn't jitter as it changes. */
+.att-step__value {
+  min-width: 2.5ch;
+  text-align: center;
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Percentage ---- */
+
+.att-card__pct {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-8);
+  padding-top: var(--space-12);
+  border-top: 1px solid var(--color-border);
+}
+
+.att-card__pct-label {
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+}
+
+.att-card__pct-value {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: var(--weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+.att-card__pct-value.is-safe   { color: var(--status-low); }
+.att-card__pct-value.is-danger { color: var(--status-high); }
+.att-card__pct-value.is-none   { color: var(--color-text-muted); }
+
+.att-card__msg {
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+  line-height: 1.45;
+}
+
+/* Unfinished-setup prompt on the dashboard. Replaces the redirect that
+   used to force onboarding — an offer occupying space, not a gate. */
+.dash-setup {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-16);
+  margin-bottom: var(--space-24);
+  border-color: var(--color-brand);
+  background-color: var(--color-brand-soft);
+}
+
+.dash-setup__title {
+  font-family: var(--font-heading);
+  font-size: 1.0625rem;
+  font-weight: var(--weight-bold);
+}
+
+.dash-setup__text { margin-top: var(--space-4); max-width: 56ch; }
+
+/* ---- Profile dropdown identity block ----------------------------
+   Program and semester are separate lines rather than one joined
+   string. Joined with " · " the browser wrapped wherever it ran out
+   of room in the 250px popover, which orphaned the number in
+   "B.E CSE AIML · Semester 3" onto a line by itself. Two elements
+   wrap only at their own boundaries, whatever the program is called. */
+
+.profile-pop__who {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.profile-pop__name {
+  display: block;
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.profile-pop__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.profile-pop__line {
+  display: block;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: var(--color-text-muted);
+  overflow-wrap: anywhere;
+}
+
+/* ---- Timetable: optional extras ---------------------------------
+   Room and instructor are not required to describe a class, so they
+   are offered rather than presented. Each starts as a chip; pressing
+   it reveals the field, and Remove puts it away and clears it. */
+
+.tt-extras {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+}
+
+.tt-extras:empty { display: none; }
+
+.tt-extra__add {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-12);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--color-text-muted);
+  font-family: inherit;
+  font-size: var(--text-small);
+  cursor: pointer;
+  transition: border-color var(--duration-fast) var(--ease-out),
+              color var(--duration-fast) var(--ease-out);
+}
+
+.tt-extra__add:hover {
+  border-color: var(--color-brand);
+  border-style: solid;
+  color: var(--color-brand);
+}
+
+.tt-extra__add:focus-visible { outline: var(--focus-ring); outline-offset: 2px; }
+
+.tt-extra__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-8);
+  margin-bottom: var(--space-4);
+}
+
+.tt-extra__remove {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--color-text-muted);
+  font-family: inherit;
+  font-size: 0.75rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.tt-extra__remove:hover { color: var(--status-high); }

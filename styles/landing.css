@@ -55,28 +55,39 @@
   margin-inline: auto;
 }
 
+/* A quiet lead-in line above a heading.
+
+   This used to be an uppercase, letter-spaced label inside a rounded
+   pill with a coloured dot — a look that reads as a generated landing
+   page template. It is now just small text in the accent colour: it
+   still introduces the heading below it without announcing itself. */
+/* A section kicker with intent.
+
+   The pill-with-a-dot version read as a generated-template tell, and
+   flat plain text read as lifeless. This is the editorial middle: small
+   uppercase letter-spaced accent text led by a short gradient rule (the
+   same sage→taupe as the heading rules), so it feels deliberate and
+   alive without the pill. It is inline-flex, so text-align:center on a
+   centred section head still centres it. */
 .eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-8);
-  padding: var(--space-4) var(--space-12) var(--space-4) var(--space-8);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-pill);
-  background-color: var(--color-surface);
-  box-shadow: var(--shadow-sm);
+  gap: var(--space-12);
+  margin-bottom: var(--space-16);
   font-size: var(--text-eyebrow);
   font-weight: var(--weight-semibold);
   letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
-  color: var(--color-text-muted);
+  color: var(--color-accent);
 }
 
 .eyebrow::before {
   content: "";
-  width: 7px;
-  height: 7px;
+  width: 26px;
+  height: 2px;
+  flex: none;
   border-radius: var(--radius-pill);
-  background-color: var(--color-accent-bright);
+  background-image: var(--gradient-rule);
 }
 
 /* Buttons, icon buttons and form fields now live in components.css,
@@ -96,11 +107,35 @@
   border-bottom: 1px solid var(--color-border);
 }
 
+/* The header reads, left to right:
+     Synora · Features How it works Why Synora FAQ Contact Us · ☾ · Sign in · Create account
+
+   Three tracks, and the outer two are the SAME width — that is what
+   actually centres the middle one. With flexbox the links sat wherever
+   the brand and the buttons left them, which is centred only by luck.
+   `1fr auto 1fr` centres the link group in the header no matter how
+   wide the brand or the actions grow.
+
+   minmax(0, 1fr) rather than 1fr: it lets the outer tracks shrink below
+   their content instead of forcing the header wider than the viewport.
+
+   The two actions are buttons: "Sign in" is a ghost (outlined) button
+   and "Create account" the filled primary — the standard secondary +
+   primary pair. The grid keeps the centre links centred regardless of
+   how wide the actions cluster grows. */
 .nav {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  gap: var(--space-24);
+  /* A floor, not a layout: guarantees clear air either side of the
+     centred link group even as the viewport narrows. */
+  gap: var(--space-32);
   height: var(--header-height);
+}
+
+.nav-brand {
+  height: 28px;
+  justify-self: start;
 }
 
 .wordmark {
@@ -127,7 +162,10 @@
   display: flex;
   align-items: center;
   gap: var(--space-4);
-  margin-left: auto;
+  /* justify-self, not margin-left: auto — auto margin pushes the group
+     to the end of its track, which is what made the links sit right of
+     centre. The grid track is already centred; this centres within it. */
+  justify-self: center;
 }
 
 .nav-links a {
@@ -147,7 +185,9 @@
 .nav-actions {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: var(--space-8);
+  justify-self: end;
 }
 
 /* ---- CSS-only mobile menu ("checkbox hack") ----
@@ -438,102 +478,9 @@
 }
 
 /* ---------------------------------------------------------
-   App preview — schematic, not a mockup
+   Task rows
+   Used by the floating card laid over the hero photo.
    --------------------------------------------------------- */
-
-.app-frame {
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  background-color: var(--color-surface);
-  box-shadow: var(--shadow-lg);
-  overflow: hidden;
-}
-
-.app-frame__bar {
-  display: flex;
-  align-items: center;
-  gap: var(--space-12);
-  padding: var(--space-12) var(--space-16);
-  border-bottom: 1px solid var(--color-border);
-  background-color: var(--color-surface-sunken);
-}
-
-.app-frame__bar .wordmark {
-  font-size: 0.9375rem;
-}
-
-.app-frame__bar .wordmark::before {
-  width: 14px;
-  height: 14px;
-  border-radius: 5px;
-}
-
-.app-frame__chip {
-  margin-left: auto;
-  padding: var(--space-4) var(--space-12);
-  border-radius: var(--radius-pill);
-  background-color: var(--color-accent-soft);
-  color: var(--color-accent);
-  font-size: 0.75rem;
-  font-weight: var(--weight-semibold);
-}
-
-.app-frame__body {
-  display: grid;
-  grid-template-columns: 168px minmax(0, 1fr) 200px;
-}
-
-/* Sidebar */
-.app-sidebar {
-  padding: var(--space-16) var(--space-12);
-  border-right: 1px solid var(--color-border);
-  background-color: var(--color-surface-sunken);
-}
-
-.app-sidebar li {
-  display: flex;
-  align-items: center;
-  gap: var(--space-8);
-  padding: var(--space-8) var(--space-12);
-  border-radius: var(--radius-sm);
-  font-size: 0.8125rem;
-  font-weight: var(--weight-medium);
-  color: var(--color-text-muted);
-}
-
-.app-sidebar li[aria-current] {
-  background-color: var(--color-brand-soft);
-  color: var(--color-brand);
-  font-weight: var(--weight-semibold);
-}
-
-.app-sidebar svg {
-  width: 15px;
-  height: 15px;
-  color: var(--color-secondary);
-}
-
-.app-sidebar li[aria-current] svg {
-  color: var(--color-brand);
-}
-
-/* Task column */
-.app-main {
-  padding: var(--space-24);
-}
-
-.app-main__title {
-  font-family: var(--font-heading);
-  font-size: 0.9375rem;
-  font-weight: var(--weight-semibold);
-  color: var(--color-text);
-}
-
-.app-main__meta {
-  margin-top: var(--space-4);
-  font-size: 0.75rem;
-  color: var(--color-text-muted);
-}
 
 .task-list {
   display: flex;
@@ -595,78 +542,6 @@
   height: 6px;
   border-radius: var(--radius-pill);
   background-color: var(--color-status);
-}
-
-/* Calendar sliver */
-.app-aside {
-  padding: var(--space-24) var(--space-16);
-  border-left: 1px solid var(--color-border);
-  background-color: var(--color-surface-sunken);
-}
-
-.app-aside__title {
-  font-family: var(--font-heading);
-  font-size: 0.8125rem;
-  font-weight: var(--weight-semibold);
-}
-
-.week {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: var(--space-4);
-  margin-top: var(--space-16);
-}
-
-.week div {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-4);
-  padding-block: var(--space-8);
-  border-radius: var(--radius-sm);
-  font-size: 0.625rem;
-  color: var(--color-text-muted);
-}
-
-.week div span:last-child {
-  font-size: 0.75rem;
-  font-weight: var(--weight-semibold);
-  color: var(--color-text);
-}
-
-.week div[aria-current] {
-  background-color: var(--color-brand);
-}
-
-.week div[aria-current] span {
-  color: var(--color-on-brand);
-}
-
-.agenda {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-12);
-  margin-top: var(--space-24);
-}
-
-.agenda li {
-  display: flex;
-  gap: var(--space-12);
-  font-size: 0.75rem;
-  color: var(--color-text-muted);
-}
-
-.agenda time {
-  flex: none;
-  width: 3.25rem;
-  font-variant-numeric: tabular-nums;
-  color: var(--color-accent);
-  font-weight: var(--weight-semibold);
-}
-
-.agenda strong {
-  font-weight: var(--weight-medium);
-  color: var(--color-text);
 }
 
 /* ---------------------------------------------------------
@@ -1135,15 +1010,6 @@
     gap: var(--space-48);
   }
 
-  /* The calendar sliver needs real width — it is the first thing to go. */
-  .app-frame__body {
-    grid-template-columns: 152px minmax(0, 1fr);
-  }
-
-  .app-aside {
-    display: none;
-  }
-
   .showcase {
     gap: var(--space-48);
   }
@@ -1197,8 +1063,9 @@
     display: inline-flex;
   }
 
-  .nav-actions {
-    margin-left: auto;
+  .nav {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--space-16);
   }
 }
 
@@ -1210,14 +1077,6 @@
 
   .section-head {
     margin-bottom: var(--space-48);
-  }
-
-  .app-frame__body {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .app-sidebar {
-    display: none;
   }
 
   .app-main {
@@ -1295,9 +1154,14 @@
   display: grid;
   place-content: center;
   justify-items: center;
-  gap: var(--space-16);
+  gap: 22px;
+  /* A faint brand-tinted glow washed over the page gradient, so the
+     splash has depth instead of a flat fill. */
   background-color: var(--color-bg);
-  background-image: var(--gradient-page);
+  background-image:
+    radial-gradient(120% 90% at 50% 40%,
+      color-mix(in srgb, var(--color-brand) 12%, transparent), transparent 62%),
+    var(--gradient-page);
   transition: opacity var(--duration-slow) var(--ease-out),
               visibility var(--duration-slow) var(--ease-out);
 }
@@ -1307,44 +1171,370 @@
   visibility: hidden;
 }
 
-.loader__mark {
+/* ---- The animated mark ----
+   A circular badge holding the Synora monogram, wrapped in a spinning
+   conic-gradient arc (the actual loading indicator) and a soft aura
+   that breathes behind it. */
+
+.loader__stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 132px;
+  height: 132px;
+}
+
+.loader__glow {
+  position: absolute;
+  inset: -16px;
+  border-radius: 50%;
+  background: radial-gradient(circle at center,
+    color-mix(in srgb, var(--color-brand) 42%, transparent), transparent 68%);
+  filter: blur(18px);
+  animation: loader-breathe 2.6s var(--ease-out) infinite;
+}
+
+/* The conic gradient is a full disc; the radial mask cuts everything
+   but a 3px band at the edge, leaving a rotating arc. */
+.loader__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg,
+    transparent 0deg,
+    color-mix(in srgb, var(--color-brand) 25%, transparent) 90deg,
+    var(--color-brand) 320deg,
+    transparent 360deg);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
+          mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
+  animation: loader-spin 1.15s linear infinite;
+}
+
+.loader__badge {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-lg);
+  animation: loader-pop var(--duration-slow) var(--ease-out) both;
+}
+
+.loader__badge .loader__logo { height: 44px; }
+
+/* ---- Wordmark + tagline ---- */
+
+.loader__word {
   font-family: var(--font-heading);
   font-weight: var(--weight-bold);
-  font-size: 2rem;
+  font-size: 1.6rem;
   letter-spacing: var(--tracking-tight);
   color: var(--color-text);
+  /* A slow light sheen sweeping across the letters. */
+  background-image: linear-gradient(100deg,
+    var(--color-text) 38%, var(--color-brand) 50%, var(--color-text) 62%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+          background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: loader-sheen 2.4s ease-in-out 0.3s infinite;
 }
 
 .loader__tag {
+  margin-top: calc(var(--space-12) * -1);
   font-size: var(--text-small);
   color: var(--color-text-muted);
   letter-spacing: var(--tracking-wide);
   text-transform: lowercase;
+  animation: loader-fade-up var(--duration-slow) var(--ease-out) 0.35s both;
 }
 
-.loader__dots {
-  display: flex;
-  gap: 6px;
-  margin-top: var(--space-8);
+@keyframes loader-spin {
+  to { transform: rotate(360deg); }
 }
 
-.loader__dots span {
-  width: 7px;
-  height: 7px;
-  border-radius: var(--radius-pill);
-  background-color: var(--color-brand);
-  animation: loader-pulse 1s var(--ease-out) infinite;
+@keyframes loader-breathe {
+  0%, 100% { opacity: 0.45; transform: scale(0.9); }
+  50%      { opacity: 0.85; transform: scale(1.08); }
 }
 
-.loader__dots span:nth-child(2) { animation-delay: 0.15s; }
-.loader__dots span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes loader-pop {
+  from { opacity: 0; transform: scale(0.82); }
+  to   { opacity: 1; transform: scale(1); }
+}
 
-@keyframes loader-pulse {
-  0%, 100% { opacity: 0.25; transform: translateY(0); }
-  50%      { opacity: 1;    transform: translateY(-4px); }
+@keyframes loader-sheen {
+  from { background-position: 130% 0; }
+  to   { background-position: -30% 0; }
+}
+
+@keyframes loader-fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .loader { transition: none; }
-  .loader__dots span { animation: none; opacity: 0.6; }
+  .loader__glow,
+  .loader__ring,
+  .loader__badge,
+  .loader__word,
+  .loader__tag { animation: none; }
+  /* Without the sheen animation the clipped-text trick would leave the
+     word invisible, so paint it solid. */
+  .loader__word {
+    background: none;
+    -webkit-text-fill-color: var(--color-text);
+  }
+  .loader__glow { opacity: 0.5; }
+}
+
+/* ---------------------------------------------------------
+   App preview — a single real screenshot in a framed card
+   --------------------------------------------------------- */
+
+.shots {
+  max-width: 62rem;
+  margin-inline: auto;
+}
+
+.shots__stage {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+}
+
+.shots__stage img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ---------------------------------------------------------
+   How it works — three numbered steps
+   --------------------------------------------------------- */
+
+.how-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-32);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  counter-reset: none;
+}
+
+.how-step {
+  position: relative;
+  padding: var(--space-32) var(--space-24) var(--space-24);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.how-step h3 {
+  margin-bottom: var(--space-8);
+  font-family: var(--font-heading);
+  font-size: 1.0625rem;
+  font-weight: var(--weight-semibold);
+}
+
+.how-step p {
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+  line-height: var(--leading-body);
+}
+
+/* The number sits half outside the card, which is what makes the three
+   read as a sequence rather than three unrelated boxes. */
+.how-step__num {
+  position: absolute;
+  top: calc(var(--space-16) * -1);
+  left: var(--space-24);
+  display: grid;
+  place-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-pill);
+  background-image: var(--gradient-brand);
+  /* Always white, not --color-on-brand: that token flips to a dark ink
+     in dark mode (correct for text on a pale surface), but the badge's
+     gradient stays a mid-to-dark green in both themes, so the number
+     needs white against it either way. In light mode this matches what
+     --color-on-brand already gave. */
+  color: #fff;
+  font-family: var(--font-heading);
+  font-size: 0.9375rem;
+  font-weight: var(--weight-bold);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ---------------------------------------------------------
+   Contact — details beside a form
+   --------------------------------------------------------- */
+
+.contact-grid {
+  display: grid;
+  /* minmax(0, …) so the form's inputs can shrink instead of widening
+     the grid past the container. */
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  gap: var(--space-48);
+  align-items: start;
+}
+
+.contact-info__lead {
+  margin-bottom: var(--space-32);
+  color: var(--color-text-muted);
+  line-height: var(--leading-body);
+}
+
+.contact-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-24);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.contact-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-16);
+}
+
+.contact-item__icon {
+  display: grid;
+  place-content: center;
+  width: 42px;
+  height: 42px;
+  flex: none;
+  border-radius: var(--radius-md);
+  background-color: var(--color-brand-soft);
+  color: var(--color-brand);
+}
+
+.contact-item__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.contact-item__label {
+  font-size: 0.6875rem;
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-secondary);
+}
+
+.contact-item__value {
+  font-size: 1rem;
+  font-weight: var(--weight-medium);
+  color: var(--color-text);
+  /* A long email or address wraps instead of widening the column. */
+  overflow-wrap: anywhere;
+}
+
+a.contact-item__value:hover { color: var(--color-brand); }
+
+.contact-item__note {
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+}
+
+.contact-item__link {
+  margin-top: var(--space-4);
+  font-size: var(--text-small);
+  font-weight: var(--weight-medium);
+  color: var(--color-brand);
+}
+
+.contact-item__link:hover { text-decoration: underline; }
+
+/* ---- The form ---- */
+
+.contact-form-card {
+  padding: var(--space-32);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-lg);
+}
+
+.contact-form-card > h3 {
+  margin-bottom: var(--space-24);
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  letter-spacing: var(--tracking-tight);
+}
+
+.contact-form__textarea {
+  min-height: 132px;
+  resize: vertical;
+  line-height: var(--leading-body);
+}
+
+.contact-form__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-12);
+  margin-top: var(--space-8);
+}
+
+/* ---- Success panel, swapped in for the form ---- */
+
+.contact-sent {
+  text-align: center;
+  padding: var(--space-24) 0;
+  animation: rise-in 500ms var(--ease-out) both;
+}
+
+.contact-sent[hidden] { display: none; }
+
+.contact-sent__mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  margin-bottom: var(--space-16);
+  border-radius: var(--radius-pill);
+  background-color: var(--color-brand-soft);
+  color: var(--color-brand);
+}
+
+.contact-sent h4 {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  margin-bottom: var(--space-8);
+}
+
+.contact-sent h4:focus { outline: none; }
+
+.contact-sent p {
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-16);
+}
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (max-width: 940px) {
+  .contact-grid { grid-template-columns: minmax(0, 1fr); gap: var(--space-32); }
+  .how-steps { grid-template-columns: minmax(0, 1fr); gap: var(--space-24); }
+}
+
+@media (max-width: 620px) {
+  .contact-form-card { padding: var(--space-24); }
 }

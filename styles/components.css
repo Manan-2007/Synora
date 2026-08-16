@@ -255,3 +255,211 @@
   60%      { transform: translateX(-4px); }
   80%      { transform: translateX(4px); }
 }
+
+/* =========================================================
+   Brand mark
+   ---------------------------------------------------------
+   The logo ships as two PNGs — one drawn for light backgrounds
+   (sage mark, ink wordmark) and one for dark (both in paper
+   white). Rather than recolouring one image with filters, which
+   never looks right, both are in the DOM and CSS shows whichever
+   matches the current theme.
+
+   Sizing is done by height only; `width: auto` keeps the
+   original proportions, and the intrinsic width/height on the
+   <img> tags reserves the right space before the file loads.
+
+   Variants:
+     .logo--lockup   mark + wordmark, side by side
+     .logo--mark     the S monogram on its own
+     .logo--stacked  mark above the wordmark
+   ========================================================= */
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+}
+
+.logo img {
+  display: block;
+  width: auto;
+  height: 100%;
+  max-width: 100%;
+}
+
+/* Only one of the pair is ever shown. */
+.logo .logo__dark { display: none; }
+
+[data-theme="dark"] .logo .logo__light { display: none; }
+[data-theme="dark"] .logo .logo__dark { display: block; }
+
+.logo--lockup { height: 30px; }
+.logo--mark { height: 30px; }
+.logo--stacked { height: 82px; }
+
+.logo--lg { height: 40px; }
+.logo--sm { height: 24px; }
+
+/* Keep the focus ring clear of the artwork. */
+a.logo:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm);
+}
+
+
+/* =========================================================
+   AVATAR PICKER
+   Shared by onboarding and by Settings, which is why it lives
+   here rather than in onboarding.css — Settings loads
+   components.css but not onboarding.css, so the picker used to
+   arrive there with no styles and collapse to one option a row.
+   ========================================================= */
+.avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--space-12);
+}
+
+@media (max-width: 560px) {
+  .avatar-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+.avatar-option {
+  position: relative;
+  display: block;
+  border-radius: var(--radius-lg);
+  border: 2px solid transparent;
+  padding: var(--space-4);
+  cursor: pointer;
+  transition: border-color var(--duration-fast) var(--ease-out),
+              transform var(--duration-fast) var(--ease-out);
+}
+
+.avatar-option:hover { transform: translateY(-2px); }
+
+/* The radio stays in the DOM — focusable, arrow-key navigable, and
+   the thing that actually holds the checked state — but is visually
+   replaced by the artwork inside its own <label>. */
+.avatar-option input,
+.avatar-swatch input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.avatar-option__art { display: block; }
+
+.avatar-option__art img,
+.avatar-option__art svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: var(--radius-pill);
+}
+
+/* Selection is shown three ways — border, tick and background —
+   so it never depends on colour alone. */
+.avatar-option.is-selected {
+  border-color: var(--color-brand);
+  background-color: var(--color-brand-soft);
+}
+
+.avatar-option__check,
+.avatar-swatch__check {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  display: none;
+  place-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-brand);
+  color: var(--color-on-brand);
+  font-size: 0.7rem;
+  line-height: 1;
+  box-shadow: 0 0 0 2px var(--color-surface);
+}
+
+.avatar-option.is-selected .avatar-option__check,
+.avatar-swatch.is-selected .avatar-swatch__check { display: grid; }
+
+.avatar-option input:focus-visible + .avatar-option__art,
+.avatar-swatch input:focus-visible + .avatar-swatch__art {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 3px;
+  border-radius: var(--radius-pill);
+}
+
+/* ---- Section headings inside the avatar step ---- */
+
+.picker-legend {
+  display: block;
+  margin-bottom: var(--space-12);
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+}
+
+.picker-legend__note {
+  margin: calc(var(--space-12) * -1) 0 var(--space-12);
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+/* A labelled rule between the two ways of having an avatar, so the
+   choice reads as either/or rather than as one long list. */
+.picker-or {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  margin: var(--space-24) 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+}
+
+.picker-or::before,
+.picker-or::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background-color: var(--color-border);
+}
+
+/* ---- The six initials colours ---- */
+
+.avatar-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-12);
+}
+
+.avatar-swatch {
+  position: relative;
+  display: block;
+  border-radius: var(--radius-lg);
+  border: 2px solid transparent;
+  padding: var(--space-4);
+  cursor: pointer;
+  transition: border-color var(--duration-fast) var(--ease-out),
+              transform var(--duration-fast) var(--ease-out);
+}
+
+.avatar-swatch:hover { transform: translateY(-2px); }
+
+.avatar-swatch.is-selected {
+  border-color: var(--color-brand);
+  background-color: var(--color-brand-soft);
+}
+
+.avatar-swatch__art { display: block; }
+
+.avatar-swatch__art svg {
+  display: block;
+  border-radius: var(--radius-pill);
+}
+

@@ -20,7 +20,7 @@
 
   var USERS_KEY = Synora.keys.users;       // "synora-users"
   var SESSION_KEY = Synora.keys.session;   // "synora-session"
-  var DASHBOARD = "./dashboard.html";
+  var ONBOARDING = "./onboarding.html";
 
   /* ---- Tiny, dependency-free string hash (cyrb53) --------
      Good enough to avoid storing passwords in the clear.
@@ -94,7 +94,17 @@
     Synora.storage.writeJSON(SESSION_KEY, { username: username });
   }
 
-  /* Reveal the success panel and head to the dashboard. */
+  /* Reveal the confirmation panel — and STOP there.
+
+     This screen used to show itself for 900ms and then redirect on a
+     timer. That is not a confirmation, it is a flash of text on the way
+     to somewhere the app had already decided to go. Now it presents the
+     two things a person might actually want next and waits for one of
+     them to be clicked. Nothing here moves on by itself.
+
+     Both destinations are real <a href> links in the markup, so they
+     work as ordinary navigation — the buttons cannot go dead because
+     no JavaScript is required to make them travel. */
   function finish(name) {
     var formView = document.getElementById("form-view");
     var doneView = document.getElementById("done-view");
@@ -104,22 +114,23 @@
       el.textContent = name;
     });
 
-    // Point the panel's button at the dashboard now that it exists.
-    if (doneView) {
-      var btn = doneView.querySelector(".btn");
-      if (btn) {
-        btn.setAttribute("href", DASHBOARD);
-        btn.textContent = "Go to your dashboard";
-      }
-      var note = doneView.querySelector(".auth-done__note");
-      if (note) note.textContent = "Taking you to your workspace…";
-      doneView.classList.add("is-shown");
+    if (!doneView) return;
+
+    /* Someone who has already set their workspace up doesn't need
+       "Personalize my workspace" offered as the headline action — but
+       it stays available, because Settings is not the only way back to
+       it and a returning student may well want to change things. */
+    var onboarded = Synora.profile.get().onboarded;
+    var personalize = doneView.querySelector("[data-go-onboarding]");
+    if (personalize && onboarded) {
+      personalize.textContent = "Change my setup";
     }
 
-    // Give the panel a beat to render, then redirect.
-    window.setTimeout(function () {
-      window.location.href = DASHBOARD;
-    }, 900);
+    doneView.classList.add("is-shown");
+
+    // Land keyboard focus on the choice, not back at the top of the page.
+    var first = doneView.querySelector(".btn");
+    if (first) first.focus();
   }
 
   /* Wire up the "Show password" checkbox on either page. */
@@ -134,26 +145,19 @@
     });
   }
 
-  /* If someone's already signed in, show the "Signed in as…" bar. */
-  function wireSessionBar() {
-    var bar = document.getElementById("session-bar");
-    if (!bar) return;
-    var username = Synora.session.username();
-    if (!username) return;
+  /* There is deliberately no "Signed in as … / Sign out" bar on these
+     pages any more.
 
-    var user = Synora.session.user();
-    var nameEl = bar.querySelector("[data-session-name]");
-    if (nameEl) nameEl.textContent = (user && user.fullName) || username;
-    bar.removeAttribute("hidden");
+     The sign-in page is for signing in. Telling a visitor who is already
+     signed in that they are, and offering to sign them out, is answering
+     a question nobody standing on that page asked — and it leaked the
+     current user's real name onto a screen that anyone can open.
 
-    var signOutBtn = document.getElementById("sign-out");
-    if (signOutBtn) {
-      signOutBtn.addEventListener("click", function () {
-        Synora.session.signOut();
-        window.location.reload();
-      });
-    }
-  }
+     None of the session MACHINERY was removed: the session is still
+     written on sign-in, still read by every app page, still what the
+     sidebar, Settings and the profile menu display, and signing out
+     still lives in the profile menu inside the app, which is where a
+     signed-in person would look for it. */
 
   /* Clear a field's error as soon as the user edits it. */
   function wireLiveClearing(form) {
@@ -170,19 +174,38 @@
      Sign-up flow.
      ======================================================= */
 
+  /* Deliberately permissive: something@something.something. Anything
+     stricter starts rejecting addresses that are perfectly valid. */
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
   function initSignup(form) {
     form.addEventListener("submit", function (e) {
       e.preventDefault();
       clearAllErrors(form);
 
-      var fullName = form.fullName.value.trim();
+      var firstName = form.firstName.value.trim();
+      var lastName = form.lastName.value.trim();
       var username = form.username.value.trim();
+      var email = form.email.value.trim();
       var password = form.password.value;
       var confirm = form.confirm.value;
       var ok = true;
 
-      if (!fullName) {
-        setError(form, "fullName", "Please enter your name.");
+      if (!firstName) {
+        setError(form, "firstName", "Please enter your first name.");
+        ok = false;
+      }
+
+      if (!lastName) {
+        setError(form, "lastName", "Please enter your last name.");
+        ok = false;
+      }
+
+      if (!email) {
+        setError(form, "email", "Please enter your email.");
+        ok = false;
+      } else if (!EMAIL_RE.test(email)) {
+        setError(form, "email", "That doesn't look like an email address.");
         ok = false;
       }
 
@@ -218,8 +241,11 @@
       // Create and store the account.
       var users = getUsers();
       users.push({
-        fullName: fullName,
+        firstName: firstName,
+        lastName: lastName,
+        fullName: Synora.util.fullName(firstName, lastName),
         username: username,
+        email: email,
         passHash: hash(password),
         createdAt: new Date().toISOString()
       });
@@ -227,16 +253,19 @@
 
       startSession(username);
 
-      // Seed a small starter profile + optional sample data (app.js).
-      Synora.store.update("profile", function (p) {
-        p.fullName = fullName;
-        return p;
+      /* A new account starts EMPTY. Only the profile is written here —
+         no tasks, no notes, no subjects, no attendance. The dashboard
+         should read 0 across the board until this person adds something
+         themselves. The rest is filled in by onboarding. */
+      Synora.profile.save({
+        firstName: firstName,
+        lastName: lastName,
+        username: username,
+        email: email,
+        onboarded: false
       });
-      if (typeof Synora.seedSampleData === "function") {
-        Synora.seedSampleData();
-      }
 
-      finish(fullName);
+      finish(firstName);
     });
   }
 
@@ -269,7 +298,19 @@
       }
 
       startSession(user.username);
-      finish(user.fullName || user.username);
+
+      /* The one place sample data is ever written. It is tied to the
+         demo account's identity, not to "somebody signed in" — which
+         is what used to give every new account a fake four-task
+         history. Seeded on first sign-in, and re-seeded when the shipped
+         demo fixture changes (see SEED_VERSION in demo-data.js), so a
+         browser that opened the demo before still picks up new data. */
+      if (Synora.demo && Synora.demo.isCurrent() && Synora.demo.needsSeed()) {
+        Synora.demo.seed();
+      }
+
+      var profile = Synora.profile.get();
+      finish(profile.firstName || user.username);
     });
   }
 
@@ -277,11 +318,30 @@
      Boot: pick the flow based on which form is present.
      ======================================================= */
 
+  /* Make the demo account exist on this browser, so "Use the demo
+     account" works on a machine that has never opened Synora before.
+     auth.js owns the hashing, so it hands the hash function over. */
+  function wireDemo() {
+    if (!Synora.demo) return;
+    Synora.demo.ensureAccount(hash);
+
+    var fillBtn = document.getElementById("use-demo");
+    var loginForm = document.getElementById("login-form");
+    if (!fillBtn || !loginForm) return;
+
+    fillBtn.addEventListener("click", function () {
+      clearAllErrors(loginForm);
+      loginForm.username.value = Synora.demo.username;
+      loginForm.password.value = Synora.demo.password;
+      loginForm.querySelector('button[type="submit"]').focus();
+    });
+  }
+
   var signupForm = document.getElementById("signup-form");
   var loginForm = document.getElementById("login-form");
 
   wireShowPassword();
-  wireSessionBar();
+  wireDemo();
 
   if (signupForm) {
     wireLiveClearing(signupForm);

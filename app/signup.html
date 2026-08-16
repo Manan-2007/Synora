@@ -8,6 +8,8 @@
   <meta name="color-scheme" content="light dark">
 
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="../assets/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="../assets/favicon-180.png">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,6 +25,7 @@
   <!-- Data layer, then form validation and account storage.
        Deferred: they only need to run once the form exists. -->
   <script src="../scripts/storage.js" defer></script>
+  <script src="../scripts/demo-data.js" defer></script>
   <script src="../scripts/auth.js" defer></script>
 </head>
 
@@ -32,7 +35,10 @@
     <!-- ================================================= FORM SIDE -->
     <main class="auth-main">
       <div class="auth-topbar">
-        <a class="wordmark" href="../index.html">Synora</a>
+        <a class="logo logo--lockup" href="../index.html" aria-label="Synora — back to the home page">
+          <img class="logo__light" src="../assets/logo-lockup-light.png" alt="Synora" width="1040" height="267">
+          <img class="logo__dark" src="../assets/logo-lockup-dark.png" alt="" aria-hidden="true" width="1040" height="267">
+        </a>
 
         <button type="button" class="icon-btn theme-toggle" data-theme-toggle aria-label="Toggle dark mode">
           <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -47,17 +53,11 @@
 
       <div class="auth-body">
 
-        <!-- Revealed by auth.js only when a session already exists. -->
-        <p class="session-bar" id="session-bar" hidden>
-          Signed in as <strong data-session-name></strong>
-          <button type="button" id="sign-out">Sign out</button>
-        </p>
-
         <!-- ---------- The form ---------- -->
         <div class="auth-view" id="form-view">
           <div class="auth-head">
             <h1>Create your account</h1>
-            <p>A username and a password is all it takes — no email, no verification. Your account is stored in this browser, on this device.</p>
+            <p>Your details set up your workspace — you'll personalize it in the next step. Everything is stored in this browser, on this device.</p>
           </div>
 
           <!-- novalidate turns off the browser's own error bubbles so
@@ -71,11 +71,20 @@
               <span data-alert-text></span>
             </div>
 
-            <div class="field" data-field="fullName">
-              <label class="field__label" for="fullName">Your name</label>
-              <input class="input" type="text" id="fullName" name="fullName"
-                     autocomplete="name" placeholder="Manan" required>
-              <p class="field__error"></p>
+            <div class="auth-form__row">
+              <div class="field" data-field="firstName">
+                <label class="field__label" for="firstName">First name</label>
+                <input class="input" type="text" id="firstName" name="firstName"
+                       autocomplete="given-name" placeholder="Manan" required>
+                <p class="field__error"></p>
+              </div>
+
+              <div class="field" data-field="lastName">
+                <label class="field__label" for="lastName">Last name</label>
+                <input class="input" type="text" id="lastName" name="lastName"
+                       autocomplete="family-name" placeholder="Kochhar" required>
+                <p class="field__error"></p>
+              </div>
             </div>
 
             <div class="field" data-field="username">
@@ -84,6 +93,14 @@
                      autocomplete="username" placeholder="manan_07"
                      minlength="3" maxlength="20" required>
               <p class="field__hint">3–20 characters. Letters, numbers and underscores.</p>
+              <p class="field__error"></p>
+            </div>
+
+            <div class="field" data-field="email">
+              <label class="field__label" for="email">Email</label>
+              <input class="input" type="email" id="email" name="email"
+                     autocomplete="email" placeholder="you@example.com" required>
+              <p class="field__hint">Stored on this device only — nothing is sent anywhere.</p>
               <p class="field__error"></p>
             </div>
 
@@ -124,18 +141,32 @@
               <path d="M20 6 9 17l-5-5"></path>
             </svg>
           </span>
-          <h2 data-done-heading>Account created</h2>
-          <p>You're signed in as <strong data-done-name></strong>. Your workspace is ready when the dashboard is.</p>
-          <a class="btn btn--primary btn--lg btn--block" href="../index.html">Back to Synora</a>
+          <h2 data-done-heading>You're signed in.</h2>
+          <p class="auth-done__lead">
+            Welcome to Synora, <strong data-done-name></strong>.
+          </p>
+          <p>Let's get your workspace ready.</p>
+
+          <!-- Two real choices, and the page waits for one of them.
+               There is no timer here on purpose: a screen that moves
+               on by itself is not a choice, it is an announcement. -->
+          <div class="auth-done__choices">
+            <a class="btn btn--primary btn--lg btn--block" data-go-onboarding href="./onboarding.html">
+              Personalize my workspace
+            </a>
+            <a class="btn btn--ghost btn--lg btn--block" data-go-dashboard href="./dashboard.html">
+              Go to dashboard
+            </a>
+          </div>
+
           <p class="auth-done__note">
-            The dashboard is the next piece to build. Until then, your account is saved
-            under <code>synora-users</code> in this browser's local storage.
+            You can personalize later from Settings — nothing is locked in.
           </p>
         </div>
 
       </div>
 
-      <p class="auth-foot">© 2026 Synora. Built by Manan.</p>
+      <p class="auth-foot">© 2026 Synora</p>
     </main>
 
     <!-- ================================================= PHOTO SIDE -->
