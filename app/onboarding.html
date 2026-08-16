@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Make Synora yours — Synora</title>
+  <meta name="description" content="Set up your Synora workspace: avatar, program, subjects, attendance goal and appearance.">
+  <meta name="color-scheme" content="light dark">
+
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="../assets/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="../assets/favicon-180.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700&display=swap">
+
+  <link rel="stylesheet" href="../styles/tokens.css">
+  <link rel="stylesheet" href="../styles/base.css">
+  <link rel="stylesheet" href="../styles/components.css">
+  <link rel="stylesheet" href="../styles/onboarding.css">
+
+  <!-- Runs before first paint so the saved theme applies with no flash. -->
+  <script src="../scripts/theme.js"></script>
+  <script src="../scripts/storage.js" defer></script>
+  <script src="../scripts/avatars.js" defer></script>
+  <script src="../scripts/onboarding.js" defer></script>
+</head>
+
+<body class="ob">
+
+  <header class="ob-topbar">
+    <a class="logo logo--lockup" href="../index.html" aria-label="Synora — back to the home page">
+      <img class="logo__light" src="../assets/logo-lockup-light.png" alt="Synora" width="1040" height="267">
+      <img class="logo__dark" src="../assets/logo-lockup-dark.png" alt="" aria-hidden="true" width="1040" height="267">
+    </a>
+
+    <button type="button" class="btn btn--ghost btn--sm" data-ob-exit>Save &amp; finish later</button>
+  </header>
+
+  <main class="ob-main" id="main">
+    <div class="ob-shell">
+
+      <div class="ob-head">
+        <h1>Make Synora yours.</h1>
+        <p>A few details and we'll set up your workspace.</p>
+      </div>
+
+      <!-- Step indicator. Rebuilt by onboarding.js as the person moves. -->
+      <ol class="ob-steps" data-ob-steps aria-label="Setup progress"></ol>
+
+      <!-- The current step is rendered in here. aria-live so a screen
+           reader hears the new step title after Continue is pressed. -->
+      <section class="ob-card" data-ob-panel aria-live="polite"></section>
+
+      <div class="ob-nav">
+        <button type="button" class="btn btn--ghost" data-ob-back>Back</button>
+        <span class="ob-nav__spacer"></span>
+        <button type="button" class="btn btn--ghost" data-ob-skip hidden>Skip for now</button>
+        <button type="button" class="btn btn--primary" data-ob-next>Continue</button>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- The closing "You're all set." moment, revealed on finish. -->
+  <div class="ob-done" data-ob-done hidden>
+    <span class="logo logo--stacked ob-done__logo">
+      <img class="logo__light" src="../assets/logo-stacked-light.png" alt="Synora" width="440" height="385">
+      <img class="logo__dark" src="../assets/logo-stacked-dark.png" alt="" aria-hidden="true" width="440" height="387">
+    </span>
+    <h2>You're all set.</h2>
+    <p data-ob-done-text>Opening your workspace…</p>
+  </div>
+
+</body>
+</html>

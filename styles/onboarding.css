@@ -1,0 +1,655 @@
+/* =========================================================
+   Synora — Personalize Synora (onboarding)
+
+   A single centred column. No sidebar, no topbar: during setup
+   there is exactly one thing to do, and the layout says so.
+   Everything here is built from the same tokens as the rest of
+   the app, so the dashboard that follows feels like the same
+   product rather than a different one.
+   ========================================================= */
+
+.ob {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-bg);
+  background-image: var(--gradient-page);
+}
+
+/* ---------------------------------------------------------
+   Top bar
+   --------------------------------------------------------- */
+
+.ob-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-16);
+  padding: var(--space-24) var(--container-pad);
+}
+
+/* ---------------------------------------------------------
+   Shell
+   --------------------------------------------------------- */
+
+.ob-main {
+  flex: 1 1 auto;
+  display: flex;
+  justify-content: center;
+  padding: var(--space-16) var(--container-pad) var(--space-64);
+}
+
+.ob-shell {
+  width: 100%;
+  max-width: 640px;
+}
+
+.ob-head {
+  text-align: center;
+  margin-bottom: var(--space-32);
+}
+
+.ob-head h1 {
+  font-family: var(--font-heading);
+  font-size: clamp(1.75rem, 4vw, 2.25rem);
+  letter-spacing: var(--tracking-tight);
+}
+
+.ob-head p {
+  margin-top: var(--space-8);
+  color: var(--color-text-muted);
+}
+
+/* ---------------------------------------------------------
+   Step indicator
+   Labels are hidden on narrow screens — six words across a
+   phone would wrap into a paragraph. The numbered dots keep
+   the sense of progress on their own.
+   --------------------------------------------------------- */
+
+.ob-steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--space-8) var(--space-16);
+  margin-bottom: var(--space-24);
+  list-style: none;
+}
+
+.ob-step {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+}
+
+.ob-step__dot {
+  display: grid;
+  place-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border-strong);
+  background-color: var(--color-surface);
+  font-size: 0.75rem;
+  font-weight: var(--weight-semibold);
+  transition: background-color var(--duration-base) var(--ease-out),
+              border-color var(--duration-base) var(--ease-out),
+              color var(--duration-base) var(--ease-out);
+}
+
+.ob-step.is-current .ob-step__dot {
+  border-color: var(--color-brand);
+  background-color: var(--color-brand);
+  color: var(--color-on-brand);
+}
+
+.ob-step.is-current .ob-step__label {
+  color: var(--color-text);
+  font-weight: var(--weight-semibold);
+}
+
+.ob-step.is-done .ob-step__dot {
+  border-color: var(--color-brand);
+  color: var(--color-brand);
+  background-color: var(--color-brand-soft);
+}
+
+@media (max-width: 640px) {
+  .ob-step__label { display: none; }
+  .ob-steps { gap: var(--space-8); }
+}
+
+/* ---------------------------------------------------------
+   Step card
+   --------------------------------------------------------- */
+
+.ob-card {
+  padding: var(--space-32);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-lg);
+  animation: ob-step-in var(--duration-slow) var(--ease-out) both;
+}
+
+@keyframes ob-step-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.ob-card__title {
+  font-family: var(--font-heading);
+  font-size: 1.375rem;
+  letter-spacing: var(--tracking-tight);
+}
+
+/* The heading takes focus when a step opens; it is a destination,
+   not a control, so it gets no ring. */
+.ob-card__title:focus { outline: none; }
+
+.ob-card__sub {
+  margin-top: var(--space-8);
+  margin-bottom: var(--space-24);
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+  line-height: var(--leading-body);
+}
+
+.ob-fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+
+.ob-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-24);
+}
+
+.ob-fields .field { margin-bottom: 0; }
+
+.ob-error {
+  margin-top: var(--space-16);
+  padding: var(--space-12) var(--space-16);
+  border: 1px solid var(--status-high);
+  border-radius: var(--radius-md);
+  background-color: color-mix(in srgb, var(--status-high) 8%, transparent);
+  font-size: var(--text-small);
+  color: var(--color-text);
+}
+
+/* The avatar picker itself now lives in components.css, because
+   Settings needs exactly the same grid and only loads components.css.
+   Keeping it here meant the picker had no styles at all on that page
+   and rendered as one option per line. */
+
+/* ---- Selected-avatar preview ---- */
+
+.ob-preview {
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+  margin-top: var(--space-24);
+  padding-top: var(--space-24);
+  border-top: 1px solid var(--color-border);
+}
+
+.ob-preview__label {
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+}
+
+.ob-preview__art {
+  display: grid;
+  place-content: center;
+  margin-left: auto;
+}
+
+.ob-preview__art svg {
+  display: block;
+  border-radius: var(--radius-pill);
+}
+
+.ob-preview__initials {
+  display: grid;
+  place-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-brand-soft);
+  color: var(--color-brand);
+  font-family: var(--font-heading);
+  font-weight: var(--weight-bold);
+  font-size: 1.5rem;
+}
+
+.ob-preview__name {
+  font-weight: var(--weight-semibold);
+}
+
+/* ---------------------------------------------------------
+   Subjects
+
+   Each subject is now a small card rather than a table row,
+   because it carries three answers instead of two: name,
+   credits, and whether it takes a register at all. A Yes/No
+   pair squeezed into a third table column would have been
+   unreadable on a phone.
+   --------------------------------------------------------- */
+
+.ob-subject {
+  padding: var(--space-16);
+  margin-bottom: var(--space-12);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface-sunken);
+}
+
+.ob-subject__main {
+  display: grid;
+  /* minmax(0, 1fr) so a long subject name can't widen the card. */
+  grid-template-columns: minmax(0, 1fr) 96px 36px;
+  gap: var(--space-8);
+  align-items: end;
+}
+
+.ob-subject__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.ob-subject__label {
+  font-size: 0.75rem;
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-secondary);
+}
+
+.ob-subject__remove {
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--color-text-muted);
+}
+
+.ob-subject__remove:hover { color: var(--status-high); }
+
+/* ---- Record attendance? ---- */
+
+.ob-track {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-8) var(--space-12);
+  margin-top: var(--space-12);
+  padding: 0;
+  border: 0;
+}
+
+.ob-track__legend {
+  padding: 0;
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+}
+
+.ob-track__options {
+  display: flex;
+  gap: var(--space-8);
+}
+
+.ob-track__option {
+  position: relative;
+  padding: var(--space-4) var(--space-16);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  background-color: var(--color-surface);
+  font-size: var(--text-small);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition: border-color var(--duration-fast) var(--ease-out),
+              background-color var(--duration-fast) var(--ease-out),
+              color var(--duration-fast) var(--ease-out);
+}
+
+.ob-track__option input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.ob-track__option.is-selected {
+  border-color: var(--color-brand);
+  background-color: var(--color-brand);
+  color: var(--color-on-brand);
+}
+
+.ob-track__option:has(input:focus-visible) {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+
+@media (max-width: 520px) {
+  .ob-subject__main {
+    grid-template-columns: minmax(0, 1fr) 36px;
+  }
+  .ob-subject__field--credits { grid-column: 1; }
+  .ob-subject__remove { grid-row: 1; grid-column: 2; }
+}
+
+.ob-empty {
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+  padding: var(--space-16) 0;
+}
+
+.ob-add { margin-top: var(--space-8); }
+
+/* ---------------------------------------------------------
+   Attendance target
+   --------------------------------------------------------- */
+
+.ob-target { text-align: center; }
+
+.ob-target__value {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: 3rem;
+  font-weight: var(--weight-bold);
+  color: var(--color-brand);
+  line-height: 1;
+  margin-bottom: var(--space-24);
+}
+
+.ob-target__range {
+  width: 100%;
+  accent-color: var(--color-brand);
+}
+
+.ob-target__scale {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--space-8);
+  font-size: 0.75rem;
+  color: var(--color-secondary);
+}
+
+.ob-target__note {
+  margin-top: var(--space-24);
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+}
+
+/* ---------------------------------------------------------
+   Appearance
+   The previews are hard-coded light and dark on purpose: a
+   "Dark" card that renders light because the page is light
+   would be showing the wrong thing.
+   --------------------------------------------------------- */
+
+.ob-themes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-16);
+}
+
+@media (max-width: 480px) {
+  .ob-themes { grid-template-columns: 1fr; }
+}
+
+.ob-theme {
+  position: relative;
+  display: block;
+  padding: var(--space-12);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+.ob-theme input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.ob-theme.is-selected { border-color: var(--color-brand); }
+
+.ob-theme input:focus-visible ~ .ob-theme__preview {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 3px;
+}
+
+.ob-theme__preview {
+  display: block;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+
+.ob-theme--light .ob-theme__preview { background-color: #FAF9F7; }
+.ob-theme--dark  .ob-theme__preview { background-color: #16181C; }
+
+.ob-theme__bar {
+  display: block;
+  height: 12px;
+}
+
+.ob-theme--light .ob-theme__bar { background-color: #FFFFFF; border-bottom: 1px solid #E5E8EB; }
+.ob-theme--dark  .ob-theme__bar { background-color: #1D2025; border-bottom: 1px solid #2C3138; }
+
+.ob-theme__body {
+  display: flex;
+  gap: 6px;
+  padding: 8px;
+  height: 68px;
+}
+
+.ob-theme__side {
+  display: block;
+  width: 26%;
+  border-radius: 4px;
+}
+
+.ob-theme--light .ob-theme__side { background-color: #F3F1EE; }
+.ob-theme--dark  .ob-theme__side { background-color: #202329; }
+
+.ob-theme__main {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1 1 auto;
+}
+
+.ob-theme__main i {
+  display: block;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.ob-theme--light .ob-theme__main i { background-color: #E5E8EB; }
+.ob-theme--dark  .ob-theme__main i { background-color: #2C3138; }
+
+.ob-theme--light .ob-theme__main i:first-child { background-color: #53655C; width: 55%; }
+.ob-theme--dark  .ob-theme__main i:first-child { background-color: #8FA697; width: 55%; }
+
+.ob-theme__meta {
+  display: block;
+  margin-top: var(--space-12);
+}
+
+.ob-theme__label {
+  display: block;
+  font-weight: var(--weight-semibold);
+}
+
+.ob-theme__note {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.ob-theme__check {
+  position: absolute;
+  top: var(--space-12);
+  right: var(--space-12);
+  display: none;
+  place-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-brand);
+  color: var(--color-on-brand);
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+.ob-theme.is-selected .ob-theme__check { display: grid; }
+
+/* ---------------------------------------------------------
+   Summary
+   --------------------------------------------------------- */
+
+.ob-summary__who {
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+  padding-bottom: var(--space-24);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.ob-summary__who strong { display: block; }
+.ob-summary__who .muted { font-size: var(--text-small); color: var(--color-text-muted); }
+
+.ob-summary__art svg {
+  display: block;
+  border-radius: var(--radius-pill);
+}
+
+.ob-summary__art .ob-preview__initials {
+  width: 64px;
+  height: 64px;
+  font-size: 1.25rem;
+}
+
+.ob-summary__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--space-16);
+  padding: var(--space-24) 0;
+}
+
+.ob-summary__grid dt {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--color-secondary);
+}
+
+.ob-summary__grid dd {
+  margin-top: 2px;
+  font-weight: var(--weight-semibold);
+}
+
+.ob-summary__subjects {
+  list-style: none;
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-16);
+}
+
+.ob-summary__subjects li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-16);
+  padding: var(--space-8) 0;
+  font-size: var(--text-small);
+}
+
+.ob-summary__subjects .muted { color: var(--color-text-muted); }
+
+/* ---------------------------------------------------------
+   Step navigation
+   --------------------------------------------------------- */
+
+/* Three buttons don't fit across a phone once one of them reads
+   "Finish setup", so the row wraps rather than overflowing. */
+.ob-nav {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-12);
+  margin-top: var(--space-24);
+}
+
+.ob-nav__spacer { flex: 1 1 auto; }
+
+.ob-nav .btn:disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------
+   "You're all set."
+   --------------------------------------------------------- */
+
+/* [hidden] must win over the display below. A bare `display: grid` here
+   overrode the browser's own `[hidden] { display: none }`, which left this
+   panel sitting invisibly (opacity 0) across the whole viewport at
+   z-index 100 — swallowing every click on the setup page. That single
+   line is what made the avatars unselectable and Continue / Back / Skip
+   look dead: nothing was broken in the JavaScript, the clicks were simply
+   never reaching it. */
+.ob-done[hidden] { display: none; }
+
+.ob-done {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--space-16);
+  text-align: center;
+  padding: var(--space-24);
+  background-color: var(--color-bg);
+  background-image: var(--gradient-page);
+  opacity: 0;
+  transition: opacity var(--duration-slow) var(--ease-out);
+}
+
+.ob-done.is-shown { opacity: 1; }
+
+.ob-done h2 {
+  font-family: var(--font-heading);
+  font-size: clamp(1.75rem, 4vw, 2.25rem);
+  letter-spacing: var(--tracking-tight);
+}
+
+.ob-done p { color: var(--color-text-muted); }
+
+.ob-done__logo {
+  margin-bottom: var(--space-8);
+  animation: ob-done-rise var(--duration-slow) var(--ease-out) both;
+}
+
+@keyframes ob-done-rise {
+  from { opacity: 0; transform: translateY(10px) scale(.98); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ob-card,
+  .ob-done__logo {
+    animation: none;
+  }
+  .avatar-option:hover,
+  .avatar-swatch:hover { transform: none; }
+}
