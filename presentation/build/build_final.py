@@ -74,34 +74,28 @@ def s02_idea():
         "cards and red warning badges make the pain visible; the red band drives it home.")
 
 def s03_solution():
-    s = d.slide(BG)   # light = the relief of the solution
+    s = d.slide(BG)   # the answer to the problem — the reveal
     eyebrow(s, ML, 0.62, "01 · The solution", color=SAGE_DK)
-    text(s, ML, 0.95, 10.5, 0.9, "Eight tools, gathered into one calm workspace.",
-         size=29, color=TEXT, bold=True, font=HEAD)
-    # ordered feature list (calm, the opposite of the scatter before)
-    rect(s, ML, 2.0, 3.35, 4.5, fill=SURFACE, line=MIST, lw=1.2, radius=0.1, shadow_=True, shalpha=9)
-    feats=[("check-square","Tasks"),("calendar","Calendar"),("feather","Notes"),("grid","Timetable"),
-           ("percent","Attendance"),("trending-up","CGPA"),("award","Achievements"),("bell","Notifications")]
-    for i,(ic,f) in enumerate(feats):
-        yy=2.3+i*0.5
-        icon_chip(s, ic, ML+0.3, yy, d=0.36, fill=SAGE_SOFT, icol="sage", ratio=0.56)
-        text(s, ML+0.8, yy, 2.4, 0.36, f, size=12.5, color=TEXT, anchor=AN.MIDDLE)
-    # converge into the Synora hub
-    arrow_right(s, 4.2, 4.25, w=0.5, color=SAGE, h=0.3)
-    hub = s.shapes.add_shape(MSO_SHAPE.OVAL, Inches(4.85), Inches(3.35), Inches(1.8), Inches(1.8))
-    hub.shadow.inherit=False; hub.fill.solid(); hub.fill.fore_color.rgb=rgb(SAGE); hub.line.fill.background()
-    shadow(hub, color=INK, alpha=24)
-    picw(s, LOGO+"logo-mark-dark.png", 5.5, 3.72, 0.5)
-    text(s, 4.85, 4.35, 1.8, 0.4, "Synora", size=15, color="FFFFFF", bold=True, font=HEAD, align=AL.CENTER)
-    arrow_right(s, 6.85, 4.25, w=0.5, color=SAGE, h=0.3)
-    pic_card(s, IMG+"dashboard_desktop.png", 7.45, 2.35, w=5.2)
-    text(s, 7.45, 5.6, 5.2, 0.3, "One dashboard for the whole semester.", size=10.5, color=SLATE, italic=True)
-    rich(s, ML, 6.75, CW, 0.4, [("One account.  ",13,SAGE_DK,True,HEAD),
-        ("One quiet home — personal to each student, on every device.",12.5,MUTED,False,BODY)])
-    footer(s, 3)
-    s.notes_slide.notes_text_frame.text = ("The relief beat: the eight scattered tools converge into one calm, "
-        "personalized workspace. Same colour language as the app (sage), ordered and quiet — deliberately the "
-        "opposite of the previous slide. The dashboard is the payoff.")
+    picw(s, LOGO+"logo-mark-light.png", ML, 1.15, 0.82)
+    text(s, ML+1.06, 1.1, 5.6, 0.92, "Synora", size=55, color=TEXT, bold=True, font=HEAD, anchor=AN.MIDDLE)
+    text(s, ML, 2.42, 5.7, 1.3, "Eight tools, gathered into one calm workspace — tasks, calendar, notes, "
+         "timetable, attendance and grades, in one personalized home for each student.",
+         size=15, color=MUTED, spacing=1.36)
+    feats=["Tasks","Calendar","Notes","Timetable","Attendance","CGPA","Achievements","Notifications"]
+    y=4.2
+    for r in range(2):
+        x=ML
+        for f in feats[r*4:r*4+4]:
+            x = chip(s, x, y, f, fill=SURFACE, tc=TEXT, line=MIST, size=11, h=0.44, padx=0.17) + 0.13
+        y+=0.58
+    rich(s, ML, 5.72, 5.7, 0.4, [("One account.  ",13,SAGE_DK,True,HEAD),
+        ("One quiet home for the whole semester.",12.5,MUTED,False,BODY)])
+    _,(_,_,dw,dh)=pic_card(s, IMG+"dashboard_desktop.png", 6.75, 1.5, w=5.9)
+    text(s, 6.75, 1.5+dh+0.08, 5.9, 0.3, "The dashboard — everything a student juggles, in one view.",
+         size=10.5, color=SLATE, italic=True, align=AL.CENTER)
+    s.notes_slide.notes_text_frame.text = ("The reveal. After the scattered problem, this is the answer — Synora. "
+        "Eight tools gathered into one calm, personalized workspace, shown by the dashboard. Land the brand name "
+        "first, then the one-line promise. Same sage colour language as the app.")
 
 def s04_what():
     s = d.slide(BG)
@@ -306,15 +300,15 @@ def s11_journey():
          size=13.5, color=MUTED)
     stages=[("landing_desktop.png","Landing","index.html"),("signup.png","Sign up","signup.html"),
             ("onboarding.png","Personalize","onboarding.html"),("dashboard_desktop.png","Dashboard","dashboard.html")]
-    w=2.78; gap=(CW-4*w)/3
+    w=2.86; gap=(CW-4*w)/3; ytop=2.72
     x=ML
     for i,(img,lab,fn) in enumerate(stages):
-        _,(_,_,ww,hh)=pic_card(s, IMG+img, x, 2.6, w=w)
-        shot_tag(s, x+0.15, 2.44, fn, color=(SAGE if i%2==0 else TAUPE), size=9)
-        text(s, x, 2.6+hh+0.1, ww, 0.3, lab, size=12, color=TEXT, bold=True, align=AL.CENTER)
-        if i<3: chevron_right(s, x+w+gap/2-0.1, 2.6+hh/2, size=0.24, color=TAUPE)
+        _,(_,_,ww,hh)=pic_card(s, IMG+img, x, ytop, w=w)
+        shot_tag(s, x+0.15, ytop-0.16, fn, color=(SAGE if i%2==0 else TAUPE), size=9)
+        text(s, x, ytop+hh+0.12, ww, 0.3, lab, size=12, color=TEXT, bold=True, align=AL.CENTER)
+        if i<3: chevron_right(s, x+w+gap/2-0.09, ytop+hh/2, size=0.19, color=TAUPE)
         x+=w+gap
-    text(s, ML, 5.7, CW, 0.7,
+    text(s, ML, 5.5, CW, 0.7,
          "Each page is a self-contained HTML document; anchors and links move between them, and the same "
          "navigation structure repeats so the product feels like one continuous space.",
          size=12.5, color=MUTED, spacing=1.28)
@@ -1062,23 +1056,24 @@ def s40_future():
 
 def s41_thanks():
     s = d.slide(INK, textured=True)
-    # THANK YOU — the hero of the closing slide
-    picw(s, LOGO+"logo-mark-dark.png", ML, 0.62, 0.85)
-    text(s, ML+1.0, 0.68, 5, 0.6, "Synora", size=22, color=CREAM, bold=True, font=HEAD, anchor=AN.MIDDLE)
-    text(s, ML-0.05, 1.78, 8.6, 1.9, "Thank\nyou.", size=104, color=CREAM, bold=True, font=HEAD, spacing=0.92)
-    text(s, ML+0.05, 5.35, 8.6, 0.5, "Synora — one calm home for everything you're studying.",
-         size=16, color=SAGE_LT, italic=True)
-    text(s, ML+0.05, 6.05, 6, 0.3, "SUBMITTED BY", size=10, color=TAUPE_LT, bold=True, letter=200)
-    text(s, ML+0.05, 6.38, 8, 0.4, NAMES, size=14.5, color=CREAM, bold=True)
-    # QR to the live demo
-    qx, qw = 9.55, 2.55
-    rect(s, qx, 2.35, qw, qw, fill="FFFFFF", radius=0.08, shadow_=True, shcolor="000000", shalpha=34)
-    picw(s, IMG+"qr.png", qx+0.28, 2.63, qw-0.56)
-    text(s, qx-0.3, 2.35+qw+0.18, qw+0.6, 0.3, "Scan for the live demo", size=12.5, color=CREAM, bold=True, align=AL.CENTER)
-    text(s, qx-0.3, 2.35+qw+0.5, qw+0.6, 0.3, "synora.vercel.app", size=11, color=SAGE_LT, align=AL.CENTER, font=MONO)
-    s.notes_slide.notes_text_frame.text = ("Close big — 'Thank you' is the hero. Restate the thesis: we used the "
+    W = d.W
+    # Centred, calm closing composition
+    picw(s, LOGO+"logo-mark-dark.png", W/2-0.42, 1.0, 0.84)
+    text(s, 0, 2.15, W, 1.0, "Thank you", size=58, color=CREAM, bold=True, font=HEAD, align=AL.CENTER)
+    text(s, 0, 3.35, W, 0.4, "Synora — one calm home for everything you're studying.",
+         size=15.5, color=SAGE_LT, italic=True, align=AL.CENTER)
+    hline(s, W/2-1.5, 4.18, 3.0, color=INK_SOFT, weight=1.2)
+    text(s, 0, 4.4, W, 0.3, "SUBMITTED BY", size=10, color=TAUPE_LT, bold=True, letter=200, align=AL.CENTER)
+    text(s, 0, 4.74, W, 0.4, NAMES, size=14.5, color=CREAM, bold=True, align=AL.CENTER)
+    # QR — small, centred at the foot
+    qw = 1.42; qx = W/2 - qw/2
+    rect(s, qx, 5.5, qw, qw, fill="FFFFFF", radius=0.09, shadow_=True, shcolor="000000", shalpha=32)
+    picw(s, IMG+"qr.png", qx+0.16, 5.66, qw-0.32)
+    rich(s, 0, 5.5+qw+0.12, W, 0.3, [("Scan for the live demo   ",11,CREAM,True,BODY),
+        ("synora-v1.vercel.app",11,SAGE_LT,False,MONO)], align=AL.CENTER)
+    s.notes_slide.notes_text_frame.text = ("Close calmly and confidently. Restate the thesis: we used the "
         "web-development syllabus as the foundation and built Synora into a complete, responsive, personalized "
-        "student-productivity platform. The QR links to the live deployment (sample URL — replace before final).")
+        "student-productivity platform. The QR links to the live deployment at synora-v1.vercel.app.")
 
 order=[s01_title,s02_idea,s03_solution,s04_what,s06_stack,
        s08_arch,s09_dataflow,s10_html_structure,s11_journey,s12_landing,s13_account,s14_personalize,
