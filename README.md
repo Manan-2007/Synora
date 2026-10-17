@@ -1,36 +1,56 @@
 <div align="center">
 
-# ✦ SYNORA ✦
+<a href="https://synora-v1.vercel.app/">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="src/assets/logo-lockup-dark.png">
+    <img alt="Synora" src="src/assets/logo-lockup-light.png" width="300">
+  </picture>
+</a>
 
-### *One calm home for everything you're studying.*
+### One calm home for everything you're studying.
 
-<p align="center">
-  <a href="#-what-is-synora">What is Synora?</a> •
-  <a href="#-feature-highlights">Features</a> •
-  <a href="#-pages--sections">Pages</a> •
-  <a href="#-how-it-works">How It Works</a> •
-  <a href="#-tech-stack">Tech Stack</a> •
-  <a href="#-design-philosophy">Design</a> •
-  <a href="#-getting-started">Getting Started</a> •
-  <a href="#-mysql-database">MySQL Database</a> •
-  <a href="#-deployment">Deployment</a>
-</p>
+Tasks, timetable, quick notes, CGPA, attendance and achievements, in a single quiet workspace.
 
-**[▶ Live site — synora-v1.vercel.app](https://synora-v1.vercel.app/)**
+<br>
 
+[![Live site](https://img.shields.io/badge/Live-synora--v1.vercel.app-53655C?style=for-the-badge&logo=vercel&logoColor=white&labelColor=22252B)](https://synora-v1.vercel.app/)
+&nbsp;
+[![Try the demo](https://img.shields.io/badge/Try-the_demo_account-B09F95?style=for-the-badge&labelColor=22252B)](https://synora-v1.vercel.app/login)
 
-[![React](https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
-[![Vite](https://img.shields.io/badge/Vite_8-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vite.dev/)
-[![React Router](https://img.shields.io/badge/React_Router_8-CA4245?style=for-the-badge&logo=reactrouter&logoColor=white)](https://reactrouter.com/)
-[![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/CSS)
-[![Vercel](https://img.shields.io/badge/Deployed_on-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://synora-v1.vercel.app/)
-[![Storage](https://img.shields.io/badge/Storage-LocalStorage-53655C?style=for-the-badge&logo=databricks&logoColor=white)](#-privacy--data)
-[![Responsive](https://img.shields.io/badge/Design-Responsive-B09F95?style=for-the-badge)](#-responsive-design)
-[![Theme](https://img.shields.io/badge/Theme-Light%20%7C%20Dark-22252B?style=for-the-badge)](#-design-philosophy)
+[![React](https://img.shields.io/badge/React-19-53655C?style=flat-square&logo=react&logoColor=white&labelColor=22252B)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-8-53655C?style=flat-square&logo=vite&logoColor=white&labelColor=22252B)](https://vite.dev/)
+[![React Router](https://img.shields.io/badge/React_Router-8-53655C?style=flat-square&logo=reactrouter&logoColor=white&labelColor=22252B)](https://reactrouter.com/)
+[![Express](https://img.shields.io/badge/Express-5-53655C?style=flat-square&logo=express&logoColor=white&labelColor=22252B)](https://expressjs.com/)
+[![MySQL](https://img.shields.io/badge/MySQL-Aiven-53655C?style=flat-square&logo=mysql&logoColor=white&labelColor=22252B)](database/README.md)
+[![Vercel](https://img.shields.io/badge/Hosted_on-Vercel-53655C?style=flat-square&logo=vercel&logoColor=white&labelColor=22252B)](https://synora-v1.vercel.app/)
+[![Themes](https://img.shields.io/badge/Themes-Light_·_Dark-B09F95?style=flat-square&labelColor=22252B)](#-design-system)
 
-<br />
+<br>
 
-**Synora** is a calm, distraction-free student workspace that unifies tasks, timetables, quick notes, attendance calculations, CGPA estimation, and achievement tracking into a single client-side dashboard. Built with **React + Vite**.
+<a href="https://synora-v1.vercel.app/">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dark/landing.webp">
+    <img alt="The Synora landing page" src="docs/screenshots/light/landing.webp" width="100%">
+  </picture>
+</a>
+
+<sub>Screenshots follow your GitHub theme. Switch between light and dark to see both.</sub>
+
+</div>
+
+<br>
+
+<div align="center">
+
+**[What it is](#-what-is-synora)** ·
+**[Features](#-features)** ·
+**[Screens](#-a-tour-of-the-app)** ·
+**[Architecture](#-architecture)** ·
+**[Database](#-the-database)** ·
+**[Design system](#-design-system)** ·
+**[Run it](#-run-it-locally)** ·
+**[Deployment](#-deployment)** ·
+**[FAQ](#-faq)**
 
 </div>
 
@@ -38,484 +58,741 @@
 
 ## ✦ What is Synora?
 
-Academic life is often scattered across fragmented tools: assignment deadlines lost in chat groups, attendance percentages scribbled in notebooks, grades tracked on buried spreadsheets, and timetables saved as gallery screenshots. When key academic details are separated, deadlines become Thursday night surprises and attendance drops below mandatory cut-offs before anyone notices.
+Academic life is scattered across fragmented tools: assignment deadlines lost in chat groups,
+attendance percentages scribbled in notebooks, grades on buried spreadsheets, timetables saved as
+gallery screenshots. When the pieces live apart, deadlines become Thursday-night surprises and
+attendance drops below the cut-off before anyone notices.
 
-**Synora eliminates this fragmentation.** It provides one quiet, cohesive environment designed specifically for students. By bringing essential academic metrics into a single dashboard, Synora answers the question *"What do I need to focus on today?"* in one glance—without advertisements, subscriptions, a backend server, or unnecessary visual noise.
+**Synora brings it all into one calm workspace.** It answers *"What do I need to focus on today?"*
+at a glance, with no ads, no subscriptions and no visual noise. The subject list sits at the centre:
+the timetable, attendance, grades and tasks all point at it, so renaming a subject once updates it
+everywhere.
 
-```
-       ┌─────────────────────────────────────────────────────────┐
-       │                         SYNORA                          │
-       │                   The Calm Workspace                    │
-       └────────────────────────────┬────────────────────────────┘
-                                    │
-    ┌──────────────┬────────────────┼───────────────┬────────────┐
-    ▼              ▼                ▼               ▼            ▼
-┌─────────┐  ┌───────────┐    ┌───────────┐   ┌───────────┐  ┌───────────┐
-│  Tasks  │  │ Timetable │    │   Notes   │   │Attendance │  │   CGPA    │
-│ & Dates │  │& Calendar │    │ & Archive │   │Calculator │  │Estimator  │
-└─────────┘  └───────────┘    └───────────┘   └───────────┘  └───────────┘
+```mermaid
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Inter, -apple-system, Segoe UI, sans-serif", "primaryColor": "#EEF2EF", "primaryTextColor": "#22252B", "primaryBorderColor": "#53655C", "lineColor": "#8A968F"}}}%%
+flowchart LR
+    S(["Your subjects<br/>the single source of truth"])
+    S --> T["Tasks &<br/>deadlines"]
+    S --> W["Timetable &<br/>calendar"]
+    S --> N["Quick<br/>notes"]
+    S --> A["Attendance<br/>calculator"]
+    S --> G["CGPA<br/>estimator"]
+    T & W & A & G --> D(["Dashboard<br/>your day at a glance"])
+    classDef hub fill:#53655C,stroke:#43524A,color:#FFFFFF
+    classDef out fill:#22252B,stroke:#22252B,color:#EDEFF1
+    class S hub
+    class D out
 ```
 
 ---
 
-## ✦ Feature Highlights
+## ✦ Features
 
-| Module | Core Capability | Key Detail |
+<table>
+<tr>
+<td width="50%" valign="top">
+
+### 📋 Tasks & assignments
+- Add, edit, complete and delete tasks with a subject, deadline, **4 priorities** (critical → low) and **3 statuses**.
+- Grouped live into *Today*, *Upcoming*, *Overdue* and *Completed* from the real date, never a manual flag.
+- Search as you type; sort by deadline, priority or newest.
+
+</td>
+<td width="50%" valign="top">
+
+### 🗓️ Timetable & calendar
+- A Monday–Sunday class grid with times, rooms and teachers. On phones it becomes stacked day cards.
+- A monthly calendar with every deadline on its date. Tap a day to see it, or add a task straight to it.
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+### 🎓 CGPA estimator
+- Credit-weighted on the 10-point scale: **CGPA = Σ(credits × grade point) ÷ Σ(credits)**.
+- `O` 10 · `A+` 9 · `A` 8 · `B+` 7 · `B` 6, and three separate failure states, `E1` / `E2` / `E3` (0 points, credits still count).
+- A split bar chart: passes rise above the line, failures drop below it.
+
+</td>
+<td valign="top">
+
+### 📊 Attendance calculator
+- One-tap **+ / −** for classes held and attended, per subject.
+- Tells you exactly how many classes you can **safely miss**, or how many in a row you **must attend** to get back to your target (75% by default).
+- Subjects can opt out of attendance and still count towards the CGPA.
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+### 📝 Quick notes
+- Fast capture for formulas, checklists and lecture takeaways.
+- Tagged by subject, filtered by a live search.
+
+</td>
+<td valign="top">
+
+### 🏆 Achievements & 🔔 notifications
+- **7 badges** that unlock as you work: *First Step*, *Getting Started*, *Productive*, *Consistent* (3-day streak), *Deadline Master*, *Academic Planner*, *Organized*.
+- One notification centre for overdue and due-today tasks, attendance warnings and new badges.
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+### 🔐 Accounts that follow you
+- Sign up once. Your workspace is saved in **MySQL** and loads on any browser or device.
+- A **demo account** with a full semester of sample data, one click from the sign-in page.
+
+</td>
+<td valign="top">
+
+### 🌓 Light & dark, phone to desktop
+- Two hand-tuned themes from one set of design tokens, with no flash of the wrong theme on load.
+- Fully responsive: the sidebar becomes a drawer at 900 px, with phone layouts below 560 px.
+
+</td>
+</tr>
+</table>
+
+---
+
+## ✦ A tour of the app
+
+The screens below come from the live app, signed in to the demo account.
+
+<table>
+<tr>
+<td width="50%">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dark/dashboard.webp">
+  <img alt="Dashboard" src="docs/screenshots/light/dashboard.webp">
+</picture>
+<p align="center"><b>Dashboard</b>: greeting, streak, today's tasks, progress and calendar</p>
+</td>
+<td width="50%">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dark/tasks.webp">
+  <img alt="Tasks" src="docs/screenshots/light/tasks.webp">
+</picture>
+<p align="center"><b>Tasks</b>: grouped by date, searchable, sorted by what matters</p>
+</td>
+</tr>
+<tr>
+<td>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dark/timetable.webp">
+  <img alt="Timetable" src="docs/screenshots/light/timetable.webp">
+</picture>
+<p align="center"><b>Timetable</b>: the week's classes with rooms and teachers</p>
+</td>
+<td>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dark/calendar.webp">
+  <img alt="Calendar" src="docs/screenshots/light/calendar.webp">
+</picture>
+<p align="center"><b>Calendar</b>: every deadline on its day</p>
+</td>
+</tr>
+<tr>
+<td>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dark/cgpa.webp">
+  <img alt="CGPA" src="docs/screenshots/light/cgpa.webp">
+</picture>
+<p align="center"><b>CGPA</b>: grades in, credit-weighted CGPA out</p>
+</td>
+<td>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dark/attendance.webp">
+  <img alt="Attendance" src="docs/screenshots/light/attendance.webp">
+</picture>
+<p align="center"><b>Attendance</b>: what you can miss, what you must attend</p>
+</td>
+</tr>
+<tr>
+<td>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dark/notes.webp">
+  <img alt="Quick notes" src="docs/screenshots/light/notes.webp">
+</picture>
+<p align="center"><b>Quick notes</b>: per subject, searchable</p>
+</td>
+<td>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dark/achievements.webp">
+  <img alt="Achievements" src="docs/screenshots/light/achievements.webp">
+</picture>
+<p align="center"><b>Achievements</b>: badges earned by actually studying</p>
+</td>
+</tr>
+<tr>
+<td>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dark/onboarding.webp">
+  <img alt="Onboarding" src="docs/screenshots/light/onboarding.webp">
+</picture>
+<p align="center"><b>Onboarding</b>: six short steps to make it yours</p>
+</td>
+<td>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dark/settings.webp">
+  <img alt="Settings" src="docs/screenshots/light/settings.webp">
+</picture>
+<p align="center"><b>Settings</b>: profile, avatar, subjects and preferences</p>
+</td>
+</tr>
+</table>
+
+<details>
+<summary><b>More screens</b>: sign-in and notifications</summary>
+<br>
+<table>
+<tr>
+<td width="50%">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dark/login.webp">
+  <img alt="Sign in" src="docs/screenshots/light/login.webp">
+</picture>
+<p align="center"><b>Sign in</b>, with the one-click demo account</p>
+</td>
+<td width="50%">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dark/notifications.webp">
+  <img alt="Notifications" src="docs/screenshots/light/notifications.webp">
+</picture>
+<p align="center"><b>Notifications</b>: deadlines, attendance and badges in one place</p>
+</td>
+</tr>
+</table>
+</details>
+
+### On your phone
+
+<table>
+<tr>
+<td width="25%">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dark/phone-dashboard.webp">
+  <img alt="Dashboard on a phone" src="docs/screenshots/light/phone-dashboard.webp">
+</picture>
+</td>
+<td width="25%">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dark/phone-tasks.webp">
+  <img alt="Tasks on a phone" src="docs/screenshots/light/phone-tasks.webp">
+</picture>
+</td>
+<td width="25%">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dark/phone-timetable.webp">
+  <img alt="Timetable on a phone" src="docs/screenshots/light/phone-timetable.webp">
+</picture>
+</td>
+<td width="25%">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dark/phone-cgpa.webp">
+  <img alt="CGPA on a phone" src="docs/screenshots/light/phone-cgpa.webp">
+</picture>
+</td>
+</tr>
+<tr>
+<td align="center"><sub>Dashboard</sub></td>
+<td align="center"><sub>Tasks</sub></td>
+<td align="center"><sub>Timetable as day cards</sub></td>
+<td align="center"><sub>CGPA with compact grades</sub></td>
+</tr>
+</table>
+
+---
+
+## ✦ How it works
+
+```mermaid
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Inter, -apple-system, Segoe UI, sans-serif", "primaryColor": "#EEF2EF", "primaryTextColor": "#22252B", "primaryBorderColor": "#53655C", "lineColor": "#8A968F", "edgeLabelBackground": "#FFFFFF"}}}%%
+flowchart LR
+    A["1 · Create your account<br/><sub>name, username, email, password</sub>"] --> B["2 · Make Synora yours<br/><sub>avatar · program · subjects & credits ·<br/>attendance target · theme</sub>"] --> C["3 · Start with a clear week<br/><sub>dashboard, tasks, timetable,<br/>CGPA & attendance, all connected</sub>"]
+    classDef step fill:#EEF2EF,stroke:#53655C,color:#22252B
+    class A,B,C step
+```
+
+1. **Create your account.** It is stored in the database, so it works on every device.
+2. **Make Synora yours.** A six-step onboarding: avatar (12 illustrations or initials), program and semester, subjects with credits, attendance target, theme, done.
+3. **Start with a clear week.** Every page reads from the same subject list, so nothing has to be typed twice.
+
+### Pages & routes
+
+```mermaid
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Inter, -apple-system, Segoe UI, sans-serif", "primaryColor": "#EEF2EF", "primaryTextColor": "#22252B", "primaryBorderColor": "#53655C", "lineColor": "#8A968F", "clusterBkg": "#FAF9F7", "clusterBorder": "#CFD5D8", "titleColor": "#22252B"}}}%%
+flowchart TB
+    L["/ · Landing"] --> SU["/signup"] & LI["/login<br/>+ demo account"]
+    SU --> OB["/onboarding<br/>6 steps"] --> D
+    LI --> D["/dashboard"]
+    D --> PLAN & ACAD & ACC
+    subgraph PLAN["Planning"]
+        direction TB
+        T["/tasks"] ~~~ C["/calendar"] ~~~ TT["/timetable"] ~~~ N["/notes"]
+    end
+    subgraph ACAD["Academics"]
+        direction TB
+        G["/cgpa"] ~~~ AT["/attendance"] ~~~ AC["/achievements"]
+    end
+    subgraph ACC["Account"]
+        direction TB
+        NO["/notifications"] ~~~ SE["/settings"]
+    end
+    classDef entry fill:#22252B,stroke:#22252B,color:#EDEFF1
+    classDef hub fill:#53655C,stroke:#43524A,color:#FFFFFF
+    class L entry
+    class D hub
+```
+
+Any unknown URL redirects to `/`. Old links from the first, vanilla version (`/app/dashboard.html`
+and so on) permanently redirect to their new routes.
+
+---
+
+## ✦ Architecture
+
+Synora is a React single-page app with a small Express API next to it. On the live site both run
+on **Vercel**: the app as a static build, the API as a serverless function. The data lives in a
+**MySQL** database on **Aiven**.
+
+```mermaid
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Inter, -apple-system, Segoe UI, sans-serif", "primaryColor": "#EEF2EF", "primaryTextColor": "#22252B", "primaryBorderColor": "#53655C", "lineColor": "#8A968F", "clusterBkg": "#FAF9F7", "clusterBorder": "#CFD5D8", "titleColor": "#22252B", "edgeLabelBackground": "#FFFFFF"}}}%%
+flowchart LR
+    subgraph BROWSER["Browser"]
+        direction TB
+        UI["React 19 pages<br/>React Router 8"]
+        LS[("localStorage<br/>working copy")]
+        SY["sync.js<br/>mirrors every save"]
+        UI <-->|"useStore()"| LS
+        LS -->|"onWrite"| SY
+    end
+    subgraph VERCEL["Vercel"]
+        direction TB
+        CDN["Static build<br/>Vite → dist/"]
+        FN["Serverless API<br/>api/index.js → Express"]
+    end
+    subgraph AIVEN["Aiven cloud"]
+        direction TB
+        DB[("MySQL · synora<br/>12 tables")]
+        WB["MySQL Workbench"]
+    end
+    UI -->|"loaded from"| CDN
+    UI -->|"/api/login · /api/signup"| FN
+    SY -->|"PUT /api/data"| FN
+    FN -->|"mysql2 pool · TLS"| DB
+    WB -.->|"TLS"| DB
+    classDef dark fill:#22252B,stroke:#22252B,color:#EDEFF1
+    classDef data fill:#F6F0EC,stroke:#B09F95,color:#22252B
+    class FN dark
+    class DB,LS data
+```
+
+| Layer | What it does | Where |
 | :--- | :--- | :--- |
-| 📋 **Tasks & Assignments** | Priority-ranked assignment tracking | Dynamic date categorisation (Overdue, Due Today, Upcoming), 4 priority levels, completion tracking. |
-| 📅 **Calendar & Timetable** | Dual-view academic scheduling | 7-day weekly schedule grid with room/instructor metadata alongside a monthly deadline overview. |
-| 📝 **Quick Notes** | Subject-organized knowledge archive | Instant search-as-you-type, clean text cards, and subject-specific filtering for quick lecture capture. |
-| 🎓 **CGPA Calculator** | Credit-weighted grade calculation | Comprehensive 10-point scale supporting distinct academic failure states (`E1`, `E2`, `E3`). |
-| 📊 **Attendance Tracker** | Real-time threshold calculation | Dynamic calculation of exact classes you can safely miss or consecutive classes required to reach targets. |
-| 🏆 **Achievements** | Motivation & consistency badges | System-awarded milestones for finishing assignments early, keeping streaks, and planning schedules. |
-| 🔔 **Notification Centre** | Unified academic alerts | Aggregated alerts for pending deadlines, attendance warnings, and unlocked milestone badges. |
-| 🌓 **Adaptive Theme Engine** | Light & Charcoal Dark modes | Persistent theme switching powered by semantic CSS custom properties with zero flash on load. |
+| **Pages** | One React component per route, styled with the design-system CSS | `src/pages/` |
+| **Framework-free logic** | Tasks, grades, attendance maths, notifications & achievements engine, auth | `src/lib/` |
+| **Store** | `localStorage` is the working copy. `useStore()` re-renders pages on every write (`useSyncExternalStore`) | `src/lib/storage.js` |
+| **Sync** | Watches writes and sends changed collections to the API, debounced and retried | `src/lib/sync.js` |
+| **API** | Express routes for sign-up, sign-in, sign-out and saving / loading data | `server/app.js` |
+| **Serverless entry** | Runs the same Express app as a Vercel function | `api/index.js` |
+| **Database** | 12 normalised MySQL tables | `database/schema.sql` |
+
+### Every change, saved twice
+
+The app always works from the browser copy, so pages open instantly and keep working if the
+network drops. In the background, each change is mirrored into MySQL:
+
+```mermaid
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Inter, -apple-system, Segoe UI, sans-serif", "actorBkg": "#EEF2EF", "actorBorder": "#53655C", "actorTextColor": "#22252B", "actorLineColor": "#8A968F", "signalColor": "#53655C", "signalTextColor": "#22252B", "noteBkgColor": "#F6F0EC", "noteBorderColor": "#B09F95", "noteTextColor": "#22252B", "labelBoxBkgColor": "#EEF2EF", "labelBoxBorderColor": "#53655C", "labelTextColor": "#22252B", "loopTextColor": "#22252B", "sequenceNumberColor": "#FFFFFF"}}}%%
+sequenceDiagram
+    autonumber
+    participant S as Student
+    participant P as Page (React)
+    participant L as localStorage
+    participant Y as sync.js
+    participant A as API (Vercel)
+    participant D as MySQL (Aiven)
+    rect rgb(250, 249, 247)
+    S->>P: adds a task
+    P->>L: store.set("tasks", list)
+    L-->>P: re-render (useStore)
+    L->>Y: onWrite(tasks)
+    Note over Y: waits 400 ms so a burst of edits becomes one save
+    Y->>A: PUT /api/data with the changed collections
+    A->>A: check the session token and that it owns this account
+    A->>D: BEGIN, replace that user's rows, COMMIT
+    D-->>A: ok
+    A-->>Y: 204 No Content
+    end
+```
+
+- **One transaction per save:** either every row lands or none does.
+- **Never stuck:** a failed save is retried every few seconds. If the database can't be reached at
+  all, the account is marked *unsynced* and uploaded as soon as it can be, with no need to sign in again.
+
+### Signing in, and the password that never leaves the browser
+
+```mermaid
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Inter, -apple-system, Segoe UI, sans-serif", "actorBkg": "#EEF2EF", "actorBorder": "#53655C", "actorTextColor": "#22252B", "actorLineColor": "#8A968F", "signalColor": "#53655C", "signalTextColor": "#22252B", "noteBkgColor": "#F6F0EC", "noteBorderColor": "#B09F95", "noteTextColor": "#22252B", "labelBoxBkgColor": "#EEF2EF", "labelBoxBorderColor": "#53655C", "labelTextColor": "#22252B", "loopTextColor": "#22252B"}}}%%
+sequenceDiagram
+    participant S as Student
+    participant B as Browser
+    participant A as API
+    participant D as MySQL
+    rect rgb(250, 249, 247)
+    S->>B: username + password
+    B->>B: key = hash(password)
+    Note over B: the password itself is never sent
+    B->>A: POST /api/login with username + key
+    A->>D: SELECT password_hash
+    A->>A: bcrypt.compare(key, hash)
+    alt account found, key matches
+        A->>D: INSERT a 64-character session token
+        A-->>B: 200, token + the whole workspace
+        B->>B: load the workspace into localStorage
+    else not in the database yet
+        A-->>B: 404
+        B->>B: sign in from this browser's copy
+        B->>A: POST /api/signup with the key (auto-connect)
+        A-->>B: 201, token
+        B->>A: PUT /api/data, uploads everything
+    else wrong password
+        A-->>B: 401, "doesn't match an account"
+    end
+    end
+```
+
+- The server stores only **`bcrypt(key)`**, never the password or the key itself.
+- Each browser session token is tied to its account, and the API refuses (`409`) a save addressed to a
+  different account.
+- **Auto-connect:** while someone is signed in without a database session (a cold start, the
+  database powered off, an expired token), the app retries on load, every 30 seconds, and when the tab
+  comes back into view. It links the account the moment it can.
 
 ---
 
-### 📋 Tasks & Assignments
-* **Granular Task Control:** Add, edit, delete, and complete assignments with titles, subject links, priorities (*Critical, High, Medium, Low*), and statuses (*Not started, In progress, Completed*).
-* **Automated Date Derivation:** Tasks are dynamically grouped into *All, Today, Upcoming, Overdue,* and *Completed* based on live system dates rather than static manual flags.
-* **Search & Sort:** Instantly search through assignments and sort by deadline or urgency.
+## ✦ The database
 
-### 📅 Calendar & Timetable
-* **Weekly Class Schedule:** A 7-day Monday–Sunday matrix showing class timings, subjects, instructors, and room numbers. Reflows into collapsible day cards on mobile screens.
-* **Monthly Deadline Calendar:** Visual overview showing all assignment deadlines mapped directly onto their calendar dates. Clicking any date reveals active items or opens a quick task creation dialog.
+Twelve normalised tables in a database called `synora`. Every row belongs to a user (`user_id`), and
+deleting an account deletes everything it owns (`ON DELETE CASCADE`). Full setup guide (Aiven →
+MySQL Workbench → Vercel): **[`database/README.md`](database/README.md)**.
 
-### 📝 Quick Notes
-* **Frictionless Note Capture:** Fast, lightweight capture of formulas, study checklists, and lecture takeaways.
-* **Subject Tagging & Search:** Notes are organized by subject and filterable through a live search bar.
+```mermaid
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Inter, -apple-system, Segoe UI, sans-serif", "primaryColor": "#EEF2EF", "primaryTextColor": "#22252B", "primaryBorderColor": "#53655C", "lineColor": "#8A968F", "attributeBackgroundColorOdd": "#FFFFFF", "attributeBackgroundColorEven": "#FAF9F7", "relationLabelBackground": "#FFFFFF", "relationLabelColor": "#22252B"}}}%%
+erDiagram
+    users ||--o{ sessions : "signs in with"
+    users ||--o| profiles : has
+    users ||--o| user_meta : has
+    users ||--o{ subjects : studies
+    users ||--o{ tasks : plans
+    users ||--o{ notes : writes
+    users ||--o{ achievements : unlocks
+    users ||--o{ notifications : receives
+    subjects ||--o{ timetable_classes : "scheduled as"
+    subjects ||--o{ attendance : "tracked in"
+    subjects ||--o{ grades : "graded in"
 
-### 🎓 CGPA Calculator
-* **10-Point Academic Scale:** Accurately computes weighted CGPA using credits assigned to each subject:
-  $$\text{CGPA} = \frac{\sum (\text{Credits} \times \text{Grade Point})}{\sum \text{Credits}}$$
-* **Dedicated Failure States:** Uniquely models distinct exam outcomes without merging them:
-  * `O` (10), `A+` (9), `A` (8), `B+` (7), `B` (6)
-  * `E1` (Failed in Internals · 0 pts)
-  * `E2` (Failed in End Term Exam · 0 pts)
-  * `E3` (Failed in Both Internals & End Term · 0 pts)
-* **Split Bar Visualisation:** High-contrast split bar chart displaying passing grades ascending above the baseline and backlog failure states descending below zero.
+    users {
+        int id PK
+        varchar username UK "case-insensitive"
+        varchar first_name
+        varchar last_name
+        varchar email
+        char password_hash "bcrypt"
+        datetime created_at
+    }
+    sessions {
+        char token PK "64 hex chars"
+        int user_id FK
+        datetime created_at "valid 30 days"
+    }
+    profiles {
+        int user_id PK, FK
+        enum avatar_type
+        varchar program
+        varchar semester
+        tinyint target_attendance
+        enum appearance "light / dark"
+        boolean onboarded
+    }
+    user_meta {
+        int user_id PK, FK
+        int streak
+        date last_completion_date
+    }
+    subjects {
+        int user_id PK, FK
+        varchar id PK
+        varchar name
+        tinyint credits
+        boolean track_attendance
+    }
+    tasks {
+        int user_id PK, FK
+        varchar id PK
+        varchar title
+        varchar subject
+        date deadline
+        enum priority "critical … low"
+        enum status
+        datetime completed_at
+    }
+    notes {
+        int user_id PK, FK
+        varchar id PK
+        varchar title
+        text body
+        varchar category
+    }
+    timetable_classes {
+        int user_id PK, FK
+        varchar id PK
+        varchar subject_id FK
+        enum day "Monday … Sunday"
+        time start_time
+        time end_time
+        varchar room
+    }
+    attendance {
+        int user_id PK, FK
+        varchar id PK
+        varchar subject_id FK
+        int total
+        int attended "CHECK attended ≤ total"
+    }
+    grades {
+        int user_id PK, FK
+        varchar id PK
+        varchar subject_id FK
+        enum grade "O … B, E1 / E2 / E3"
+    }
+    achievements {
+        int user_id PK, FK
+        varchar achievement_id PK
+        datetime unlocked_at
+    }
+    notifications {
+        int user_id PK, FK
+        varchar id PK
+        varchar type
+        varchar title
+        boolean is_read
+    }
+```
 
-### 📊 Attendance Calculator
-* **One-Touch Adjustments:** Incremental `+` and `−` controls for held and attended sessions.
-* **Actionable Guidance:** Computes whether you are above or below your target percentage (e.g., 75%) and displays exact math:
-  * *Classes you can safely miss while remaining above target.*
-  * *Consecutive classes you must attend to recover your attendance.*
-* **Selective Subject Tracking:** Non-attendance subjects (such as audits or electives) can be excluded from attendance warnings while remaining part of the CGPA calculation.
+<details>
+<summary><b>Ready-made SQL</b>: CGPA computed in the database</summary>
+<br>
 
-### 🏆 Achievements & Streaks
-* **Behavior-Based Milestones:** Badges unlock automatically as you use the workspace—such as creating your first note, maintaining a study streak, completing multiple tasks, or setting up a full timetable.
+[`database/queries.sql`](database/queries.sql) has ten queries to run in MySQL Workbench: every
+account, rows per user, attendance against the target, overdue tasks, the weekly timetable, unread
+notifications, who is signed in, and this one, which works out the CGPA in SQL:
+
+```sql
+SELECT u.username,
+       SUM(s.credits) AS total_credits,
+       ROUND(SUM(s.credits * CASE g.grade
+               WHEN 'O' THEN 10 WHEN 'A+' THEN 9 WHEN 'A' THEN 8
+               WHEN 'B+' THEN 7 WHEN 'B' THEN 6 ELSE 0 END)
+             / SUM(s.credits), 2) AS cgpa
+FROM grades g
+JOIN subjects s ON s.user_id = g.user_id AND s.id = g.subject_id
+JOIN users u    ON u.id = g.user_id
+WHERE g.grade IS NOT NULL
+GROUP BY u.username;
+```
+
+</details>
 
 ---
 
-## ✦ Pages & Sections
+## ✦ Design system
 
-Every page is a client-side route handled by React Router:
+Everything is built from one set of CSS custom properties in [`src/styles/tokens.css`](src/styles/tokens.css):
+colour, type, spacing, radii, shadows and motion. Each token has a light and a dark value. A tiny
+inline script in `index.html` applies the saved theme before the first paint, so there is never a
+flash of the wrong one.
 
-| Route | Page |
-| :--- | :--- |
-| `/` | Public marketing landing page & feature showcase |
-| `/login` | Account sign-in & demo account access |
-| `/signup` | User registration (client-side) |
-| `/onboarding` | 6-step workspace personalization wizard |
-| `/dashboard` | Central command center & academic snapshot |
-| `/tasks` | Task management & deadline tracking |
-| `/calendar` | Monthly deadline calendar view |
-| `/timetable` | Weekly 7-day class schedule |
-| `/notes` | Subject-categorized study notes |
-| `/attendance` | Attendance calculator & threshold analysis |
-| `/cgpa` | Credit-weighted CGPA estimator & grade chart |
-| `/achievements` | Milestone badges & streak statistics |
-| `/notifications` | Aggregated alerts & academic warnings |
-| `/settings` | Profile, avatar, subject catalog, & preferences |
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/brand/palette-dark.svg">
+  <img alt="The Synora colour palette" src="docs/brand/palette-light.svg" width="100%">
+</picture>
 
-Any unknown URL redirects to `/`.
-
----
-
-## ✦ How It Works
-
-Synora takes you from a blank slate to a structured academic routine in three clear steps:
-
-```
-    ┌─────────────────────────┐
-    │ 1. Create Your Account  │ ──► Enter your name, username, email & password
-    └───────────┬─────────────┘
-                │
-    ┌───────────▼─────────────┐
-    │ 2. Make Synora Yours    │ ──► Choose avatar, configure subjects & attendance target
-    └───────────┬─────────────┘
-                │
-    ┌───────────▼─────────────┐
-    │ 3. Start With Clarity   │ ──► Open your unified dashboard with all tools linked
-    └─────────────────────────┘
-```
-
-1. **Create Your Account:** Register with your name, username, email, and password. Synora creates your account in its database, with a working copy in your browser.
-2. **Make Synora Yours:** Step through an onboarding flow to pick an illustrated avatar or initials color, set your academic program and semester, define your subjects with credit weightings, and set your target attendance percentage.
-3. **Start With a Clear Week:** Your dashboard opens with subjects already interconnected. Timetable entries, grade sheets, attendance monitors, and task forms read from the same subject catalog.
-
----
-
-## ✦ Tech Stack
-
-A small, modern stack: React for the UI, Vite for the build, and plain CSS for the design system. There is no CSS framework, UI kit or state library. A small Node.js + Express API stores every account in a MySQL database: in the cloud for the live site, or locally.
-
-```
-┌───────────────────────────────────────────────────────────────────────────┐
-│                                TECH STACK                                 │
-├───────────────────┬───────────────────────────────────────────────────────┤
-│ UI                │ React 19 (function components & hooks, JSX)           │
-│ Routing           │ React Router 8 (BrowserRouter, client-side routes)    │
-│ Build & Dev       │ Vite 8 (dev server, production bundling)              │
-│ Styling           │ CSS3 (Custom properties / Tokens, Grid, Flexbox)      │
-│ Persistence       │ Client-side LocalStorage (Namespaced JSON store)      │
-│ Database          │ MySQL (Aiven cloud / local) via a Node.js Express API │
-│ Typography        │ Google Fonts (Inter & Manrope with system fallbacks)  │
-│ Hosting           │ Vercel (static build, serverless API, Web Analytics)  │
-└───────────────────┴───────────────────────────────────────────────────────┘
-```
-
-* **Three runtime dependencies:** `react`, `react-dom` and `react-router`. Everything else is hand-written. The API in `server/` adds `express`, `mysql2` and `bcryptjs`.
-* **Framework-free logic layer:** Storage, auth, the notification engine, grades, attendance and timetable maths live in `src/lib/` as plain JavaScript, separate from the React components.
-* **Store hook:** `useStore()` subscribes components to `localStorage` changes with `useSyncExternalStore`, so every page re-renders from the same source of truth.
-* **CSS Custom Properties:** Complete design token architecture (`tokens.css`) defining typography, spacing, elevations, and dual-theme palettes. Page-specific stylesheets are mounted only on their own routes.
-* **Accessible Component Architecture:** Native disclosure widgets for FAQ accordions, semantic form controls, skip-to-content links, and keyboard-trapped modal dialogs.
-* **Pre-paint Theme Script:** A small inline script in `index.html` applies the saved theme before React loads, so there is no flash of the wrong theme.
-
----
-
-## ✦ Design Philosophy
-
-```
-  ┌──────────────────┐    ┌──────────────────┐    ┌──────────────────┐
-  │  Calm by Design  │    │  Privacy First   │    │ Unified Context  │
-  │ Minimalist focus │    │ Private accounts │    │ Single source of │
-  │ & reduced noise  │    │ & hashed secrets │    │ academic truth   │
-  └──────────────────┘    └──────────────────┘    └──────────────────┘
-```
-
-### 🌿 Calm by Design
-Academic tools often add stress through red warning badges, intrusive pop-ups, and cluttered sidebars. Synora uses subdued tones, generous whitespace, clear typography, and structured grids to keep attention on your coursework.
-
-### 🔒 Privacy First
-Your academic life belongs to you. Each workspace is private to its account. Passwords are stored only as bcrypt hashes, the database connection is encrypted, and there are no ads and no tracking cookies. The hosted site uses Vercel Web Analytics only for anonymous, cookie-free page-view counts.
-
-### 🏛️ Unified Academic Context
-Instead of forcing you to type the same subject names into four different utilities, Synora treats your **Subject List** as the canonical single source of truth. Renaming a subject in Settings instantly updates the Timetable, Attendance cards, and CGPA calculations across the entire application.
-
-### 🎨 Semantic Design Tokens
-
-| Token Name | Light Hex | Dark Hex | Application Role |
+| | Light | Dark | Used for |
 | :--- | :--- | :--- | :--- |
-| `--ink` | `#22252B` | `#F3F4F6` | Primary headers, high-emphasis text, strong surfaces |
-| `--sage` | `#53655C` | `#7C9285` | Primary brand accent, action buttons, active navigation |
-| `--slate` | `#A3AEB1` | `#8A9699` | Subdued labels, structural icons, secondary elements |
-| `--mist` | `#E5E8EB` | `#2E333D` | Borders, subtle dividers, inactive control outlines |
-| `--taupe` | `#B09F95` | `#C4B5AC` | Warm accents, badges, highlights, note card accents |
+| **Brand · sage** | `#53655C` | `#8FA697` | primary buttons, active navigation, focus |
+| **Accent · taupe** | `#B09F95` | `#C6B4A9` | warm highlights, badges |
+| **Ink** | `#22252B` | `#E8EAED` | headings and body text |
+| **Muted** | `#5F6A70` | `#9CA5AC` | secondary text |
+| **Border · mist** | `#E5E8EB` | `#2C3138` | dividers, card edges |
+| **Background** | `#FAF9F7` | `#16181C` | the page itself |
+
+- **Type:** *Manrope* for headings, *Inter* for everything else.
+- **Principles:** calm by design (soft tones, generous whitespace, no red-badge panic); one source of
+  truth (the subject list); private by default (no ads, no tracking cookies, hashed passwords).
+- **Accessible:**
+  - semantic landmarks and a *Skip to content* link;
+  - every input has a real `<label>` and its own error message;
+  - dialogs trap focus and close with `Escape`;
+  - colour contrast checked in both themes;
+  - `prefers-reduced-motion` respected (the splash loader shortens from 2 s to 0.6 s).
 
 ---
 
-## ✦ User Experience & Interface
+## ✦ Tech stack
 
-```
-[ Splash Reveal ] ──► [ Centered Navbar ] ──► [ Interactive Hero ] ──► [ Feature Showcase ]
-       │                      │                         │                      │
-   2000ms / 600ms       3-Track Centered          Live Task Preview      Card Grid & Stats
-   Motion Handover      Brand & Quick Nav         Streak Badges          & Real Screenshot
-```
-
-* **Staggered Splash Screen:** A CSS/SVG loading badge with a rotating gradient aura and sweeping wordmark sheen welcomes the user for 2000ms (or 600ms when `prefers-reduced-motion` is active) before smoothly handing over to the page content.
-* **Balanced 3-Track Navigation:** A CSS Grid header (`minmax(0, 1fr) auto minmax(0, 1fr)`) ensures centered links while actions and branding align symmetrically on the sides.
-* **CSS-Only Mobile Navigation:** Below 900px, navigation links reflow cleanly into a slide-down mobile panel controlled through an accessible, zero-JavaScript checkbox toggle.
-* **Non-Blocking Feedback:** In-app operations use subtle toast alerts and inline field validation rather than disruptive browser dialogs.
+| | |
+| :--- | :--- |
+| **UI** | React 19 (function components and hooks), React Router 8 |
+| **Build** | Vite 8 |
+| **Styling** | Hand-written CSS with design tokens: no framework, no UI kit |
+| **API** | Node.js + Express 5, `mysql2` (connection pool, TLS), `bcryptjs` |
+| **Database** | MySQL on Aiven (cloud), or any local MySQL 8+ |
+| **Hosting** | Vercel: static build, serverless API, Web Analytics |
+| **Runtime dependencies** | `react`, `react-dom`, `react-router` in the app, and `express`, `mysql2`, `bcryptjs` in the API. Nothing else. |
 
 ---
 
-## ✦ Privacy & Data Architecture
-
-Synora operates on a transparent, client-side data model powered by standard browser `localStorage`. Every change is also saved to the [MySQL database](#-mysql-database), linked to your account.
-
-```
-localStorage
-├── synora-users                          # Registered account registry
-├── synora-session                        # Active session username
-├── synora-theme                          # User theme preference ("light" | "dark")
-│
-└── synora:<username>:*                   # Isolated per-user data partition
-    ├── profile                           # Name, program, semester, avatar, attendance target
-    ├── subjects                          # Canonical list of subjects & credit allocations
-    ├── tasks                             # Task records, priorities, deadlines, status
-    ├── notes                             # Categorized study notes
-    ├── timetable                         # Weekly schedule entries with time/room data
-    ├── attendance                        # Held and attended session counts
-    ├── cgpa                              # Subject grade records
-    ├── achievements                      # Timestamped unlocked achievement IDs
-    ├── notifications                     # Alert history & read/unread state
-    └── meta                              # Study streaks & last completion timestamps
-```
-
-### Architectural Notes & Invariants
-* **Isolated Multi-User Support:** User data is segregated by username keys (`synora:<username>:<collection>`). Multiple students can use the same browser without their records mixing.
-* **Derived State:** Percentages, CGPA totals, deadline statuses (Overdue/Due Today), and streak counts are **derived at runtime** rather than stored as static values.
-* **Follows You Everywhere:** Because the workspace is saved in MySQL, signing in on any browser or device restores it. If the database can't be reached, the app keeps working from the browser copy and uploads everything by itself as soon as it can.
-
----
-
-## ✦ Preview
-
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│  SYNORA DASHBOARD                                        [Light | Dark]│
-├────────────────────────────────────────────────────────────────────────┤
-│  Good morning, Manan · B.E CSE AIML (Semester 3)                       │
-│                                                                        │
-│  [ Total: 12 ]   [ Due Today: 2 ]   [ Overdue: 0 ]   [ Upcoming: 5 ]   │
-│                                                                        │
-│  ┌─────────────────────────┐  ┌─────────────────────────────────────┐  │
-│  │ Today's Schedule        │  │ Today's Tasks                       │  │
-│  │ 09:00 - DBMS (Room 302) │  │ [ ] Submit Networks Assignment (6pm)│  │
-│  │ 11:00 - SDE Lab         │  │ [x] Read Operating Systems Ch. 4    │  │
-│  └─────────────────────────┘  └─────────────────────────────────────┘  │
-│                                                                        │
-│  ┌─────────────────────────┐  ┌─────────────────────────────────────┐  │
-│  │ Attendance: 84.5%       │  │ CGPA Snapshot: 8.75 / 10.0          │  │
-│  │ (Target: 75% · +3 Safe) │  │ (6 Graded Subjects · All Clear)     │  │
-│  └─────────────────────────┘  └─────────────────────────────────────┘  │
-└────────────────────────────────────────────────────────────────────────┘
-```
-
-<div align="center">
-
-![Synora Dashboard](./src/assets/preview/dashboard.png)
-
-*A view of the Synora Dashboard showcasing the greeting, statistics, daily agenda, calendar, and academic overview.*
-
-</div>
-
----
-
-## ✦ Project Structure
+## ✦ Project structure
 
 ```text
 Synora/
-├── index.html                 # HTML shell: fonts, pre-paint theme script, analytics, #root
-├── package.json               # Scripts & dependencies (react, react-dom, react-router)
-├── vite.config.js             # Vite build config (vendor chunk, unminified CSS)
-├── vercel.json                # SPA rewrite so deep links work on Vercel
-├── start.sh / start.bat       # One-click launchers (install + dev server + open browser)
-├── README.md                  # Project documentation & reference
-│
-├── database/                  # MySQL database
-│   ├── schema.sql             # Creates the `synora` database & its 12 tables
-│   ├── local-user.sql         # The API's login on a LOCAL MySQL only
-│   ├── queries.sql            # Ready-made queries (CGPA in SQL, attendance %, overdue tasks…)
-│   └── README.md              # Setup guide: Aiven, Vercel, MySQL Workbench
+├── index.html              # HTML shell: fonts, pre-paint theme script, analytics
+├── vite.config.js          # Vite build; proxies /api to the local API
+├── vercel.json             # SPA rewrite, /api routing, redirects, asset caching
+├── start.sh / start.bat    # One-click launchers (app + API)
 │
 ├── api/
-│   └── index.js               # Vercel serverless function: runs server/app.js on the live site
+│   └── index.js            # Vercel serverless function → server/app.js
+├── server/                 # The API
+│   ├── app.js              # Routes: health, signup, login, logout, data
+│   ├── collections.js      # The app's collections ⇄ table rows
+│   ├── db.js               # MySQL pool (TLS for the cloud), transactions
+│   └── index.js            # Runs the API locally (npm run server)
+├── database/
+│   ├── schema.sql          # Creates the `synora` database and its 12 tables
+│   ├── local-user.sql      # The API's login on a local MySQL
+│   ├── queries.sql         # Ready-made queries for MySQL Workbench
+│   └── README.md           # Setup guide: Aiven, Workbench, Vercel
 │
-├── server/                    # The API: Node.js + Express + mysql2 + bcryptjs
-│   ├── app.js                 # Routes: /api/health, /signup, /login, /logout, /data
-│   ├── collections.js         # Converts the app's collections ⇄ table rows
-│   ├── db.js                  # MySQL connection pool (TLS for the cloud), transactions
-│   ├── index.js               # Runs the API locally: `npm run server`
-│   └── .env.example           # Local connection settings (copy to .env)
-│
-├── public/                    # Copied as-is: favicon.svg/.ico, favicon-32, favicon-180
-│
+├── public/                 # Favicons, copied as-is
+├── docs/                   # README screenshots and brand images
 └── src/
-    ├── main.jsx               # Entry point: mounts <App /> inside BrowserRouter
-    ├── App.jsx                # Route table
-    │
-    ├── pages/                 # One component per route
-    │   ├── landing/           # Landing page, header, splash loader, contact section
-    │   ├── auth/              # Login, Signup & shared form pieces
-    │   ├── onboarding/        # 6-step wizard, steps & saved draft
-    │   ├── timetable/         # Weekly grid & class form
-    │   ├── Dashboard.jsx      # Dashboard metrics & schedule aggregator
-    │   ├── Tasks.jsx          # Task CRUD & dynamic filters
-    │   ├── Calendar.jsx       # Monthly grid & deadline mapping
-    │   ├── Notes.jsx          # Notes manager & live filter
-    │   ├── Attendance.jsx     # Attendance math & recovery calculation
-    │   ├── Cgpa.jsx           # Grade mapping & split-bar chart
-    │   ├── Achievements.jsx   # Milestone badges
-    │   ├── Notifications.jsx  # Alert centre
-    │   └── Settings.jsx       # Profile, avatar, subjects & preferences
-    │
-    ├── layouts/               # AppLayout (app shell), Sidebar, Topbar, AuthLayout
-    ├── components/            # Shared UI: modal provider, toaster, theme toggle, icons,
-    │                          #   avatar picker, progress ring, task form & row
-    ├── hooks/                 # useStore, useTheme, usePageStyles, useBodyClass, usePageMeta
-    ├── lib/                   # Framework-free logic: storage, auth, engine (notifications &
-    │                          #   achievements), tasks, notes, grades, attendance, timetable,
-    │                          #   theme, toast, demo data, api + sync (MySQL mirroring)
-    ├── data/                  # Navigation items & avatar definitions
-    ├── styles/                # tokens, base, components, landing, auth, onboarding, app (.css)
-    └── assets/                # Logos, 12 vector avatars (Lorelei style, CC0),
-                               #   landing imagery & dashboard preview
+    ├── main.jsx            # Entry: router, sync, auto-connect
+    ├── App.jsx             # Route table
+    ├── pages/              # One component per route (landing, auth, onboarding, …)
+    ├── layouts/            # App shell: sidebar, topbar, auth layout
+    ├── components/         # Shared UI: dialogs, toasts, icons, avatar picker, …
+    ├── hooks/              # useStore, useTheme, usePageStyles, …
+    ├── lib/                # Framework-free logic: storage, sync, api, auth, engine, …
+    ├── data/               # Navigation items, avatar definitions
+    ├── styles/             # tokens · base · components · landing · auth · onboarding · app
+    └── assets/             # Logos, 12 avatars, landing imagery
 ```
 
 ---
 
-## ✦ Getting Started
+## ✦ Run it locally
 
-You need **Node.js 22.22 or newer** (React Router 8 requires it).
+You need **Node.js 22.22+**.
 
-### 1. Clone the Repository
 ```bash
 git clone https://github.com/Manan-2007/Synora.git
 cd Synora
-```
-
-### 2. Start It
-
-**One click:** run `./start.sh` (macOS / Linux) or double-click `start.bat` (Windows). It installs dependencies on first run, starts the dev server and opens Synora in your browser.
-
-**Or by hand:**
-```bash
 npm install
-npm run dev
-```
-Then open the URL Vite prints (usually `http://localhost:5173`).
-
-### 3. (Optional) Use a Database Locally
-Without a database, `npm run dev` keeps everything in the browser. To save to MySQL while developing, create `server/.env` (pointing at the cloud database or a local MySQL) and start with `./start.sh` / `start.bat`, which then also start the API. See [`database/README.md`](database/README.md), part 5.
-
-### 4. Build for Production
-```bash
-npm run build     # outputs to dist/
-npm run preview   # serves the production build locally
+npm run dev            # http://localhost:5173
 ```
 
-> **Testing Options:**
-> * **New Student Journey:** Click **"Create account"**, complete the quick registration, and customize your workspace via the onboarding wizard.
-> * **Instant Demonstration:** Go to **Sign In** and click **"Use the demo account"** to immediately explore a populated workspace with realistic semester data.
+Or run **`./start.sh`** (macOS / Linux) or double-click **`start.bat`** (Windows). It installs what's
+missing, starts everything and opens the browser.
 
----
+> **Try it:** click **Create account** for the full onboarding, or **Sign in → Use the demo account**
+> for a workspace already full of a semester's tasks, grades, attendance and notes.
 
-## ✦ MySQL Database
+**With a database:** without one, the app runs on browser storage alone. To save to MySQL while
+developing, create `server/.env` (pointing at the cloud database, or a local MySQL set up with
+`database/schema.sql` + `database/local-user.sql`). `./start.sh` then starts the API too. See
+[`database/README.md`](database/README.md), part 5.
 
-Every account, and everything in it, is stored in **MySQL**, ready to browse and query in **MySQL Workbench**. The live site uses a free cloud MySQL on **Aiven**. Full setup guide (Aiven → Workbench → Vercel): **[`database/README.md`](database/README.md)**.
-
-```
-React app (localStorage) ──/api──► Express API (Vercel serverless function) ──TLS──► MySQL `synora` (Aiven)
-```
-
-* **12 normalised tables:** `users`, `sessions`, `profiles`, `user_meta`, `subjects`, `tasks`, `notes`, `timetable_classes`, `attendance`, `grades`, `achievements` and `notifications`. They are linked by primary and foreign keys with `ON DELETE CASCADE`.
-* **Real authentication:** the password never leaves the browser. A key derived from it is sent instead, and the server stores only a **bcrypt** hash of that key. Signing in issues a random session token that is deleted on sign-out. Sign-in attempts are rate-limited.
-* **Automatic sync:** the app works from a browser copy, so pages open instantly. Every change is also sent to MySQL within about half a second, in a single transaction.
-* **Never stuck:** if the database can't be reached, Synora keeps working from the browser copy and retries in the background (every 30 seconds and when the tab is reopened). It links the account and uploads everything as soon as it can, with no need to sign in again.
-* **Demo included:** the demo account is stored in the database too. Everyone who uses it shares one sample workspace.
+| Command | |
+| :--- | :--- |
+| `npm run dev` | the app with hot reload |
+| `npm run server` | the API on `127.0.0.1:4000` (reads `server/.env`) |
+| `npm run build` | production build into `dist/` |
+| `npm run preview` | serve the production build |
 
 ---
 
 ## ✦ Deployment
 
-The live site at **[synora-v1.vercel.app](https://synora-v1.vercel.app/)** deploys automatically from the `main` branch on Vercel:
+The live site deploys automatically from `main` on **Vercel**.
 
-* Vercel detects Vite, runs `npm run build` and serves `dist/`.
-* [`vercel.json`](vercel.json) rewrites every path to `index.html`, so refreshing a deep link such as `/dashboard` still loads the app and React Router takes over.
-* Old links from the vanilla version (`/app/dashboard.html` and so on) permanently redirect to their new routes (`/dashboard`).
-* Hashed build files under `/assets/` are cached for a year, since every rebuild gives them new names.
-* Vercel Web Analytics is enabled through the snippet in `index.html`.
-* `api/index.js` runs the Express API as a serverless function. It reads the database settings (`DB_HOST`, `DB_PASSWORD`, `DB_SSL_CA`, …) from Vercel's environment variables. Until those are set, the API reports "no database" and the site runs on browser storage.
-
----
-
-## ✦ Responsive Design
-
-Synora is built to deliver a seamless experience across all device form factors:
-
-* **Desktop Workspaces (≥ 1024px):** Displays a persistent sidebar, multi-column dashboard widgets, and a full 7-day horizontal timetable grid.
-* **Tablets & Small Laptops (768px – 1023px):** Fluid grid reflows with condensed calendar cells and responsive summary cards.
-* **Mobile Devices (< 768px):** Navigation transitions into an off-canvas drawer with a touch-friendly toggle. The weekly timetable reflows from a horizontal grid into day-by-day stacked schedule cards.
-
----
-
-## ✦ Accessibility
-
-Synora incorporates accessible web practices to ensure an inclusive user experience:
-
-* **Semantic Landmark Structure:** Proper use of `<header>`, `<nav>`, `<main>`, `<section>`, `<article>`, and `<footer>` elements.
-* **Direct Navigation:** Includes a visible `#main` **Skip to content** link for keyboard users.
-* **Form Accessibility:** All form inputs have explicitly associated `<label>` elements and inline error message regions.
-* **High Contrast Ratios:** All text and UI component color tokens meet standard contrast thresholds across both light and dark themes.
-* **Reduced Motion Compliance:** Full support for `prefers-reduced-motion: reduce`, disabling animations and shortening loader durations for users who prefer minimal motion.
-* **Keyboard-Friendly Interactions:** Modal dialogues, drawers, and interactive cards support standard keyboard focus and `Escape` key dismissal.
+- Vercel builds the app with Vite and serves `dist/`. `api/index.js` becomes a serverless function.
+- [`vercel.json`](vercel.json) sends `/api/*` to that function and every other path to `index.html`, so deep links like `/dashboard` work on refresh.
+- It also permanently redirects old `/app/*.html` links, and caches hashed assets for a year.
+- The database connection comes only from Vercel's environment variables (`DB_HOST`, `DB_PASSWORD`, `DB_SSL_CA`, …), never from the repository.
+- Until those variables are set, `/api/health` answers *no database* and the site runs on browser storage.
 
 ---
 
 ## ✦ FAQ
 
-#### Is Synora completely free?
-Yes. Synora has no paid tiers, no premium locked features, no trial periods, and no advertisements.
+<details>
+<summary><b>Is Synora free?</b></summary>
+<br>Yes. No paid tier, no trial, no ads, nothing locked behind an upgrade.
+</details>
 
-#### Do I need to create an account?
-Yes. Synora uses client-side account records to isolate tasks, timetables, and grades for individual users sharing the same browser. Creating an account takes less than a minute.
+<details>
+<summary><b>Where is my data stored?</b></summary>
+<br>In Synora's MySQL database, linked to your account, so signing in anywhere brings your workspace
+with you. A copy also lives in your browser so every page opens instantly. Passwords are stored only as
+bcrypt hashes.
+</details>
 
-#### Where is my academic data saved?
-In Synora's MySQL database, linked to your account, so signing in anywhere brings your workspace with you. A copy is kept in your browser's `localStorage` so pages open instantly. Passwords are stored only as bcrypt hashes.
+<details>
+<summary><b>What is the demo account?</b></summary>
+<br>A sample student, Arshpreet Kaur, with a full semester of tasks, timetable, grades, attendance and
+notes. It is one shared account: anyone who uses it on the live site sees the same workspace.
+</details>
 
-#### Does Synora work on mobile browsers?
-Yes. Synora is fully responsive and runs smoothly in modern mobile browsers on both iOS and Android.
+<details>
+<summary><b>Does it work on my phone?</b></summary>
+<br>Yes. Every page is responsive. Sign in with the same account and your workspace is already there.
+</details>
 
----
-
-## ✦ Contact
-
-The landing page includes a **Contact Us** section featuring contact information and a **Get in Touch** form with fields for:
-
-* Full Name
-* Email Address
-* Phone Number
-* Message text
-
-The form features instantaneous client-side validation. Contact display values can be customized in the `CONTACT_INFO` object at the top of `src/pages/landing/ContactSection.jsx`:
-
-```javascript
-const CONTACT_INFO = {
-  phone: "+91 98654 54345",
-  email: "synora@gmail.com",
-  office: "Sector 20, Panchkula, India",
-  mapUrl: "https://www.google.com/maps/search/?api=1&query=Sector+20+Panchkula+India",
-};
-```
+<details>
+<summary><b>What happens if the database is down?</b></summary>
+<br>Nothing visible. The app keeps working from the browser copy and uploads everything as soon as the
+database is back, without asking you to sign in again.
+</details>
 
 ---
 
-## ✦ Project Goals
+## ✦ Roadmap
 
-* **Eliminate Academic Fragmentation:** Bring disparate study tools into a single, cohesive interface.
-* **Foster Calm & Focus:** Replace high-stress notification feeds with a clean, actionable daily agenda.
-* **Simplify Complex Calculations:** Automate credit-weighted CGPA estimation and attendance safe-miss thresholds.
-* **Protect Student Privacy:** Keep every workspace private to its account, with hashed passwords, encrypted connections and no ad tracking.
-* **Deliver Dependable Performance:** Provide a fast web experience with a lean React build and only three runtime dependencies.
-
----
-
-## ✦ The Team
-
-Built as a student project with a focus on simplicity, productivity, and thoughtful web design.
-
----
-
-## ✦ Potential Future Improvements
-
-> **Note:** The items below represent prospective architectural enhancements and ideas for future exploration.
-
-* [ ] **Optional Cloud Sync:** Encrypted cloud backup for syncing workspaces across multiple devices.
-* [ ] **Calendar Export:** Exporting class timetables and assignment deadlines to standard `.ics` format.
-* [ ] **Syllabus & Course Checklist:** Topic-by-topic tracking within each registered subject.
-* [ ] **Backend Service Integration:** Real-time email dispatch integration for the Get in Touch contact endpoint.
-* [ ] **Push Reminders:** Configurable browser web push notifications for upcoming high-priority assignments.
+- [ ] **Calendar export:** timetable and deadlines as an `.ics` file
+- [ ] **Syllabus tracker:** topic-by-topic progress inside each subject
+- [ ] **Reminders:** browser push notifications for high-priority deadlines
+- [ ] **Contact form delivery:** send *Get in touch* messages by email
+- [ ] **Demo reset:** restore the shared demo account to its sample data automatically
 
 ---
 
 <div align="center">
 
-*Made with care for student productivity and calm learning.*
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="src/assets/logo-mark-dark.png">
+  <img alt="" src="src/assets/logo-mark-light.png" width="48">
+</picture>
 
-**Synora** — *Organize · Focus · Progress*
+**Synora**: *Organize · Focus · Progress*
+
+<sub>Built as a student project with care for calm, focused studying.</sub>
 
 </div>

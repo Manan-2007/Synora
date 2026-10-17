@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="150" viewBox="0 0 900 150" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+<rect x="0.5" y="0.5" width="135" height="84" rx="14" fill="#22252B" stroke="#CFD5D8"/>
+<text x="2" y="108" font-size="14" font-weight="600" fill="#22252B">Ink</text>
+<text x="2" y="127" font-size="12.5" fill="#5F6A70">#22252B</text>
+<text x="2" y="144" font-size="11" fill="#5F6A70" font-family="SFMono-Regular, Menlo, Consolas, monospace">--color-ink</text>
+<rect x="152.5" y="0.5" width="135" height="84" rx="14" fill="#53655C" stroke="#CFD5D8"/>
+<text x="154" y="108" font-size="14" font-weight="600" fill="#22252B">Sage</text>
+<text x="154" y="127" font-size="12.5" fill="#5F6A70">#53655C</text>
+<text x="154" y="144" font-size="11" fill="#5F6A70" font-family="SFMono-Regular, Menlo, Consolas, monospace">--color-brand</text>
+<rect x="304.5" y="0.5" width="135" height="84" rx="14" fill="#B09F95" stroke="#CFD5D8"/>
+<text x="306" y="108" font-size="14" font-weight="600" fill="#22252B">Taupe</text>
+<text x="306" y="127" font-size="12.5" fill="#5F6A70">#B09F95</text>
+<text x="306" y="144" font-size="11" fill="#5F6A70" font-family="SFMono-Regular, Menlo, Consolas, monospace">--accent-bright</text>
+<rect x="456.5" y="0.5" width="135" height="84" rx="14" fill="#A3AEB1" stroke="#CFD5D8"/>
+<text x="458" y="108" font-size="14" font-weight="600" fill="#22252B">Slate</text>
+<text x="458" y="127" font-size="12.5" fill="#5F6A70">#A3AEB1</text>
+<text x="458" y="144" font-size="11" fill="#5F6A70" font-family="SFMono-Regular, Menlo, Consolas, monospace">--color-secondary</text>
+<rect x="608.5" y="0.5" width="135" height="84" rx="14" fill="#E5E8EB" stroke="#CFD5D8"/>
+<text x="610" y="108" font-size="14" font-weight="600" fill="#22252B">Mist</text>
+<text x="610" y="127" font-size="12.5" fill="#5F6A70">#E5E8EB</text>
+<text x="610" y="144" font-size="11" fill="#5F6A70" font-family="SFMono-Regular, Menlo, Consolas, monospace">--color-border</text>
+<rect x="760.5" y="0.5" width="135" height="84" rx="14" fill="#FAF9F7" stroke="#CFD5D8"/>
+<text x="762" y="108" font-size="14" font-weight="600" fill="#22252B">Paper</text>
+<text x="762" y="127" font-size="12.5" fill="#5F6A70">#FAF9F7</text>
+<text x="762" y="144" font-size="11" fill="#5F6A70" font-family="SFMono-Regular, Menlo, Consolas, monospace">--color-bg</text>
+</svg>
