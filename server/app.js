@@ -12,6 +12,7 @@
      POST /api/login    check a password key       → { token, user, data }
      POST /api/logout   end this browser's session
      GET  /api/data     every collection for the signed-in user
+     POST /api/contact  store a message from the landing page's contact form
      PUT  /api/data     save changes: { username, changes: { tasks: { upsert: [...], delete: [ids] }, ... } }
 
    Signed-in requests send "Authorization: Bearer <token>".
@@ -175,6 +176,29 @@ app.post("/api/login", rateLimit, handle(async (req, res) => {
     },
     data,
   });
+}));
+
+/* The landing page's "Get in Touch" form. Stored for reading in MySQL
+   Workbench (contact_messages); nothing is emailed. */
+app.post("/api/contact", rateLimit, handle(async (req, res) => {
+  const b = req.body || {};
+  const name = String(b.name || "").trim();
+  const email = String(b.email || "").trim();
+  const phone = String(b.phone || "").trim();
+  const message = String(b.message || "").trim();
+  if (name.length < 2 || name.length > 100 || !EMAIL_RE.test(email) || email.length > 255 ||
+      phone.length > 30 || message.length < 10 || message.length > 5000) {
+    return res.status(400).json({ error: "invalid" });
+  }
+  try {
+    await pool.query("INSERT INTO contact_messages (name, email, phone, message) VALUES (?, ?, ?, ?)",
+      [name, email, phone, message]);
+  } catch (err) {
+    /* schema.sql not re-run on this database yet */
+    if (err.code === "ER_NO_SUCH_TABLE") return res.status(503).json({ error: "not-set-up" });
+    throw err;
+  }
+  res.status(201).json({ ok: true });
 }));
 
 app.post("/api/logout", requireAuth, handle(async (req, res) => {

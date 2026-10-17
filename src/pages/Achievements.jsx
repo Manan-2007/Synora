@@ -38,7 +38,7 @@ export default function Achievements() {
           {list.map((a) => (
             <div key={a.id} className={"ach-card" + (a.unlocked ? "" : " is-locked")}>
               <span className="ach-badge"><Icon name={a.unlocked ? a.icon : "trophy"} size={26} /></span>
-              <h3 className="ach-card__title">{a.title}</h3>
+              <h2 className="ach-card__title">{a.title}</h2>
               <p className="ach-card__desc">{a.desc}</p>
               {!a.unlocked && (
                 <div className="meter" style={{ marginBottom: 10 }}>

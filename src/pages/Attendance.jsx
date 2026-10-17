@@ -266,7 +266,7 @@ export default function Attendance() {
                   return (
                     <article key={r.subjectId} className={"att-card" + (a.status === "danger" ? " att-card--danger" : "")}>
                       <header className="att-card__head">
-                        <h3 className="att-card__name">{r.subject}</h3>
+                        <h2 className="att-card__name">{r.subject}</h2>
                         <div className="att-card__actions">
                           <button type="button" className="icon-btn" aria-label={"Edit " + r.subject}
                             onClick={() => openEdit(r.subjectId)}>

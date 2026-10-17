@@ -139,7 +139,9 @@ body.app {
   font-weight: var(--weight-semibold);
   letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
-  color: var(--color-secondary);
+  /* Muted, not --color-secondary: that token is decorative only and fails
+     text contrast (2.27:1 on white). */
+  color: var(--color-text-muted);
 }
 
 .nav-item {
@@ -174,8 +176,8 @@ body.app {
   height: 18px;
   padding: 0 5px;
   border-radius: var(--radius-pill);
-  background-color: var(--status-high);
-  color: #fff;
+  background-color: var(--badge-bg);
+  color: var(--badge-text);
   font-size: 0.6875rem;
   font-weight: var(--weight-semibold);
   display: inline-flex;
@@ -299,6 +301,35 @@ body.app {
   letter-spacing: var(--tracking-tight);
 }
 
+/* Sync status pill (components/SyncStatus.jsx) */
+.sync-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 var(--space-12);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+  cursor: default;
+}
+.sync-pill svg { flex: none; }
+.sync-pill--saved svg { color: var(--status-done); }
+.sync-pill--saving svg { color: var(--color-brand); animation: sync-spin 1.1s linear infinite; }
+.sync-pill--offline, .sync-pill--error { border-color: var(--status-overdue); color: var(--status-overdue); }
+.sync-pill--local svg { color: var(--color-text-muted); }
+@keyframes sync-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .sync-pill--saving svg { animation: none; } }
+/* Phones: the icon alone (its full meaning is in the label and tooltip). */
+@media (max-width: 560px) {
+  .sync-pill { padding: 0; width: 32px; justify-content: center; }
+  .sync-pill__label { display: none; }
+}
+
 .topbar__actions {
   margin-left: auto;
   display: flex;
@@ -319,8 +350,8 @@ body.app {
   height: 16px;
   padding: 0 4px;
   border-radius: var(--radius-pill);
-  background-color: var(--status-high);
-  color: #fff;
+  background-color: var(--badge-bg);
+  color: var(--badge-text);
   font-size: 0.625rem;
   font-weight: var(--weight-bold);
   display: none;
@@ -436,7 +467,7 @@ body.app {
 .notif-item__icon svg { width: 16px; height: 16px; }
 .notif-item__title { font-size: var(--text-small); font-weight: var(--weight-semibold); }
 .notif-item__body { font-size: 0.8125rem; color: var(--color-text-muted); }
-.notif-item__time { font-size: 0.6875rem; color: var(--color-secondary); margin-top: 2px; }
+.notif-item__time { font-size: 0.6875rem; color: var(--color-text-subtle); margin-top: 2px; }
 
 /* Semantic tints for notification icons */
 .tint-danger  { background-color: color-mix(in srgb, var(--status-high) 16%, transparent);   color: var(--status-high); }
@@ -582,10 +613,10 @@ body.app {
 
 .badge__dot { width: 7px; height: 7px; border-radius: var(--radius-pill); background: currentColor; }
 
-.badge--critical { color: var(--status-overdue); background: color-mix(in srgb, var(--status-overdue) 14%, transparent); }
-.badge--high     { color: var(--status-high);    background: color-mix(in srgb, var(--status-high) 14%, transparent); }
-.badge--medium   { color: var(--status-medium);  background: color-mix(in srgb, var(--status-medium) 16%, transparent); }
-.badge--low      { color: var(--status-low);     background: color-mix(in srgb, var(--status-low) 16%, transparent); }
+.badge--critical { color: var(--status-overdue-text); background: color-mix(in srgb, var(--status-overdue) 14%, transparent); }
+.badge--high     { color: var(--status-high-text);    background: color-mix(in srgb, var(--status-high) 14%, transparent); }
+.badge--medium   { color: var(--status-medium-text);  background: color-mix(in srgb, var(--status-medium) 16%, transparent); }
+.badge--low      { color: var(--status-low-text);     background: color-mix(in srgb, var(--status-low) 16%, transparent); }
 .badge--neutral  { color: var(--color-text-muted); background: var(--color-surface-sunken); }
 .badge--brand    { color: var(--color-brand); background: var(--color-brand-soft); }
 .badge--done     { color: var(--status-done); background: var(--color-brand-soft); }
@@ -796,7 +827,7 @@ textarea.input { min-height: 96px; resize: vertical; line-height: var(--leading-
   display: grid; place-content: center;
   border-radius: var(--radius-pill);
   background-color: var(--color-surface-sunken);
-  color: var(--color-secondary);
+  color: var(--color-text-subtle);
   margin-bottom: var(--space-8);
 }
 .empty__icon svg { width: 26px; height: 26px; }
@@ -1026,7 +1057,7 @@ textarea.input { min-height: 96px; resize: vertical; line-height: var(--leading-
    whole grid — and the page with it — wider than the viewport. Setting
    the minimum to zero lets the cells stay equal and the chips ellipsis. */
 .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
-.cal-dow { text-align: center; font-size: 0.6875rem; font-weight: var(--weight-semibold); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--color-secondary); padding-bottom: var(--space-8); }
+.cal-dow { text-align: center; font-size: 0.6875rem; font-weight: var(--weight-semibold); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--color-text-subtle); padding-bottom: var(--space-8); }
 
 .cal-cell {
   position: relative;
@@ -1041,7 +1072,7 @@ textarea.input { min-height: 96px; resize: vertical; line-height: var(--leading-
   text-align: left;
 }
 
-.cal-cell--muted { background-color: var(--color-bg); color: var(--color-secondary); }
+.cal-cell--muted { background-color: var(--color-bg); color: var(--color-text-subtle); }
 .cal-cell--today { border-color: var(--color-brand); box-shadow: inset 0 0 0 1px var(--color-brand); }
 .cal-cell__num { font-size: 0.8125rem; font-weight: var(--weight-semibold); }
 .cal-cell--today .cal-cell__num { color: var(--color-brand); }
@@ -1058,26 +1089,26 @@ textarea.input { min-height: 96px; resize: vertical; line-height: var(--leading-
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.cal-chip--critical { background: color-mix(in srgb, var(--status-overdue) 16%, transparent); color: var(--status-overdue); }
-.cal-chip--high { background: color-mix(in srgb, var(--status-high) 16%, transparent); color: var(--status-high); }
+.cal-chip--critical { background: color-mix(in srgb, var(--status-overdue) 16%, transparent); color: var(--status-overdue-text); }
+.cal-chip--high { background: color-mix(in srgb, var(--status-high) 16%, transparent); color: var(--status-high-text); }
 .cal-chip--exam { background: color-mix(in srgb, var(--color-accent) 20%, transparent); color: var(--color-accent); }
 .cal-cell__more { font-size: 0.625rem; color: var(--color-text-muted); }
 
 /* Mini month (dashboard) */
 .mini-cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
-.mini-cal__dow { text-align: center; font-size: 0.625rem; color: var(--color-secondary); }
+.mini-cal__dow { text-align: center; font-size: 0.625rem; color: var(--color-text-subtle); }
 .mini-cal__day {
   aspect-ratio: 1; display: grid; place-items: center;
   font-size: 0.75rem; border-radius: var(--radius-sm); position: relative;
   color: var(--color-text-muted);
 }
 .mini-cal__day--muted { color: var(--color-border-strong); }
-.mini-cal__day--today { background: var(--color-brand); color: #fff; font-weight: var(--weight-semibold); }
+.mini-cal__day--today { background: var(--color-brand); color: var(--color-on-brand); font-weight: var(--weight-semibold); }
 .mini-cal__day--has::after {
   content: ""; position: absolute; bottom: 3px; width: 4px; height: 4px;
   border-radius: 50%; background: var(--color-accent);
 }
-.mini-cal__day--today.mini-cal__day--has::after { background: #fff; }
+.mini-cal__day--today.mini-cal__day--has::after { background: var(--color-on-brand); }
 
 /* ============================ 15. FEATURE BITS ======= */
 
@@ -1114,7 +1145,7 @@ textarea.input { min-height: 96px; resize: vertical; line-height: var(--leading-
 .titem:hover .titem__actions, .titem:focus-within .titem__actions { opacity: 1; }
 .titem__actions .icon-btn { width: 32px; height: 32px; }
 .titem__actions .icon-btn svg { width: 15px; height: 15px; }
-.due-soon { color: var(--status-high); font-weight: var(--weight-semibold); }
+.due-soon { color: var(--status-high-text); font-weight: var(--weight-semibold); }
 .due-over { color: var(--status-overdue); font-weight: var(--weight-semibold); }
 
 /* Note cards */
@@ -1131,7 +1162,8 @@ textarea.input { min-height: 96px; resize: vertical; line-height: var(--leading-
   transition: box-shadow var(--duration-base) var(--ease-out), transform var(--duration-base) var(--ease-out);
 }
 .note-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
-.note-card__title { font-family: var(--font-heading); font-weight: var(--weight-semibold); margin-bottom: var(--space-8); }
+/* Card titles are h2 (the page title is the h1) but keep the h3 look. */
+.note-card__title { font-family: var(--font-heading); font-size: var(--text-h3); font-weight: var(--weight-semibold); line-height: var(--leading-snug); letter-spacing: var(--tracking-normal); margin-bottom: var(--space-8); }
 .note-card__body { font-size: var(--text-small); color: var(--color-text-muted); line-height: var(--leading-body); white-space: pre-wrap; overflow: hidden; flex: 1 1 auto; }
 .note-card__foot { display: flex; align-items: center; justify-content: space-between; gap: var(--space-8); margin-top: var(--space-16); }
 .note-card__actions { display: flex; gap: 2px; }
@@ -1143,7 +1175,7 @@ textarea.input { min-height: 96px; resize: vertical; line-height: var(--leading-
 .tt-day { display: flex; flex-direction: column; gap: var(--space-8); }
 .tt-day__name {
   font-size: 0.75rem; font-weight: var(--weight-semibold); text-transform: uppercase;
-  letter-spacing: var(--tracking-wide); color: var(--color-secondary); text-align: center;
+  letter-spacing: var(--tracking-wide); color: var(--color-text-subtle); text-align: center;
   padding-bottom: var(--space-8); border-bottom: 1px solid var(--color-border);
 }
 .tt-day--today .tt-day__name { color: var(--color-brand); }
@@ -1158,7 +1190,7 @@ textarea.input { min-height: 96px; resize: vertical; line-height: var(--leading-
 .tt-slot__time { display: block; font-size: 0.6875rem; color: var(--color-text-muted); }
 .tt-slot__subject { display: block; font-weight: var(--weight-semibold); margin: 1px 0; }
 .tt-slot__room { display: block; font-size: 0.6875rem; color: var(--color-text-muted); }
-.tt-day__empty { font-size: 0.75rem; color: var(--color-secondary); text-align: center; padding: var(--space-16) 0; }
+.tt-day__empty { font-size: 0.75rem; color: var(--color-text-subtle); text-align: center; padding: var(--space-16) 0; }
 
 /* Agenda (dashboard daily timetable) */
 .agenda-list { display: flex; flex-direction: column; gap: var(--space-4); }
@@ -1202,7 +1234,7 @@ textarea.input { min-height: 96px; resize: vertical; line-height: var(--leading-
 }
 .ach-card.is-locked .ach-badge { background: var(--color-surface-sunken); color: var(--color-secondary); }
 .ach-badge svg { width: 26px; height: 26px; }
-.ach-card__title { font-family: var(--font-heading); font-weight: var(--weight-semibold); }
+.ach-card__title { font-family: var(--font-heading); font-size: var(--text-h3); font-weight: var(--weight-semibold); line-height: var(--leading-snug); letter-spacing: var(--tracking-normal); }
 .ach-card__desc { font-size: var(--text-small); color: var(--color-text-muted); margin-top: 4px; margin-bottom: var(--space-16); }
 .ach-card__status { font-size: 0.75rem; font-weight: var(--weight-semibold); color: var(--color-brand); }
 .ach-card.is-locked .ach-card__status { color: var(--color-text-muted); }
@@ -1308,7 +1340,7 @@ textarea.input { min-height: 96px; resize: vertical; line-height: var(--leading-
   justify-content: space-between;
   align-items: flex-end;
   font-size: 0.6875rem;
-  color: var(--color-secondary);
+  color: var(--color-text-subtle);
   font-variant-numeric: tabular-nums;
   transform: translateY(-0.4em);
   padding-right: var(--space-4);
@@ -1481,7 +1513,7 @@ textarea.input { min-height: 96px; resize: vertical; line-height: var(--leading-
   flex-direction: column;
   align-items: flex-end;
   font-size: 0.6875rem;
-  color: var(--color-secondary);
+  color: var(--color-text-subtle);
   transform: translateY(0.4em);
   padding-right: var(--space-4);
 }
@@ -1697,6 +1729,7 @@ textarea.input { min-height: 96px; resize: vertical; line-height: var(--leading-
   font-size: 1rem;
   font-weight: var(--weight-bold);
   line-height: 1.3;
+  letter-spacing: var(--tracking-normal);
   min-width: 0;
   overflow-wrap: anywhere;
 }

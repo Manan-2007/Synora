@@ -85,6 +85,7 @@ export const api = {
      addressed to another account. */
   save: (username, changes, token) => request("PUT", "/data", { username, changes }, token),
   load: (token) => request("GET", "/data", undefined, token),
+  contact: (message) => request("POST", "/contact", message),
 
   /* Last-chance save while the page is closing: keepalive lets the request
      finish after the tab is gone. */

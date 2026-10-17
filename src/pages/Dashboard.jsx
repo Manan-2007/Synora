@@ -13,10 +13,11 @@ import { daysUntil, relativeDay, parseISODate, clamp, plural } from "../lib/util
 /* The command centre: who am I, what's due today, what's overdue,
    what's next, and how am I doing academically. */
 
+/* Late night (midnight–5am) is still "evening", not morning. */
 function greeting(now) {
   const h = now.getHours();
-  if (h < 12) return "Good morning";
-  if (h < 17) return "Good afternoon";
+  if (h >= 5 && h < 12) return "Good morning";
+  if (h >= 12 && h < 17) return "Good afternoon";
   return "Good evening";
 }
 

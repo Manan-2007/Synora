@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import Icon from "../components/Icon.jsx";
 import NotificationIcon from "../components/NotificationIcon.jsx";
+import SyncStatus from "../components/SyncStatus.jsx";
 import { UserAvatar } from "../components/AvatarArt.jsx";
 import { profile, session } from "../lib/storage.js";
 import { notifications, refresh } from "../lib/engine.js";
@@ -61,6 +62,7 @@ export default function Topbar({ title, onMenuToggle }) {
       <h1 className="topbar__title">{title}</h1>
 
       <div className="topbar__actions">
+        <SyncStatus />
         <button type="button" className="icon-btn" aria-label="Toggle dark mode" onClick={toggleTheme}>
           <span className="only-light"><Icon name="moon" size={18} /></span>
           <span className="only-dark"><Icon name="sun" size={18} /></span>

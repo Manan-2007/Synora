@@ -270,7 +270,7 @@
   font-weight: var(--weight-semibold);
   letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
-  color: var(--color-secondary);
+  color: var(--color-text-subtle);
 }
 
 .ob-subject__remove {
@@ -378,7 +378,7 @@
   justify-content: space-between;
   margin-top: var(--space-8);
   font-size: 0.75rem;
-  color: var(--color-secondary);
+  color: var(--color-text-subtle);
 }
 
 .ob-target__note {
@@ -551,7 +551,7 @@
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: var(--tracking-wide);
-  color: var(--color-secondary);
+  color: var(--color-text-subtle);
 }
 
 .ob-summary__grid dd {

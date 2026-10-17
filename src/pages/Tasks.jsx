@@ -73,7 +73,7 @@ export default function Tasks() {
             <input className="input" type="search" placeholder="Search tasks…"
               onChange={(e) => setQuery(e.target.value.toLowerCase())} />
           </label>
-          <select className="select select--sm" style={{ flex: "0 0 auto", width: "auto" }} value={sort}
+          <select className="select select--sm" aria-label="Sort tasks" style={{ flex: "0 0 auto", width: "auto" }} value={sort}
             onChange={(e) => setSort(e.target.value)}>
             <option value="deadline">Sort: Deadline</option>
             <option value="priority">Sort: Priority</option>

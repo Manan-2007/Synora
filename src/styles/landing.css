@@ -771,7 +771,7 @@
   z-index: -1;
   background-image:
     linear-gradient(100deg, var(--ink-veil) 30%, var(--ink-veil-edge) 100%),
-    url("../assets/img/desk-evening.jpg");
+    url("../assets/img/desk-evening.webp");
   background-size: cover, cover;
   background-position: center, center;
 }
@@ -866,7 +866,7 @@
 
 .faq-item > summary svg {
   margin-left: auto;
-  color: var(--color-secondary);
+  color: var(--color-text-subtle);
   transition: transform var(--duration-base) var(--ease-out);
 }
 
@@ -997,7 +997,7 @@
 .footer-credit {
   flex-basis: 100%;
   font-size: 0.75rem;
-  color: var(--color-secondary);
+  color: var(--color-text-subtle);
 }
 
 /* ---------------------------------------------------------
@@ -1433,7 +1433,7 @@
   font-weight: var(--weight-semibold);
   letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
-  color: var(--color-secondary);
+  color: var(--color-text-subtle);
 }
 
 .contact-item__value {
@@ -1491,6 +1491,15 @@ a.contact-item__value:hover { color: var(--color-brand); }
 }
 
 /* ---- Success panel, swapped in for the form ---- */
+
+.contact-form__failure {
+  margin: 0 0 var(--space-16);
+  padding: var(--space-12) var(--space-16);
+  border-radius: var(--radius-md);
+  background: var(--color-accent-soft);
+  color: var(--color-text);
+  font-size: var(--text-small);
+}
 
 .contact-sent {
   text-align: center;

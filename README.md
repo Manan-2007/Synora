@@ -379,7 +379,7 @@ flowchart LR
     end
     subgraph AIVEN["Aiven cloud"]
         direction TB
-        DB[("MySQL · synora<br/>12 tables")]
+        DB[("MySQL · synora<br/>13 tables")]
         WB["MySQL Workbench"]
     end
     UI -->|"loaded from"| CDN
@@ -401,7 +401,7 @@ flowchart LR
 | **Sync** | Sends only what changed (items added, edited, deleted) and re-loads changes from other devices | `src/lib/sync.js` |
 | **API** | Express routes for sign-up, sign-in, sign-out and saving / loading data | `server/app.js` |
 | **Serverless entry** | Runs the same Express app as a Vercel function | `api/index.js` |
-| **Database** | 12 normalised MySQL tables | `database/schema.sql` |
+| **Database** | 13 MySQL tables (12 per-account + contact messages) | `database/schema.sql` |
 
 ### Every change, saved twice
 
@@ -438,6 +438,8 @@ sequenceDiagram
 - **Every device catches up:** the app re-loads from MySQL when it opens, when the tab comes back into
   view and every 2 minutes. It never overwrites edits that are still waiting to be saved.
 - **Every tab stays current:** a second tab of the app re-renders as soon as the first one saves.
+- **Always visible:** a small pill in the top bar shows *Saved*, *Saving…*, *Offline* (changes kept on
+  this device and retried) or *This device* (not connected to an account database).
 - **One transaction per save:** either every row lands or none does.
 - **Never stuck:** a failed save retries with growing gaps (5 s up to 60 s). If the database can't be
   reached at all, the changes wait in the browser and upload as soon as it can be, with no need to sign in
@@ -490,8 +492,10 @@ sequenceDiagram
 
 ## ✦ The database
 
-Twelve normalised tables in a database called `synora`. Every row belongs to a user (`user_id`), and
-deleting an account deletes everything it owns (`ON DELETE CASCADE`). Full setup guide (Aiven →
+Thirteen tables in a database called `synora`. Twelve hold the accounts and their workspaces: every
+row belongs to a user (`user_id`), and deleting an account deletes everything it owns (`ON DELETE
+CASCADE`). The thirteenth, `contact_messages`, stores what people send through the landing page's
+*Get in Touch* form. Full setup guide (Aiven →
 MySQL Workbench → Vercel): **[`database/README.md`](database/README.md)**.
 
 ```mermaid
@@ -595,15 +599,23 @@ erDiagram
         varchar title
         boolean is_read
     }
+    contact_messages {
+        int id PK
+        varchar name
+        varchar email
+        varchar phone
+        text message
+        datetime created_at
+    }
 ```
 
 <details>
 <summary><b>Ready-made SQL</b>: CGPA computed in the database</summary>
 <br>
 
-[`database/queries.sql`](database/queries.sql) has ten queries to run in MySQL Workbench: every
+[`database/queries.sql`](database/queries.sql) has eleven queries to run in MySQL Workbench: every
 account, rows per user, attendance against the target, overdue tasks, the weekly timetable, unread
-notifications, who is signed in, and this one, which works out the CGPA in SQL:
+notifications, who is signed in, contact-form messages, and this one, which works out the CGPA in SQL:
 
 ```sql
 SELECT u.username,
@@ -648,6 +660,7 @@ flash of the wrong one.
 - **Principles:** calm by design (soft tones, generous whitespace, no red-badge panic); one source of
   truth (the subject list); private by default (no ads, no tracking cookies, hashed passwords).
 - **Accessible:**
+  - **0 violations** in an axe accessibility scan of every page, in both themes, including colour contrast;
   - semantic landmarks and a *Skip to content* link;
   - every input has a real `<label>` and its own error message;
   - dialogs trap focus and close with `Escape`;
@@ -686,7 +699,7 @@ Synora/
 │   ├── db.js               # MySQL pool (TLS for the cloud), transactions
 │   └── index.js            # Runs the API locally (npm run server)
 ├── database/
-│   ├── schema.sql          # Creates the `synora` database and its 12 tables
+│   ├── schema.sql          # Creates the `synora` database and its 13 tables
 │   ├── local-user.sql      # The API's login on a local MySQL
 │   ├── queries.sql         # Ready-made queries for MySQL Workbench
 │   └── README.md           # Setup guide: Aiven, Workbench, Vercel

@@ -120,7 +120,7 @@ export default function Notes() {
             <div className="notes-grid">
               {items.map((n) => (
                 <article className="note-card" key={n.id}>
-                  <h3 className="note-card__title">{n.title}</h3>
+                  <h2 className="note-card__title">{n.title}</h2>
                   <p className="note-card__body">{n.body || ""}</p>
                   <div className="note-card__foot">
                     {n.category

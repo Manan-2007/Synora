@@ -94,3 +94,8 @@ ORDER BY n.created_at DESC;
 SELECT u.username, s.created_at AS signed_in_at
 FROM sessions s
 JOIN users u ON u.id = s.user_id;
+
+-- 11. Messages sent through the landing page's contact form, newest first
+SELECT id, name, email, phone, message, created_at
+FROM contact_messages
+ORDER BY created_at DESC;

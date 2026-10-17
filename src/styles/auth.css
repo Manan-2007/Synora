@@ -176,11 +176,11 @@
 
 /* Paths are relative to this stylesheet, which lives in styles/. */
 .auth-aside--signup {
-  background-image: url("../assets/img/planner-flatlay.jpg");
+  background-image: url("../assets/img/planner-flatlay.webp");
 }
 
 .auth-aside--login {
-  background-image: url("../assets/img/hero-workspace.jpg");
+  background-image: url("../assets/img/hero-workspace.webp");
 }
 
 /* The wash that ties the photo to the palette and keeps the

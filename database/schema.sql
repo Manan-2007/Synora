@@ -7,7 +7,7 @@
 --     • your local MySQL (then also run local-user.sql).
 --   It is safe to run again: nothing is dropped or overwritten.
 --
---   It creates the `synora` database and its 12 tables.
+--   It creates the `synora` database and its 13 tables.
 --
 --   Every table except `users` belongs to one user through
 --   `user_id`. Deleting a user deletes all of their rows
@@ -189,4 +189,20 @@ CREATE TABLE IF NOT EXISTS notifications (
   position   INT UNSIGNED NOT NULL DEFAULT 0,
   PRIMARY KEY (user_id, id),
   CONSTRAINT fk_notifications_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+-- ---------------------------------------------------------
+-- Messages sent from the landing page's "Get in Touch" form.
+-- Not tied to an account: anyone can write in.
+-- ---------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS contact_messages (
+  id         INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  name       VARCHAR(100) NOT NULL,
+  email      VARCHAR(255) NOT NULL,
+  phone      VARCHAR(30)  NOT NULL DEFAULT '',
+  message    TEXT         NOT NULL,
+  created_at DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (id),
+  KEY ix_contact_created (created_at)
 );

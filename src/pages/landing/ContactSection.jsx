@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import CheckMark from "../../components/CheckMark.jsx";
 import { EMAIL_RE } from "../../lib/util.js";
+import { api } from "../../lib/api.js";
 
 /* PLACEHOLDERS — replace these with the real details; the markup reads
    them from here and nothing else needs to change. */
@@ -36,13 +37,17 @@ function validate(v) {
   return errors;
 }
 
-/* Synora has no backend, so this form does NOT email anyone and doesn't
-   pretend to: it validates, confirms, and nothing leaves the browser.
-   A real integration would post the values from submit(). */
+/* The message is stored in the database (POST /api/contact →
+   contact_messages); nobody is emailed. "Sent" is only shown once the
+   database has it — if it can't be reached, the form says so and keeps
+   what was typed. */
+const MAX = { name: 100, email: 255, phone: 30, message: 5000 };
 export default function ContactSection() {
   const [values, setValues] = useState(EMPTY);
   const [errors, setErrors] = useState({});
   const [sent, setSent] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [failure, setFailure] = useState("");
   const inputs = useRef({});
   const sentHeading = useRef(null);
   const focusAfterReset = useRef(false);
@@ -61,8 +66,10 @@ export default function ContactSection() {
     if (errors[name]) setErrors((e) => ({ ...e, [name]: undefined }));
   }
 
-  function submit(e) {
+  async function submit(e) {
     e.preventDefault();
+    if (busy) return;
+    setFailure("");
     const trimmed = Object.fromEntries(FIELDS.map((f) => [f, values[f].trim()]));
     const found = validate(trimmed);
     setErrors(found);
@@ -71,12 +78,22 @@ export default function ContactSection() {
       inputs.current[firstBad].focus();
       return;
     }
-    setSent(true);
+    setBusy(true);
+    let ok = false;
+    try {
+      ok = (await api.contact(trimmed)).status === 201;
+    } catch {
+      ok = false;
+    }
+    setBusy(false);
+    if (ok) setSent(true);
+    else setFailure("Your message couldn't be sent right now. Nothing was lost — please try again in a little while.");
   }
 
   function reset() {
     setValues(EMPTY);
     setErrors({});
+    setFailure("");
   }
 
   function sendAnother() {
@@ -101,6 +118,7 @@ export default function ContactSection() {
       id: "contact-" + name,
       name,
       required: true,
+      maxLength: MAX[name],
       value: values[name],
       onChange: (e) => change(name, e.target.value),
       "aria-invalid": errors[name] ? "true" : undefined,
@@ -194,16 +212,20 @@ export default function ContactSection() {
                 <textarea {...inputProps("message")} className="input contact-form__textarea" rows="5"
                   placeholder="What's on your mind?" />)}
 
+              {failure && <p className="contact-form__failure" role="alert">{failure}</p>}
+
               <div className="contact-form__actions">
-                <button type="submit" className="btn btn--primary">Send Message</button>
+                <button type="submit" className="btn btn--primary" disabled={busy}>
+                  {busy ? "Sending…" : "Send Message"}
+                </button>
                 <button type="reset" className="btn btn--ghost">Clear</button>
               </div>
             </form>
 
             <div className="contact-sent" hidden={!sent}>
               <span className="contact-sent__mark" aria-hidden="true"><CheckMark size={24} /></span>
-              <h4 tabIndex="-1" ref={sentHeading}>Message sent successfully.</h4>
-              <p>We'll get back to you soon.</p>
+              <h4 tabIndex="-1" ref={sentHeading}>Message sent.</h4>
+              <p>Thanks for writing — we'll get back to you at the email you gave.</p>
               <button type="button" className="btn btn--ghost btn--sm" onClick={sendAnother}>
                 Send another message
               </button>

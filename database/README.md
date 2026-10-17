@@ -16,7 +16,7 @@ timetable, attendance, grades, achievements and notifications.
  Browser (React app)            Vercel                                Aiven (cloud)
 ┌──────────────────────┐ /api/* ┌──────────────────────────────┐ SQL  ┌──────────────────┐
 │ localStorage         │ ─────► │ API: serverless function     │ ───► │ MySQL: `synora`  │
-│ (the working copy)   │ ◄───── │ api/index.js → server/app.js │ ◄─── │ 12 tables        │
+│ (the working copy)   │ ◄───── │ api/index.js → server/app.js │ ◄─── │ 13 tables        │
 └──────────────────────┘  JSON  └──────────────────────────────┘ TLS  └──────────────────┘
                                                                               ▲
                                                            MySQL Workbench connects here too
@@ -76,7 +76,7 @@ the database, open the Aiven console and click **Power on**.
 2. Open the connection, then **File → Open SQL Script…** → `database/schema.sql`.
 3. Click the **⚡ lightning bolt**, or press **⌘ ⇧ ↵** (Mac) / **Ctrl + Shift + Enter**
    (Windows). The *Output* panel should show only green ticks.
-4. In the **Navigator → Schemas** tab, click **↻ refresh**. **`synora`** appears with 12 tables.
+4. In the **Navigator → Schemas** tab, click **↻ refresh**. **`synora`** appears with 13 tables.
 
 `schema.sql` is safe to run again later. It never deletes data.
 
@@ -169,6 +169,7 @@ the local connection and use **Server → Data Import** with that file.
 | `grades` | graded subject | `O`, `A+`, `A`, `B+`, `B` pass; `E1`, `E2`, `E3` fail |
 | `achievements` | unlocked badge | badge definitions live in the app |
 | `notifications` | alert | read / seen flags |
+| `contact_messages` | message from the landing page's contact form | not tied to an account; nothing is emailed |
 
 * Every table except `users` has a `user_id` foreign key to `users` with **`ON DELETE
   CASCADE`**: deleting an account deletes everything it owns.

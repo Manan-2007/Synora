@@ -8,10 +8,10 @@ import CheckMark from "../../components/CheckMark.jsx";
 import usePageStyles from "../../hooks/usePageStyles.js";
 import usePageMeta from "../../hooks/usePageMeta.js";
 import landingCss from "../../styles/landing.css?inline";
-import heroWorkspace from "../../assets/img/hero-workspace.jpg";
-import plannerFlatlay from "../../assets/img/planner-flatlay.jpg";
-import notebooks from "../../assets/img/notebooks.jpg";
-import dashboardPreview from "../../assets/preview/dashboard.png";
+import heroWorkspace from "../../assets/img/hero-workspace.webp";
+import plannerFlatlay from "../../assets/img/planner-flatlay.webp";
+import notebooks from "../../assets/img/notebooks.webp";
+import dashboardPreview from "../../assets/preview/dashboard.webp";
 
 const STATS = [
   { value: "6", label: "tools, one workspace" },
@@ -252,7 +252,7 @@ export default function Landing() {
             {SHOWCASES.map((s) => (
               <div className={"showcase" + (s.flip ? " showcase--flip" : "")} key={s.title}>
                 <figure className="showcase__media">
-                  <img src={s.image} alt={s.alt} width={s.width} height={s.height} loading="lazy" />
+                  <img src={s.image} alt={s.alt} width={s.width} height={s.height} loading="lazy" decoding="async" />
                 </figure>
                 <div>
                   <p className="eyebrow">{s.eyebrow}</p>
@@ -281,7 +281,7 @@ export default function Landing() {
 
             <div className="shots">
               <div className="shots__stage">
-                <img src={dashboardPreview} width="1700" height="1100"
+                <img src={dashboardPreview} width="1700" height="1100" loading="lazy" decoding="async"
                   alt="The Synora dashboard: a greeting with the student's program and semester, counts for total, due-today, overdue and upcoming tasks, today's task list, a progress donut and a month calendar." />
               </div>
             </div>

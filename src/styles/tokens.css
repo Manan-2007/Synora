@@ -67,6 +67,22 @@
   --status-done: #53655C;
   --status-overdue: #A8443C;
 
+  /* Count badges (sidebar, bell): text on red needs ≥ 4.5:1 */
+  --badge-bg: #B04A41;
+  --badge-text: #FFFFFF;
+
+  /* Status colours as TEXT (priority badges, calendar chips, "due soon"):
+     same hues, deep enough for ≥ 4.5:1 on their own tinted backgrounds.
+     The plain --status-* values stay for dots and fills. */
+  --status-overdue-text: #A8443C;
+  --status-high-text: #A54B43;
+  --status-medium-text: #83663B;
+  --status-low-text: #556F56;
+
+  /* Quiet labels (calendar day names, chart axes, timestamps): lighter than
+     muted text but still readable. --color-secondary is decorative only. */
+  --color-text-subtle: #5F6A70;
+
   /* ---- Decorative gradients ---- */
   --gradient-page:
     radial-gradient(90rem 40rem at 12% -10%, rgba(83, 101, 92, .10), transparent 60%),
@@ -193,6 +209,16 @@
   --status-low: #8FB891;
   --status-done: #8FA697;
   --status-overdue: #C9756A;
+
+  --badge-bg: #D98A83;
+  --badge-text: #16181C;
+
+  --status-overdue-text: #D0877D;
+  --status-high-text: #D98A83;
+  --status-medium-text: #D7B078;
+  --status-low-text: #8FB891;
+
+  --color-text-subtle: #889398;
 
   --gradient-page:
     radial-gradient(90rem 40rem at 12% -10%, rgba(143, 166, 151, .12), transparent 60%),

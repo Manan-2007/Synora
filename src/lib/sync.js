@@ -54,6 +54,31 @@ let localWrites = 0;          // bumps on every synced write, to spot edits made
 let lastRefresh = 0;
 let currentUser = session.username();
 
+/* ---- Status, for the indicator in the top bar ----
+     "saved"    the database has everything
+     "saving"   a change is on its way
+     "offline"  a save failed; changes are kept here and retried
+     "error"    the database refused a save; it stays on this device
+     "local"    not connected to a database (none set up, or not linked
+                yet): everything is kept on this device */
+let status = api.token() ? "saved" : "local";
+const statusListeners = new Set();
+
+function setStatus(next) {
+  if (next === status) return;
+  status = next;
+  statusListeners.forEach((fn) => fn());
+}
+
+export function syncStatus() {
+  return status;
+}
+
+export function onSyncStatus(fn) {
+  statusListeners.add(fn);
+  return () => statusListeners.delete(fn);
+}
+
 const same = (a, b) => !!a && !!b && a.toLowerCase() === b.toLowerCase();
 
 /* ---- The base (written straight to localStorage: not a change to sync) ---- */
@@ -138,6 +163,7 @@ export function hasPending(username) {
 
 function schedule(delay = DEBOUNCE_MS) {
   clearTimeout(timer);
+  if (status !== "offline") setStatus("saving");
   timer = setTimeout(() => { flush(); }, delay);
 }
 
@@ -147,14 +173,16 @@ export async function flush({ all = false } = {}) {
   clearTimeout(timer);
   while (inflight) await inflight;
   const owner = api.session();
-  if (!owner) return false;
-  if (!all && !isLinked(owner.username)) return false;
+  if (!owner) { setStatus("local"); return false; }
+  if (!all && !isLinked(owner.username)) { setStatus("local"); return false; }   // linking finishes the job
 
   const { changes, snapshot, empty } = diff(owner.username, all);
   if (empty) {
     if (all) writeBase(owner.username, "profile", readJSON(userKey("profile", owner.username), null));
+    setStatus("saved");
     return true;
   }
+  setStatus("saving");
 
   inflight = api.save(owner.username, changes, owner.token)
     .then((res) => {
@@ -162,20 +190,24 @@ export async function flush({ all = false } = {}) {
         for (const [name, value] of Object.entries(snapshot)) writeBase(owner.username, name, value);
         localStorage.removeItem(legacyUnsyncedKey(owner.username));
         retryMs = RETRY_MIN_MS;
+        setStatus("saved");
         return true;
       }
       if (res.status === 401 || res.status === 409) {     // session gone or not this account's
         api.clearToken();                                  // the changes stay pending; the link restarts
+        setStatus("local");
         return false;
       }
       if (res.status >= 400 && res.status < 500) {         // refused as invalid: retrying won't help
         console.warn("Synora: the database refused a save (" + res.status + ")");
+        setStatus("error");
         return false;
       }
       throw new Error("save failed: " + res.status);
     })
     .catch((err) => {
       console.warn("Synora: could not save to the database, will retry", err);
+      setStatus("offline");
       schedule(retryMs);
       retryMs = Math.min(retryMs * 2, RETRY_MAX_MS);
       return false;
@@ -200,6 +232,7 @@ export function applyServerData(username, data) {
   } finally {
     paused -= 1;
   }
+  setStatus("saved");
   /* The shared demo starts each day from fresh sample data. */
   if (same(session.username(), username) && demo.isCurrent() && demo.needsSeed()) demo.seed();
 }
@@ -298,6 +331,7 @@ onWrite((key) => {
     const next = session.username();
     if (!next && currentUser) endSession(currentUser);
     currentUser = next;
+    if (!api.token()) setStatus("local");
     return;
   }
   if (paused) return;
@@ -306,6 +340,7 @@ onWrite((key) => {
   if (!SYNCED.includes(key.slice(key.lastIndexOf(":") + 1))) return;
   localWrites += 1;
   if (api.token()) schedule();
+  else setStatus("local");
 });
 
 /* Closing or reloading the tab inside the debounce window would lose the
