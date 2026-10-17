@@ -12,7 +12,7 @@ import { profile } from "../../lib/storage.js";
 const ASIDE = {
   photo: "login",
   quote: "A due date on Friday shouldn't be a surprise on Thursday night.",
-  points: ["Your whole week on one timeline", "CGPA and attendance worked out for you", "Nothing uploaded, nothing tracked"],
+  points: ["Your whole week on one timeline", "CGPA and attendance worked out for you", "Pick up where you left off, on any device"],
 };
 
 export default function Login() {
@@ -22,6 +22,7 @@ export default function Login() {
   const [alert, setAlert] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [doneName, setDoneName] = useState(null);
+  const [busy, setBusy] = useState(false);
   const submitRef = useRef(null);
 
   // "Use the demo account" must work on a browser that has never opened Synora.
@@ -34,8 +35,9 @@ export default function Login() {
     setAlert("");
   }
 
-  function submit(e) {
+  async function submit(e) {
     e.preventDefault();
+    if (busy) return;
     setErrors({});
     setAlert("");
 
@@ -43,7 +45,9 @@ export default function Login() {
     if (!username) { setErrors({ username: "Enter your username." }); return; }
     if (!values.password) { setErrors({ password: "Enter your password." }); return; }
 
-    const user = signIn(username, values.password);
+    setBusy(true);
+    const user = await signIn(username, values.password);
+    setBusy(false);
     if (!user) {
       // Deliberately vague — don't reveal which half was wrong.
       setAlert("That username and password don't match an account.");
@@ -89,7 +93,7 @@ export default function Login() {
             </span>
           </div>
 
-          <button type="submit" className="btn btn--primary btn--lg btn--block" ref={submitRef}>Sign in</button>
+          <button type="submit" className="btn btn--primary btn--lg btn--block" ref={submitRef} disabled={busy}>Sign in</button>
         </form>
 
         {/* The credential is local to this project and unlocks nothing but

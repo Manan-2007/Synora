@@ -52,7 +52,7 @@ const FEATURES = [
 
 const HOW_STEPS = [
   { title: "Create your account",
-    text: "First name, last name, a username, an email and a password. It lives in this browser — there is no server to sign up to." },
+    text: "First name, last name, a username, an email and a password. That's it — no verification step, no phone number." },
   { title: "Make Synora yours",
     text: "Pick an avatar, tell us your program and semester, then add your subjects — credits, and whether each one takes a register at all. Set the attendance you're aiming for and you're done." },
   { title: "Start with a clear week",
@@ -85,8 +85,8 @@ const WHY = [
   { title: "Calm by design",
     text: "No clutter, no noise, no badges begging for attention — just what you need, when you need it.",
     icon: <><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" /><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" /></> },
-  { title: "Your account, your device",
-    text: "Your account and everything in it stay in your own browser. Nothing is uploaded, and there's no server to trust.",
+  { title: "Private by default",
+    text: "Your workspace belongs to your account alone. No ads, no tracking, and your password is only ever stored as a secure hash.",
     icon: <><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></> },
   { title: "Free, with no catch",
     text: "No paid tier, no ads, and no trial that quietly turns into a subscription. Signing up costs you a username.",
@@ -97,11 +97,11 @@ const FAQ = [
   { q: "Is Synora free?",
     a: "Yes — completely. There's no paid tier, no trial period, and nothing locked behind an upgrade." },
   { q: "Do I need an account?",
-    a: "Yes. Synora is built around your account — it's what separates your tasks, notes and grades from anyone else using the same browser, and it's how the app knows what to load when you come back. Creating one takes a username and a password, and nothing else: no email, no phone number, no verification step." },
+    a: "Yes. Synora is built around your account — it's what keeps your tasks, notes and grades separate from everyone else's, and it's how the app knows what to load when you come back. Creating one takes your name, a username, an email and a password: no phone number, no verification step." },
   { q: "Where is my data stored?",
-    a: "In your browser's local storage, on the device you're using — your account included. Nothing is uploaded anywhere. The trade-off is that your workspace doesn't follow you between browsers or devices, and clearing your browser data will clear it." },
+    a: "In Synora's database, linked to your account — so signing in on another browser or device brings your whole workspace with you. A copy is also kept in your browser so every page opens instantly. Passwords are stored only as a secure hash, never as plain text." },
   { q: "Does it work on mobile?",
-    a: "Yes. Synora is responsive and runs in any modern mobile browser. Since data is stored per-device, you'll sign up again on your phone and it keeps its own copy." },
+    a: "Yes. Synora is responsive and runs in any modern mobile browser. Sign in on your phone with the same account and your workspace is already there." },
 ];
 
 export default function Landing() {
@@ -220,7 +220,7 @@ export default function Landing() {
             </ul>
 
             <p className="features-note">
-              Plus a unified dashboard, light &amp; dark themes, and your data kept private on your own device.
+              Plus a unified dashboard, light &amp; dark themes, and your data kept private to your account.
             </p>
           </div>
         </section>

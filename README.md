@@ -12,6 +12,7 @@
   <a href="#-tech-stack">Tech Stack</a> •
   <a href="#-design-philosophy">Design</a> •
   <a href="#-getting-started">Getting Started</a> •
+  <a href="#-mysql-database">MySQL Database</a> •
   <a href="#-deployment">Deployment</a>
 </p>
 
@@ -158,7 +159,7 @@ Synora takes you from a blank slate to a structured academic routine in three cl
 
 ## ✦ Tech Stack
 
-A small, modern stack: React for the UI, Vite for the build, and plain CSS for the design system. There is no CSS framework, UI kit, state library, or backend.
+A small, modern stack: React for the UI, Vite for the build, and plain CSS for the design system. There is no CSS framework, UI kit or state library. A small Node.js + Express API stores every account in a MySQL database: in the cloud for the live site, or locally.
 
 ```
 ┌───────────────────────────────────────────────────────────────────────────┐
@@ -169,12 +170,13 @@ A small, modern stack: React for the UI, Vite for the build, and plain CSS for t
 │ Build & Dev       │ Vite 8 (dev server, production bundling)              │
 │ Styling           │ CSS3 (Custom properties / Tokens, Grid, Flexbox)      │
 │ Persistence       │ Client-side LocalStorage (Namespaced JSON store)      │
+│ Database          │ MySQL (Aiven cloud / local) via a Node.js Express API │
 │ Typography        │ Google Fonts (Inter & Manrope with system fallbacks)  │
-│ Hosting           │ Vercel (static build + Web Analytics)                 │
+│ Hosting           │ Vercel (static build, serverless API, Web Analytics)  │
 └───────────────────┴───────────────────────────────────────────────────────┘
 ```
 
-* **Three runtime dependencies:** `react`, `react-dom` and `react-router`. Everything else is hand-written.
+* **Three runtime dependencies:** `react`, `react-dom` and `react-router`. Everything else is hand-written. The API in `server/` adds `express`, `mysql2` and `bcryptjs`.
 * **Framework-free logic layer:** Storage, auth, the notification engine, grades, attendance and timetable maths live in `src/lib/` as plain JavaScript, separate from the React components.
 * **Store hook:** `useStore()` subscribes components to `localStorage` changes with `useSyncExternalStore`, so every page re-renders from the same source of truth.
 * **CSS Custom Properties:** Complete design token architecture (`tokens.css`) defining typography, spacing, elevations, and dual-theme palettes. Page-specific stylesheets are mounted only on their own routes.
@@ -188,8 +190,8 @@ A small, modern stack: React for the UI, Vite for the build, and plain CSS for t
 ```
   ┌──────────────────┐    ┌──────────────────┐    ┌──────────────────┐
   │  Calm by Design  │    │  Privacy First   │    │ Unified Context  │
-  │ Minimalist focus │    │ On-device data   │    │ Single source of │
-  │ & reduced noise  │    │ & no backend     │    │ academic truth   │
+  │ Minimalist focus │    │ Private accounts │    │ Single source of │
+  │ & reduced noise  │    │ & hashed secrets │    │ academic truth   │
   └──────────────────┘    └──────────────────┘    └──────────────────┘
 ```
 
@@ -197,7 +199,7 @@ A small, modern stack: React for the UI, Vite for the build, and plain CSS for t
 Academic tools often add stress through red warning badges, intrusive pop-ups, and cluttered sidebars. Synora uses subdued tones, generous whitespace, clear typography, and structured grids to keep attention on your coursework.
 
 ### 🔒 Privacy First
-Your academic life belongs to you. Synora stores accounts, tasks, grades, and notes exclusively within your browser's local sandbox. Your data never leaves your machine, no cookies track your activity, and no remote server holds your academic history. The hosted site uses Vercel Web Analytics only for anonymous, cookie-free page-view counts.
+Your academic life belongs to you. Each workspace is private to its account. Passwords are stored only as bcrypt hashes, the database connection is encrypted, and there are no ads and no tracking cookies. The hosted site uses Vercel Web Analytics only for anonymous, cookie-free page-view counts.
 
 ### 🏛️ Unified Academic Context
 Instead of forcing you to type the same subject names into four different utilities, Synora treats your **Subject List** as the canonical single source of truth. Renaming a subject in Settings instantly updates the Timetable, Attendance cards, and CGPA calculations across the entire application.
@@ -232,7 +234,7 @@ Instead of forcing you to type the same subject names into four different utilit
 
 ## ✦ Privacy & Data Architecture
 
-Synora operates on a transparent, purely client-side data model powered by standard browser `localStorage`.
+Synora operates on a transparent, client-side data model powered by standard browser `localStorage`. Every change is also saved to the [MySQL database](#-mysql-database), linked to your account.
 
 ```
 localStorage
@@ -256,7 +258,7 @@ localStorage
 ### Architectural Notes & Invariants
 * **Isolated Multi-User Support:** User data is segregated by username keys (`synora:<username>:<collection>`). Multiple students can use the same browser without their records mixing.
 * **Derived State:** Percentages, CGPA totals, deadline statuses (Overdue/Due Today), and streak counts are **derived at runtime** rather than stored as static values.
-* **Trade-off Notice:** Because data lives strictly on-device, clearing your browser's site data will reset your workspace. Data does not synchronize across separate physical devices.
+* **Follows You Everywhere:** Because the workspace is saved in MySQL, signing in on any browser or device restores it. If the database can't be reached, the app keeps working from the browser copy and uploads the changes at the next sign-in.
 
 ---
 
@@ -304,6 +306,22 @@ Synora/
 ├── start.sh / start.bat       # One-click launchers (install + dev server + open browser)
 ├── README.md                  # Project documentation & reference
 │
+├── database/                  # MySQL database
+│   ├── schema.sql             # Creates the `synora` database & its 12 tables
+│   ├── local-user.sql         # The API's login on a LOCAL MySQL only
+│   ├── queries.sql            # Ready-made queries (CGPA in SQL, attendance %, overdue tasks…)
+│   └── README.md              # Setup guide: Aiven, Vercel, MySQL Workbench
+│
+├── api/
+│   └── index.js               # Vercel serverless function: runs server/app.js on the live site
+│
+├── server/                    # The API: Node.js + Express + mysql2 + bcryptjs
+│   ├── app.js                 # Routes: /api/health, /signup, /login, /logout, /data
+│   ├── collections.js         # Converts the app's collections ⇄ table rows
+│   ├── db.js                  # MySQL connection pool (TLS for the cloud), transactions
+│   ├── index.js               # Runs the API locally: `npm run server`
+│   └── .env.example           # Local connection settings (copy to .env)
+│
 ├── public/                    # Copied as-is: favicon.svg/.ico, favicon-32, favicon-180
 │
 └── src/
@@ -331,7 +349,7 @@ Synora/
     ├── hooks/                 # useStore, useTheme, usePageStyles, useBodyClass, usePageMeta
     ├── lib/                   # Framework-free logic: storage, auth, engine (notifications &
     │                          #   achievements), tasks, notes, grades, attendance, timetable,
-    │                          #   theme, toast, demo data
+    │                          #   theme, toast, demo data, api + sync (MySQL mirroring)
     ├── data/                  # Navigation items & avatar definitions
     ├── styles/                # tokens, base, components, landing, auth, onboarding, app (.css)
     └── assets/                # Logos, 12 vector avatars (Lorelei style, CC0),
@@ -361,7 +379,10 @@ npm run dev
 ```
 Then open the URL Vite prints (usually `http://localhost:5173`).
 
-### 3. Build for Production
+### 3. (Optional) Use a Database Locally
+Without a database, `npm run dev` keeps everything in the browser. To save to MySQL while developing, create `server/.env` (pointing at the cloud database or a local MySQL) and start with `./start.sh` / `start.bat`, which then also start the API. See [`database/README.md`](database/README.md), part 5.
+
+### 4. Build for Production
 ```bash
 npm run build     # outputs to dist/
 npm run preview   # serves the production build locally
@@ -370,6 +391,22 @@ npm run preview   # serves the production build locally
 > **Testing Options:**
 > * **New Student Journey:** Click **"Create account"**, complete the quick registration, and customize your workspace via the onboarding wizard.
 > * **Instant Demonstration:** Go to **Sign In** and click **"Use the demo account"** to immediately explore a populated workspace with realistic semester data.
+
+---
+
+## ✦ MySQL Database
+
+Every account, and everything in it, is stored in **MySQL**, ready to browse and query in **MySQL Workbench**. The live site uses a free cloud MySQL on **Aiven**. Full setup guide (Aiven → Workbench → Vercel): **[`database/README.md`](database/README.md)**.
+
+```
+React app (localStorage) ──/api──► Express API (Vercel serverless function) ──TLS──► MySQL `synora` (Aiven)
+```
+
+* **12 normalised tables:** `users`, `sessions`, `profiles`, `user_meta`, `subjects`, `tasks`, `notes`, `timetable_classes`, `attendance`, `grades`, `achievements` and `notifications`. They are linked by primary and foreign keys with `ON DELETE CASCADE`.
+* **Real authentication:** passwords are stored as **bcrypt** hashes. Signing in issues a random session token that is deleted on sign-out. Sign-in attempts are rate-limited.
+* **Automatic sync:** the app works from a browser copy, so pages open instantly. Every change is also sent to MySQL within about half a second, in a single transaction.
+* **Never stuck:** if the database can't be reached, Synora keeps working from the browser copy and uploads the changes at the next sign-in.
+* **Demo stays separate:** the demo account is a per-browser sample and is never saved to the database.
 
 ---
 
@@ -382,6 +419,7 @@ The live site at **[synora-v1.vercel.app](https://synora-v1.vercel.app/)** deplo
 * Old links from the vanilla version (`/app/dashboard.html` and so on) permanently redirect to their new routes (`/dashboard`).
 * Hashed build files under `/assets/` are cached for a year, since every rebuild gives them new names.
 * Vercel Web Analytics is enabled through the snippet in `index.html`.
+* `api/index.js` runs the Express API as a serverless function. It reads the database settings (`DB_HOST`, `DB_PASSWORD`, `DB_SSL_CA`, …) from Vercel's environment variables. Until those are set, the API reports "no database" and the site runs on browser storage.
 
 ---
 
@@ -417,7 +455,7 @@ Yes. Synora has no paid tiers, no premium locked features, no trial periods, and
 Yes. Synora uses client-side account records to isolate tasks, timetables, and grades for individual users sharing the same browser. Creating an account takes less than a minute.
 
 #### Where is my academic data saved?
-All data is stored directly in your browser's `localStorage` on your local device. Nothing is uploaded to any remote server or third-party service.
+In Synora's MySQL database, linked to your account, so signing in anywhere brings your workspace with you. A copy is kept in your browser's `localStorage` so pages open instantly. Passwords are stored only as bcrypt hashes. The demo account is the exception: it lives only in your browser.
 
 #### Does Synora work on mobile browsers?
 Yes. Synora is fully responsive and runs smoothly in modern mobile browsers on both iOS and Android.
@@ -451,7 +489,7 @@ const CONTACT_INFO = {
 * **Eliminate Academic Fragmentation:** Bring disparate study tools into a single, cohesive interface.
 * **Foster Calm & Focus:** Replace high-stress notification feeds with a clean, actionable daily agenda.
 * **Simplify Complex Calculations:** Automate credit-weighted CGPA estimation and attendance safe-miss thresholds.
-* **Protect Student Privacy:** Maintain an entirely client-side workspace model where academic data never leaves the browser.
+* **Protect Student Privacy:** Keep every workspace private to its account, with hashed passwords, encrypted connections and no ad tracking.
 * **Deliver Dependable Performance:** Provide a fast web experience with a lean React build and only three runtime dependencies.
 
 ---

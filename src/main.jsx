@@ -2,6 +2,8 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router";
 import App from "./App.jsx";
+// Mirrors every save into the local MySQL database when its API is running.
+import "./lib/sync.js";
 
 // Global design system. Page-specific stylesheets are mounted per route (usePageStyles).
 import "./styles/tokens.css";

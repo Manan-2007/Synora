@@ -9,9 +9,13 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "server": "node --watch --env-file-if-exists=server/.env server/index.js"
   },
   "dependencies": {
+    "bcryptjs": "3.0.3",
+    "express": "5.2.1",
+    "mysql2": "3.24.5",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-router": "^8.4.0"

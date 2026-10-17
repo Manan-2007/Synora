@@ -9,7 +9,7 @@ import { ensureDemoAccount, validateSignup, createAccount } from "../../lib/auth
 const ASIDE = {
   photo: "signup",
   quote: "Six notebooks, three apps and a group chat is not a system.",
-  points: ["Tasks, timetable, notes and grades in one place", "Free, with no ads and no paid tier", "Everything stays on your own device"],
+  points: ["Tasks, timetable, notes and grades in one place", "Free, with no ads and no paid tier", "Your workspace follows you to any device"],
 };
 
 const EMPTY = { firstName: "", lastName: "", username: "", email: "", password: "", confirm: "" };
@@ -20,6 +20,7 @@ export default function Signup() {
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [doneName, setDoneName] = useState(null);
+  const [busy, setBusy] = useState(false);
 
   // The demo account exists everywhere, so its username is always taken.
   useEffect(() => { ensureDemoAccount(); }, []);
@@ -30,8 +31,9 @@ export default function Signup() {
     if (errors[name]) setErrors((err) => ({ ...err, [name]: undefined }));
   }
 
-  function submit(e) {
+  async function submit(e) {
     e.preventDefault();
+    if (busy) return;
     const v = {
       firstName: values.firstName.trim(),
       lastName: values.lastName.trim(),
@@ -44,7 +46,10 @@ export default function Signup() {
     setErrors(found);
     if (Object.keys(found).length) return;
 
-    createAccount(v);
+    setBusy(true);
+    const refused = await createAccount(v);
+    setBusy(false);
+    if (Object.keys(refused).length) { setErrors(refused); return; }
     setDoneName(v.firstName);
   }
 
@@ -59,7 +64,7 @@ export default function Signup() {
       <div className="auth-view" id="form-view" hidden={doneName !== null}>
         <div className="auth-head">
           <h1>Create your account</h1>
-          <p>Your details set up your workspace — you'll personalize it in the next step. Everything is stored in this browser, on this device.</p>
+          <p>Your details set up your workspace — you'll personalize it in the next step.</p>
         </div>
 
         <form className="auth-form" id="signup-form" noValidate onSubmit={submit}>
@@ -73,7 +78,7 @@ export default function Signup() {
             "3–20 characters. Letters, numbers and underscores.")}
           {field("email", "Email",
             { type: "email", autoComplete: "email", placeholder: "you@example.com", required: true },
-            "Stored on this device only — nothing is sent anywhere.")}
+            "Only used for your account — never shared or shown to anyone.")}
           {field("password", "Password",
             { type: passwordType, autoComplete: "new-password", minLength: 8, required: true },
             "At least 8 characters, with a letter and a number.")}
@@ -87,7 +92,7 @@ export default function Signup() {
             </span>
           </div>
 
-          <button type="submit" className="btn btn--primary btn--lg btn--block">Create account</button>
+          <button type="submit" className="btn btn--primary btn--lg btn--block" disabled={busy}>Create account</button>
         </form>
 
         <p className="auth-alt">

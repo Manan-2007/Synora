@@ -22,7 +22,13 @@ if not exist node_modules (
     exit /b 1
   )
 )
-echo Starting Synora...
+rem The MySQL API runs in its own window once it is set up (see database\README.md).
+if exist server\.env (
+  start "Synora API" cmd /c npm run server
+  echo Starting Synora with the MySQL database...
+) else (
+  echo Starting Synora - browser storage only. See database\README.md to add MySQL.
+)
 rem Vite opens the browser itself as soon as the dev server is ready.
 call npm run dev -- --open
 if errorlevel 1 pause

@@ -202,7 +202,7 @@ export default function Settings() {
   async function signOut() {
     const ok = await modal.confirm({
       title: "Sign out?",
-      message: "Your workspace stays in this browser and will be here when you sign back in.",
+      message: "Your workspace is saved and will be here when you sign back in.",
       confirmLabel: "Sign out",
     });
     if (!ok) return;
@@ -393,8 +393,8 @@ export default function Settings() {
             <div className="card__header"><span className="card__title">Account</span></div>
             <div className="card__body stack" style={{ gap: 16 }}>
               <p className="text-small muted" style={{ margin: 0 }}>
-                Everything in Synora is stored in this browser, on this device. Nothing is uploaded, and signing out
-                leaves your workspace here for next time.
+                Your workspace is saved to your Synora account, so it follows you to any browser or device you
+                sign in on. Signing out keeps everything for next time.
               </p>
               <div className="row row--wrap" style={{ gap: 12 }}>
                 <button type="button" className="btn btn--ghost" onClick={signOut}>Sign out</button>

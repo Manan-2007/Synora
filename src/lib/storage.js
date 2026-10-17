@@ -95,6 +95,14 @@ export function getVersion() {
   return version;
 }
 
+/* One optional listener told the key of every write — sync.js uses it to
+   mirror changes into the MySQL database. */
+let writeHook = null;
+
+export function onWrite(fn) {
+  writeHook = fn;
+}
+
 /* ---- Low-level helpers: safe read / write of raw keys ---- */
 
 export function readJSON(key, fallback) {
@@ -112,6 +120,7 @@ export function writeJSON(key, value) {
   try {
     localStorage.setItem(key, JSON.stringify(value));
     emitChange();
+    if (writeHook) writeHook(key);
     return true;
   } catch (err) {
     console.error("Synora: could not save", key, err);
@@ -122,6 +131,7 @@ export function writeJSON(key, value) {
 export function removeKey(key) {
   localStorage.removeItem(key);
   emitChange();
+  if (writeHook) writeHook(key);
 }
 
 /* ---- Session — who is signed in ---- */

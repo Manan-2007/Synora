@@ -14,6 +14,16 @@ node -e 'const [a, b] = process.versions.node.split(".").map(Number); process.ex
   || echo "Warning: Node.js $(node -v) is older than 22.22, which React Router 8 needs." >&2
 
 if [ ! -d node_modules ]; then npm install; fi
-echo "Starting Synora…"
+
+# The MySQL API runs alongside once it is set up (see database/README.md).
+if [ -f server/.env ]; then
+  npm run server &
+  api=$!
+  trap 'kill "$api" 2>/dev/null' EXIT INT TERM
+  echo "Starting Synora with the MySQL database…"
+else
+  echo "Starting Synora (browser storage only — see database/README.md to add MySQL)…"
+fi
+
 # Vite opens the browser itself as soon as the dev server is ready.
-exec npm run dev -- --open
+npm run dev -- --open
