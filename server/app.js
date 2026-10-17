@@ -82,7 +82,14 @@ const requireAuth = handle(async (req, res, next) => {
    storage. */
 app.get("/api/health", handle(async (req, res) => {
   if (!configured) return res.status(503).json({ error: "no-database" });
-  await pool.query("SELECT 1");
+  try {
+    await pool.query("SELECT 1");
+  } catch (err) {
+    /* Only the error code (e.g. ER_ACCESS_DENIED_ERROR, ETIMEDOUT): enough to
+       tell what is wrong with the setup, never a host name or password. */
+    console.error(err);
+    return res.status(500).json({ error: "database-unreachable", code: err.code || "unknown" });
+  }
   res.json({ ok: true });
 }));
 
