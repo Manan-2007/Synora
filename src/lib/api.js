@@ -7,9 +7,28 @@
    alone when it says no.
    ========================================================= */
 
-/* Kept apart from the synora-* keys on purpose: it is written straight
-   to localStorage, so saving it never triggers a sync. */
+import { session } from "./storage.js";
+
+/* The database session: { username, token }. Kept apart from the synora-*
+   keys on purpose: it is written straight to localStorage, so saving it
+   never triggers a sync. It records WHOSE session it is, so one account's
+   token can never be used for another account's data. */
 const TOKEN_KEY = "synora-api-token";
+
+const same = (a, b) => !!a && !!b && a.toLowerCase() === b.toLowerCase();
+
+function readSession() {
+  try {
+    const raw = localStorage.getItem(TOKEN_KEY);
+    if (raw === null) return null;
+    const value = JSON.parse(raw);
+    if (value && typeof value.token === "string" && typeof value.username === "string") return value;
+  } catch {
+    // Not JSON: a bare token from an earlier version, which did not say whose it was.
+  }
+  localStorage.removeItem(TOKEN_KEY);   // unknown owner: drop it, the account re-links itself
+  return null;
+}
 
 async function request(method, path, body, token) {
   const headers = {};
@@ -42,11 +61,17 @@ export const api = {
     }
   },
 
-  token() {
-    try { return localStorage.getItem(TOKEN_KEY); } catch { return null; }
+  /* { username, token } of the stored database session, whoever it belongs to. */
+  session() {
+    try { return readSession(); } catch { return null; }
   },
-  setToken(token) {
-    localStorage.setItem(TOKEN_KEY, token);
+  /* The token, but only when it belongs to the account signed in here. */
+  token() {
+    const s = api.session();
+    return s && same(s.username, session.username()) ? s.token : null;
+  },
+  setToken(token, username) {
+    localStorage.setItem(TOKEN_KEY, JSON.stringify({ username, token }));
   },
   clearToken() {
     localStorage.removeItem(TOKEN_KEY);
@@ -55,16 +80,17 @@ export const api = {
   signup: (account) => request("POST", "/signup", account),
   login: (username, key) => request("POST", "/login", { username, key }),
   logout: (token) => request("POST", "/logout", undefined, token),
-  save: (collections, token) => request("PUT", "/data", { collections }, token),
+  /* `username` lets the server refuse a save addressed to another account. */
+  save: (username, collections, token) => request("PUT", "/data", { username, collections }, token),
 
   /* Last-chance save while the page is closing: keepalive lets the request
      finish after the tab is gone. */
-  saveOnExit(collections, token) {
+  saveOnExit(username, collections, token) {
     fetch("/api/data", {
       method: "PUT",
       keepalive: true,
       headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
-      body: JSON.stringify({ collections }),
+      body: JSON.stringify({ username, collections }),
     }).catch(() => {});
   },
 };

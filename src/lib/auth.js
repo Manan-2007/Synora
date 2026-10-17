@@ -78,10 +78,10 @@ export function validateSignup(v) {
 /* Any API session belongs to whoever signed in last; drop it before a
    different account takes over, so nothing syncs into the wrong account. */
 function forgetApiSession() {
-  const token = api.token();
-  if (!token) return;
+  const owner = api.session();
+  if (!owner) return;
   api.clearToken();
-  api.logout(token).catch(() => {});
+  api.logout(owner.token).catch(() => {});
 }
 
 /* A new account starts EMPTY: only the profile is written — no tasks,
@@ -110,7 +110,7 @@ async function createAccountAs(v) {
         firstName: v.firstName, lastName: v.lastName, username: v.username, email: v.email, key,
       });
       if (res.status === 409) return { username: "That username is already taken." };
-      if (res.ok) api.setToken(res.body.token);
+      if (res.ok) api.setToken(res.body.token, v.username);
     } catch {
       // The API went away mid-way: connect() links the account later.
     }
@@ -180,7 +180,7 @@ function rememberAccount(user, key) {
    the database was unreachable are newer than its copy, so they are
    uploaded; otherwise the database's copy is loaded. */
 async function adoptServerSession(username, token, data) {
-  api.setToken(token);
+  api.setToken(token, username);
   if (hasUnsynced(username)) await pushAll();
   else applyServerData(username, data);
 }
@@ -251,6 +251,13 @@ export function connect() {
 async function linkAccount() {
   const username = session.username();
   if (switching || !username || api.token() || refused.has(username)) return;
+  /* A database session left over from another account must not be reused
+     for this one (it would save this account's data into that one). */
+  const leftover = api.session();
+  if (leftover) {
+    api.clearToken();
+    api.logout(leftover.token).catch(() => {});
+  }
   const account = findUser(username);
   if (!account || !account.passHash) return;
   if (!(await api.available())) return;
@@ -276,7 +283,7 @@ async function linkAccount() {
   if (switching || session.username() !== username) return;
   if (created.status === 409 || created.status === 400) { refused.add(username); return; }
   if (!created.ok) return;
-  api.setToken(created.body.token);
+  api.setToken(created.body.token, username);
   /* The demo's first copy in the database is the shipped sample data, not
      whatever this one browser's copy had been edited into. */
   if (demo.isCurrent()) demo.seed();

@@ -73,11 +73,13 @@ const requireAuth = handle(async (req, res, next) => {
   const match = /^Bearer ([0-9a-f]{64})$/.exec(req.get("authorization") || "");
   if (!match) return res.status(401).json({ error: "signed-out" });
   const [rows] = await pool.query(
-    "SELECT user_id FROM sessions WHERE token = ? AND created_at >= NOW() - INTERVAL ? DAY",
+    `SELECT s.user_id, u.username FROM sessions s JOIN users u ON u.id = s.user_id
+     WHERE s.token = ? AND s.created_at >= NOW() - INTERVAL ? DAY`,
     [match[1], SESSION_DAYS],
   );
   if (!rows.length) return res.status(401).json({ error: "signed-out" });
   req.userId = rows[0].user_id;
+  req.username = rows[0].username;
   req.token = match[1];
   next();
 });
@@ -171,6 +173,13 @@ app.get("/api/data", requireAuth, handle(async (req, res) => {
 }));
 
 app.put("/api/data", requireAuth, handle(async (req, res) => {
+  /* The app says whose data this is. If that is not the token's owner, the
+     browser has mixed up its sessions: refuse rather than overwrite another
+     account. */
+  const claimed = req.body && req.body.username;
+  if (typeof claimed === "string" && claimed.toLowerCase() !== String(req.username).toLowerCase()) {
+    return res.status(409).json({ error: "wrong-account" });
+  }
   const incoming = (req.body && req.body.collections) || {};
   const data = {};
   for (const name of COLLECTIONS) if (name in incoming) data[name] = incoming[name];

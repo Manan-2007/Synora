@@ -63,23 +63,31 @@ function collectionOf(key) {
   return SYNCED.includes(name) ? name : null;
 }
 
-/* Send everything dirty now. Resolves to true once MySQL has it all. */
+/* Send everything dirty now. Resolves to true once MySQL has it all.
+   Only the collections of the account that owns the database session are
+   sent; anything belonging to another account stays in this browser and
+   is marked unsynced, to be uploaded when that account links again. */
 export async function flush() {
   clearTimeout(timer);
   while (inflight) await inflight;
-  const token = api.token();
   if (!dirty.size) return true;
-  if (!token) return false;
+  const owner = api.session();
+  if (!owner) return false;
 
-  const keys = [...dirty];
+  const keys = [];
+  for (const key of dirty) {
+    if (usernameOf(key).toLowerCase() === owner.username.toLowerCase()) keys.push(key);
+    else markUnsynced(usernameOf(key));
+  }
   dirty.clear();
+  if (!keys.length) return false;
   const collections = {};
   for (const key of keys) collections[key.slice(key.lastIndexOf(":") + 1)] = readJSON(key, null);
 
-  inflight = api.save(collections, token)
+  inflight = api.save(owner.username, collections, owner.token)
     .then((res) => {
       if (res.ok) return true;
-      if (res.status === 401) {                            // session gone: carry on locally
+      if (res.status === 401 || res.status === 409) {     // session gone or not this account's: carry on locally
         api.clearToken();
         keys.forEach((k) => markUnsynced(usernameOf(k)));
         return false;
@@ -127,11 +135,11 @@ export function withoutSync(fn) {
 
 /* Signing out: save what is pending, then end the API session. */
 async function endSession() {
-  const token = api.token();
-  if (!token) return;
+  const owner = api.session();
+  if (!owner) return;
   await flush();
   api.clearToken();
-  api.logout(token).catch(() => {});
+  api.logout(owner.token).catch(() => {});
 }
 
 onWrite((key) => {
@@ -152,10 +160,14 @@ onWrite((key) => {
 /* Closing or reloading the tab inside the debounce window would lose the
    last change, so send it on the way out. */
 window.addEventListener("pagehide", () => {
-  const token = api.token();
-  if (!dirty.size || !token) return;
+  const owner = api.session();
+  if (!dirty.size || !owner) return;
   const collections = {};
-  dirty.forEach((key) => { collections[key.slice(key.lastIndexOf(":") + 1)] = readJSON(key, null); });
+  dirty.forEach((key) => {
+    if (usernameOf(key).toLowerCase() === owner.username.toLowerCase()) {
+      collections[key.slice(key.lastIndexOf(":") + 1)] = readJSON(key, null);
+    }
+  });
   dirty.clear();
-  api.saveOnExit(collections, token);
+  if (Object.keys(collections).length) api.saveOnExit(owner.username, collections, owner.token);
 });
