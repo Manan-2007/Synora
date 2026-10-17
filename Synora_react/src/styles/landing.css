@@ -1,0 +1,1540 @@
+/* =========================================================
+   Synora — Landing page layout & components
+
+   Most of the interaction on this page is built in CSS:
+     · mobile menu   → hidden checkbox + label ("checkbox hack")
+     · FAQ accordion → native <details> / <summary>
+     · smooth scroll → scroll-behavior in base.css
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   Shared primitives
+   --------------------------------------------------------- */
+
+.section {
+  padding-block: var(--space-96);
+}
+
+.section--tight {
+  padding-block: var(--space-80);
+}
+
+.section-head {
+  max-width: 42rem;
+  margin-bottom: var(--space-64);
+}
+
+.section-head--center {
+  margin-inline: auto;
+  text-align: center;
+}
+
+/* When the section below supplies its own top spacing. */
+.section-head--flush {
+  margin-bottom: 0;
+}
+
+.section-head p {
+  margin-top: var(--space-16);
+  color: var(--color-text-muted);
+  font-size: 1.0625rem;
+}
+
+/* A short gradient rule under a heading — sage bleeding into taupe.
+   Small detail, but it is what stops the page reading as one flat colour. */
+.rule {
+  width: 72px;
+  height: 3px;
+  margin-top: var(--space-24);
+  border-radius: var(--radius-pill);
+  background-image: var(--gradient-rule);
+}
+
+.section-head--center .rule {
+  margin-inline: auto;
+}
+
+/* A quiet lead-in line above a heading.
+
+   This used to be an uppercase, letter-spaced label inside a rounded
+   pill with a coloured dot — a look that reads as a generated landing
+   page template. It is now just small text in the accent colour: it
+   still introduces the heading below it without announcing itself. */
+/* A section kicker with intent.
+
+   The pill-with-a-dot version read as a generated-template tell, and
+   flat plain text read as lifeless. This is the editorial middle: small
+   uppercase letter-spaced accent text led by a short gradient rule (the
+   same sage→taupe as the heading rules), so it feels deliberate and
+   alive without the pill. It is inline-flex, so text-align:center on a
+   centred section head still centres it. */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-12);
+  margin-bottom: var(--space-16);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.eyebrow::before {
+  content: "";
+  width: 26px;
+  height: 2px;
+  flex: none;
+  border-radius: var(--radius-pill);
+  background-image: var(--gradient-rule);
+}
+
+/* Buttons, icon buttons and form fields now live in components.css,
+   because the app's sign-up and login pages need them too. */
+
+/* ---------------------------------------------------------
+   Navbar
+   --------------------------------------------------------- */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background-color: color-mix(in srgb, var(--color-bg) 82%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* The header reads, left to right:
+     Synora · Features How it works Why Synora FAQ Contact Us · ☾ · Sign in · Create account
+
+   Three tracks, and the outer two are the SAME width — that is what
+   actually centres the middle one. With flexbox the links sat wherever
+   the brand and the buttons left them, which is centred only by luck.
+   `1fr auto 1fr` centres the link group in the header no matter how
+   wide the brand or the actions grow.
+
+   minmax(0, 1fr) rather than 1fr: it lets the outer tracks shrink below
+   their content instead of forcing the header wider than the viewport.
+
+   The two actions are buttons: "Sign in" is a ghost (outlined) button
+   and "Create account" the filled primary — the standard secondary +
+   primary pair. The grid keeps the centre links centred regardless of
+   how wide the actions cluster grows. */
+.nav {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  /* A floor, not a layout: guarantees clear air either side of the
+     centred link group even as the viewport narrows. */
+  gap: var(--space-32);
+  height: var(--header-height);
+}
+
+.nav-brand {
+  height: 28px;
+  justify-self: start;
+}
+
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text);
+}
+
+/* The little sage/taupe lozenge in front of the word. */
+.wordmark::before {
+  content: "";
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  background-image: var(--gradient-brand);
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  /* justify-self, not margin-left: auto — auto margin pushes the group
+     to the end of its track, which is what made the links sit right of
+     centre. The grid track is already centred; this centres within it. */
+  justify-self: center;
+}
+
+.nav-links a {
+  display: inline-block;
+  padding: var(--space-8) var(--space-12);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-small);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-muted);
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.nav-links a:hover {
+  color: var(--color-brand);
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-8);
+  justify-self: end;
+}
+
+/* ---- CSS-only mobile menu ("checkbox hack") ----
+   The checkbox is kept in the DOM (focusable, toggled with Space)
+   but visually hidden; the <label> is the thing you see and tap.
+   Its :checked state drives the panel with a sibling combinator. */
+
+.nav-checkbox {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.nav-toggle {
+  display: none;
+}
+
+.nav-toggle .icon-close {
+  display: none;
+}
+
+.nav-checkbox:checked ~ .nav .nav-toggle .icon-menu {
+  display: none;
+}
+
+.nav-checkbox:checked ~ .nav .nav-toggle .icon-close {
+  display: block;
+}
+
+/* Keyboard focus lands on the hidden checkbox — show the ring on the label. */
+.nav-checkbox:focus-visible ~ .nav .nav-toggle {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}
+
+.nav-panel {
+  display: none;
+  padding: var(--space-8) 0 var(--space-24);
+  border-top: 1px solid var(--color-border);
+}
+
+.nav-checkbox:checked ~ .nav-panel {
+  display: block;
+}
+
+/* With the menu open the header must be solid, or the page scrolls
+   past behind the links. :has() lets a parent react to a child's state. */
+.site-header:has(.nav-checkbox:checked) {
+  background-color: var(--color-bg);
+}
+
+.nav-panel ul {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-bottom: var(--space-16);
+}
+
+/* Scoped to the list so it can't outrank .btn on the CTAs below it. */
+.nav-panel ul a {
+  display: block;
+  padding: var(--space-12) var(--space-8);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-muted);
+}
+
+.nav-panel ul a:hover {
+  color: var(--color-brand);
+}
+
+.nav-panel .btn {
+  width: 100%;
+}
+
+.nav-panel .btn + .btn {
+  margin-top: var(--space-8);
+}
+
+/* ---------------------------------------------------------
+   Hero
+   --------------------------------------------------------- */
+
+.hero {
+  padding-top: var(--space-80);
+  padding-bottom: var(--space-96);
+}
+
+.hero .container {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: var(--space-64);
+  align-items: center;
+}
+
+.hero h1 {
+  margin-top: var(--space-24);
+}
+
+/* One word of the headline picked out in the brand colour. */
+.hero h1 em {
+  font-style: normal;
+  color: var(--color-brand);
+}
+
+.hero-sub {
+  max-width: 34rem;
+  margin-top: var(--space-24);
+  font-size: 1.125rem;
+  color: var(--color-text-muted);
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-12);
+  margin-top: var(--space-32);
+}
+
+.hero-micro {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-16);
+  margin-top: var(--space-24);
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+}
+
+.hero-micro span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.hero-micro svg {
+  color: var(--color-brand);
+}
+
+/* ---- Hero visual: a photo with a live-looking card laid over it ---- */
+
+.hero-visual {
+  position: relative;
+  padding-bottom: var(--space-32);
+}
+
+.hero-photo {
+  position: relative;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-xl);
+}
+
+.hero-photo img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
+/* A sage wash over the photo keeps it inside the palette instead of
+   fighting it. */
+.hero-photo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(
+    160deg,
+    rgba(83, 101, 92, .30) 0%,
+    rgba(176, 159, 149, .18) 55%,
+    rgba(34, 37, 43, .34) 100%
+  );
+}
+
+.hero-card {
+  position: absolute;
+  right: calc(var(--space-24) * -1);
+  bottom: 0;
+  width: min(19rem, 78%);
+  padding: var(--space-16);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-xl);
+}
+
+.hero-card__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: var(--space-12);
+}
+
+.hero-card__head strong {
+  font-family: var(--font-heading);
+  font-size: 0.9375rem;
+}
+
+.hero-card__head span {
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+}
+
+.hero-badge {
+  position: absolute;
+  top: var(--space-24);
+  left: calc(var(--space-16) * -1);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  padding: var(--space-8) var(--space-16);
+  border-radius: var(--radius-pill);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-lg);
+  font-size: 0.75rem;
+  font-weight: var(--weight-semibold);
+}
+
+.hero-badge svg {
+  color: var(--color-accent);
+}
+
+/* A one-shot entrance. No observers, no scroll listeners — the page
+   simply animates in once and is then completely static. */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.hero-copy > *,
+.hero-visual {
+  animation: rise 700ms var(--ease-out) both;
+}
+
+.hero-copy > *:nth-child(2) { animation-delay: 70ms; }
+.hero-copy > *:nth-child(3) { animation-delay: 140ms; }
+.hero-copy > *:nth-child(4) { animation-delay: 210ms; }
+.hero-copy > *:nth-child(5) { animation-delay: 280ms; }
+.hero-visual { animation-delay: 200ms; }
+
+/* ---------------------------------------------------------
+   Stats strip
+   --------------------------------------------------------- */
+
+.stats {
+  border-block: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+}
+
+.stats .container {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-24);
+  padding-block: var(--space-48);
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat strong {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: 2.25rem;
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-accent);
+}
+
+.stat span {
+  display: block;
+  margin-top: var(--space-4);
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+}
+
+/* Thin dividers between stats — slate, the palette's quiet colour. */
+.stat + .stat {
+  border-left: 1px solid var(--color-border);
+}
+
+/* ---------------------------------------------------------
+   Task rows
+   Used by the floating card laid over the hero photo.
+   --------------------------------------------------------- */
+
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  margin-top: var(--space-16);
+}
+
+.task {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  padding: var(--space-12);
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-status);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+}
+
+.task__box {
+  width: 15px;
+  height: 15px;
+  border: 1.5px solid var(--color-border-strong);
+  border-radius: 5px;
+}
+
+.task--done .task__box {
+  border-color: var(--color-status);
+  background-color: var(--color-status);
+}
+
+.task__label {
+  font-size: 0.8125rem;
+  color: var(--color-text);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.task--done .task__label {
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+}
+
+.task__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-left: auto;
+  font-size: 0.6875rem;
+  font-weight: var(--weight-medium);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.task__tag::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-status);
+}
+
+/* ---------------------------------------------------------
+   Features
+   --------------------------------------------------------- */
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-24);
+}
+
+.card {
+  position: relative;
+  padding: var(--space-32);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition:
+    box-shadow var(--duration-base) var(--ease-out),
+    border-color var(--duration-base) var(--ease-out),
+    transform var(--duration-base) var(--ease-out);
+}
+
+/* A colour bar that grows across the top edge on hover. */
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 3px;
+  background-image: var(--gradient-rule);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--duration-slow) var(--ease-out);
+}
+
+.card:hover {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-3px);
+}
+
+.card:hover::before {
+  transform: scaleX(1);
+}
+
+.card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: var(--space-24);
+  border-radius: var(--radius-md);
+  background-color: var(--color-brand-soft);
+  color: var(--color-brand);
+}
+
+/* Alternating icon wells so six cards don't read as one green block. */
+.card__icon--taupe {
+  background-color: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+
+.card__icon--ink {
+  background-color: var(--color-ink);
+  color: var(--color-on-ink);
+}
+
+.card h3 {
+  margin-bottom: var(--space-8);
+}
+
+.card p {
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+}
+
+.features-note {
+  margin-top: var(--space-48);
+  text-align: center;
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+}
+
+/* ---------------------------------------------------------
+   Showcase — photo beside prose
+   --------------------------------------------------------- */
+
+.showcase {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-64);
+  align-items: center;
+}
+
+.showcase + .showcase {
+  margin-top: var(--space-96);
+}
+
+/* Second block flips so the eye zig-zags down the page. */
+.showcase--flip .showcase__media {
+  order: 2;
+}
+
+.showcase__media {
+  position: relative;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+
+.showcase__media img {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+}
+
+.showcase__media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(
+    200deg,
+    rgba(176, 159, 149, .22),
+    rgba(83, 101, 92, .28)
+  );
+}
+
+.showcase h2 {
+  font-size: clamp(1.5rem, 2.4vw, 2rem);
+}
+
+.showcase > div > p {
+  margin-top: var(--space-16);
+  color: var(--color-text-muted);
+}
+
+.check-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  margin-top: var(--space-24);
+}
+
+.check-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-12);
+  font-size: var(--text-small);
+}
+
+.check-list svg {
+  margin-top: 3px;
+  color: var(--color-brand);
+}
+
+/* ---------------------------------------------------------
+   Steps — how you get started
+   --------------------------------------------------------- */
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-32);
+  counter-reset: step;
+}
+
+.step {
+  position: relative;
+  padding: var(--space-32);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface-sage);
+}
+
+.step:nth-child(2) {
+  background-color: var(--color-surface-taupe);
+}
+
+.step:nth-child(3) {
+  background-color: var(--color-surface-sunken);
+}
+
+/* The big outlined numeral is drawn with a CSS counter — no markup. */
+.step::before {
+  counter-increment: step;
+  content: counter(step, decimal-leading-zero);
+  display: block;
+  margin-bottom: var(--space-16);
+  font-family: var(--font-heading);
+  font-size: 1.75rem;
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-accent);
+}
+
+.step h3 {
+  margin-bottom: var(--space-8);
+}
+
+.step p {
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+}
+
+/* ---------------------------------------------------------
+   Why Synora — the dark ink band
+   --------------------------------------------------------- */
+
+.why {
+  position: relative;
+  isolation: isolate;
+  background-color: var(--color-ink);
+  color: var(--color-on-ink);
+  overflow: hidden;
+}
+
+/* Photo, then a veil over it, both as background layers of one
+   pseudo-element. The gradient sits first so it paints on top. */
+.why::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(100deg, var(--ink-veil) 30%, var(--ink-veil-edge) 100%),
+    url("../assets/img/desk-evening.jpg");
+  background-size: cover, cover;
+  background-position: center, center;
+}
+
+.why h2,
+.why h3 {
+  color: var(--color-on-ink);
+}
+
+.why .section-head p {
+  color: var(--color-on-ink-muted);
+}
+
+.why-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-32);
+  margin-top: var(--space-48);
+}
+
+.why-item {
+  padding: var(--space-32);
+  border: 1px solid var(--color-ink-border);
+  border-radius: var(--radius-lg);
+  background-color: color-mix(in srgb, var(--color-ink-raised) 72%, transparent);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.why-item__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background-color: rgba(255, 255, 255, .07);
+  color: var(--color-on-ink-muted);
+}
+
+.why-item:nth-child(2) .why-item__icon {
+  color: var(--color-accent-bright);
+}
+
+.why-item h3 {
+  margin-block: var(--space-16) var(--space-8);
+}
+
+.why-item p {
+  font-size: var(--text-small);
+  color: var(--color-on-ink-muted);
+}
+
+/* ---------------------------------------------------------
+   FAQ — native <details>, zero JavaScript
+   --------------------------------------------------------- */
+
+.faq-list {
+  max-width: 46rem;
+  margin-inline: auto;
+}
+
+.faq-item {
+  margin-bottom: var(--space-12);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+  overflow: hidden;
+  transition: border-color var(--duration-base) var(--ease-out);
+}
+
+.faq-item[open] {
+  border-color: var(--color-brand);
+}
+
+.faq-item > summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+  padding: var(--space-24);
+  font-family: var(--font-heading);
+  font-size: 1.0625rem;
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-snug);
+  color: var(--color-text);
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.faq-item > summary:hover {
+  color: var(--color-brand);
+}
+
+.faq-item > summary svg {
+  margin-left: auto;
+  color: var(--color-secondary);
+  transition: transform var(--duration-base) var(--ease-out);
+}
+
+/* [open] is set by the browser itself when the disclosure is expanded. */
+.faq-item[open] > summary svg {
+  transform: rotate(180deg);
+  color: var(--color-brand);
+}
+
+.faq-answer {
+  padding: 0 var(--space-48) var(--space-24) var(--space-24);
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+}
+
+/* ---------------------------------------------------------
+   Closing CTA
+   --------------------------------------------------------- */
+
+.cta {
+  position: relative;
+  padding: var(--space-80) var(--space-32);
+  border-radius: var(--radius-xl);
+  background-image: var(--gradient-brand);
+  color: #FFFFFF;
+  text-align: center;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+
+/* Soft light bloom in the corner so the gradient isn't a flat wash. */
+.cta::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(
+    38rem 22rem at 80% 0%,
+    rgba(255, 255, 255, .22),
+    transparent 70%
+  );
+}
+
+.cta > * {
+  position: relative;
+}
+
+.cta h2 {
+  color: #FFFFFF;
+}
+
+.cta p {
+  max-width: 34rem;
+  margin: var(--space-16) auto 0;
+  color: rgba(255, 255, 255, .82);
+}
+
+.cta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-12);
+  justify-content: center;
+  margin-top: var(--space-32);
+}
+
+.cta-micro {
+  margin-top: var(--space-24);
+  font-size: var(--text-small);
+  color: rgba(255, 255, 255, .7);
+}
+
+/* ---------------------------------------------------------
+   Footer
+   --------------------------------------------------------- */
+
+.site-footer {
+  border-top: 1px solid var(--color-border);
+  padding-block: var(--space-64) var(--space-32);
+  background-color: var(--color-surface);
+}
+
+.footer-top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-48);
+  justify-content: space-between;
+}
+
+.footer-brand p {
+  max-width: 22rem;
+  margin-top: var(--space-12);
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+}
+
+.footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-24);
+}
+
+.footer-nav a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.footer-nav a:hover {
+  color: var(--color-brand);
+}
+
+.footer-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-16);
+  margin-top: var(--space-48);
+  padding-top: var(--space-24);
+  border-top: 1px solid var(--color-border);
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+}
+
+.footer-credit {
+  flex-basis: 100%;
+  font-size: 0.75rem;
+  color: var(--color-secondary);
+}
+
+/* ---------------------------------------------------------
+   Responsive
+   --------------------------------------------------------- */
+
+@media (max-width: 1024px) {
+  .hero .container {
+    gap: var(--space-48);
+  }
+
+  .showcase {
+    gap: var(--space-48);
+  }
+}
+
+@media (max-width: 940px) {
+  .hero .container {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hero-sub {
+    max-width: none;
+  }
+
+  .hero-visual {
+    max-width: 34rem;
+  }
+
+  .card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .stats .container {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-32);
+  }
+
+  /* Row-based dividers make no sense in a 2x2 grid. */
+  .stat + .stat {
+    border-left: 0;
+  }
+
+  .steps {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-16);
+  }
+
+  .why-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-16);
+  }
+}
+
+@media (max-width: 860px) {
+  .nav-links,
+  .nav-actions .btn {
+    display: none;
+  }
+
+  .nav-toggle {
+    display: inline-flex;
+  }
+
+  .nav {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--space-16);
+  }
+}
+
+@media (max-width: 720px) {
+  .section,
+  .hero {
+    padding-block: var(--space-64);
+  }
+
+  .section-head {
+    margin-bottom: var(--space-48);
+  }
+
+  .app-main {
+    padding: var(--space-16);
+  }
+
+  .card-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .card,
+  .step,
+  .why-item {
+    padding: var(--space-24);
+  }
+
+  .showcase {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-32);
+  }
+
+  /* Photo always leads on a phone, regardless of the desktop flip. */
+  .showcase--flip .showcase__media {
+    order: 0;
+  }
+
+  .showcase + .showcase {
+    margin-top: var(--space-64);
+  }
+
+  .cta {
+    padding: var(--space-48) var(--space-24);
+  }
+
+  .hero-actions .btn {
+    flex: 1 1 auto;
+  }
+
+  .hero-card {
+    position: static;
+    width: 100%;
+    margin-top: var(--space-16);
+  }
+
+  .hero-badge {
+    left: var(--space-16);
+  }
+
+  .faq-item > summary,
+  .faq-answer {
+    padding-inline: var(--space-16);
+  }
+
+  .faq-answer {
+    padding-right: var(--space-24);
+  }
+}
+
+@media (max-width: 400px) {
+  :root {
+    --container-pad: var(--space-16);
+  }
+}
+
+/* =========================================================
+   Landing loading screen
+   A brief, branded splash shown while the landing page opens.
+   Removed by SplashLoader (src/pages/landing) once it has been
+   visible long enough to read.
+   ========================================================= */
+
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 22px;
+  /* A faint brand-tinted glow washed over the page gradient, so the
+     splash has depth instead of a flat fill. */
+  background-color: var(--color-bg);
+  background-image:
+    radial-gradient(120% 90% at 50% 40%,
+      color-mix(in srgb, var(--color-brand) 12%, transparent), transparent 62%),
+    var(--gradient-page);
+  transition: opacity var(--duration-slow) var(--ease-out),
+              visibility var(--duration-slow) var(--ease-out);
+}
+
+.loader.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* ---- The animated mark ----
+   A circular badge holding the Synora monogram, wrapped in a spinning
+   conic-gradient arc (the actual loading indicator) and a soft aura
+   that breathes behind it. */
+
+.loader__stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 132px;
+  height: 132px;
+}
+
+.loader__glow {
+  position: absolute;
+  inset: -16px;
+  border-radius: 50%;
+  background: radial-gradient(circle at center,
+    color-mix(in srgb, var(--color-brand) 42%, transparent), transparent 68%);
+  filter: blur(18px);
+  animation: loader-breathe 2.6s var(--ease-out) infinite;
+}
+
+/* The conic gradient is a full disc; the radial mask cuts everything
+   but a 3px band at the edge, leaving a rotating arc. */
+.loader__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg,
+    transparent 0deg,
+    color-mix(in srgb, var(--color-brand) 25%, transparent) 90deg,
+    var(--color-brand) 320deg,
+    transparent 360deg);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
+          mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
+  animation: loader-spin 1.15s linear infinite;
+}
+
+.loader__badge {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-lg);
+  animation: loader-pop var(--duration-slow) var(--ease-out) both;
+}
+
+.loader__badge .loader__logo { height: 44px; }
+
+/* ---- Wordmark + tagline ---- */
+
+.loader__word {
+  font-family: var(--font-heading);
+  font-weight: var(--weight-bold);
+  font-size: 1.6rem;
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text);
+  /* A slow light sheen sweeping across the letters. */
+  background-image: linear-gradient(100deg,
+    var(--color-text) 38%, var(--color-brand) 50%, var(--color-text) 62%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+          background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: loader-sheen 2.4s ease-in-out 0.3s infinite;
+}
+
+.loader__tag {
+  margin-top: calc(var(--space-12) * -1);
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+  letter-spacing: var(--tracking-wide);
+  text-transform: lowercase;
+  animation: loader-fade-up var(--duration-slow) var(--ease-out) 0.35s both;
+}
+
+@keyframes loader-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes loader-breathe {
+  0%, 100% { opacity: 0.45; transform: scale(0.9); }
+  50%      { opacity: 0.85; transform: scale(1.08); }
+}
+
+@keyframes loader-pop {
+  from { opacity: 0; transform: scale(0.82); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes loader-sheen {
+  from { background-position: 130% 0; }
+  to   { background-position: -30% 0; }
+}
+
+@keyframes loader-fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loader { transition: none; }
+  .loader__glow,
+  .loader__ring,
+  .loader__badge,
+  .loader__word,
+  .loader__tag { animation: none; }
+  /* Without the sheen animation the clipped-text trick would leave the
+     word invisible, so paint it solid. */
+  .loader__word {
+    background: none;
+    -webkit-text-fill-color: var(--color-text);
+  }
+  .loader__glow { opacity: 0.5; }
+}
+
+/* ---------------------------------------------------------
+   App preview — a single real screenshot in a framed card
+   --------------------------------------------------------- */
+
+.shots {
+  max-width: 62rem;
+  margin-inline: auto;
+}
+
+.shots__stage {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+}
+
+.shots__stage img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ---------------------------------------------------------
+   How it works — three numbered steps
+   --------------------------------------------------------- */
+
+.how-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-32);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  counter-reset: none;
+}
+
+.how-step {
+  position: relative;
+  padding: var(--space-32) var(--space-24) var(--space-24);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.how-step h3 {
+  margin-bottom: var(--space-8);
+  font-family: var(--font-heading);
+  font-size: 1.0625rem;
+  font-weight: var(--weight-semibold);
+}
+
+.how-step p {
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+  line-height: var(--leading-body);
+}
+
+/* The number sits half outside the card, which is what makes the three
+   read as a sequence rather than three unrelated boxes. */
+.how-step__num {
+  position: absolute;
+  top: calc(var(--space-16) * -1);
+  left: var(--space-24);
+  display: grid;
+  place-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-pill);
+  background-image: var(--gradient-brand);
+  /* Always white, not --color-on-brand: that token flips to a dark ink
+     in dark mode (correct for text on a pale surface), but the badge's
+     gradient stays a mid-to-dark green in both themes, so the number
+     needs white against it either way. In light mode this matches what
+     --color-on-brand already gave. */
+  color: #fff;
+  font-family: var(--font-heading);
+  font-size: 0.9375rem;
+  font-weight: var(--weight-bold);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ---------------------------------------------------------
+   Contact — details beside a form
+   --------------------------------------------------------- */
+
+.contact-grid {
+  display: grid;
+  /* minmax(0, …) so the form's inputs can shrink instead of widening
+     the grid past the container. */
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  gap: var(--space-48);
+  align-items: start;
+}
+
+.contact-info__lead {
+  margin-bottom: var(--space-32);
+  color: var(--color-text-muted);
+  line-height: var(--leading-body);
+}
+
+.contact-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-24);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.contact-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-16);
+}
+
+.contact-item__icon {
+  display: grid;
+  place-content: center;
+  width: 42px;
+  height: 42px;
+  flex: none;
+  border-radius: var(--radius-md);
+  background-color: var(--color-brand-soft);
+  color: var(--color-brand);
+}
+
+.contact-item__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.contact-item__label {
+  font-size: 0.6875rem;
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-secondary);
+}
+
+.contact-item__value {
+  font-size: 1rem;
+  font-weight: var(--weight-medium);
+  color: var(--color-text);
+  /* A long email or address wraps instead of widening the column. */
+  overflow-wrap: anywhere;
+}
+
+a.contact-item__value:hover { color: var(--color-brand); }
+
+.contact-item__note {
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+}
+
+.contact-item__link {
+  margin-top: var(--space-4);
+  font-size: var(--text-small);
+  font-weight: var(--weight-medium);
+  color: var(--color-brand);
+}
+
+.contact-item__link:hover { text-decoration: underline; }
+
+/* ---- The form ---- */
+
+.contact-form-card {
+  padding: var(--space-32);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-lg);
+}
+
+.contact-form-card > h3 {
+  margin-bottom: var(--space-24);
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  letter-spacing: var(--tracking-tight);
+}
+
+.contact-form__textarea {
+  min-height: 132px;
+  resize: vertical;
+  line-height: var(--leading-body);
+}
+
+.contact-form__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-12);
+  margin-top: var(--space-8);
+}
+
+/* ---- Success panel, swapped in for the form ---- */
+
+.contact-sent {
+  text-align: center;
+  padding: var(--space-24) 0;
+  animation: rise-in 500ms var(--ease-out) both;
+}
+
+.contact-sent[hidden] { display: none; }
+
+.contact-sent__mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  margin-bottom: var(--space-16);
+  border-radius: var(--radius-pill);
+  background-color: var(--color-brand-soft);
+  color: var(--color-brand);
+}
+
+.contact-sent h4 {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  margin-bottom: var(--space-8);
+}
+
+.contact-sent h4:focus { outline: none; }
+
+.contact-sent p {
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-16);
+}
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (max-width: 940px) {
+  .contact-grid { grid-template-columns: minmax(0, 1fr); gap: var(--space-32); }
+  .how-steps { grid-template-columns: minmax(0, 1fr); gap: var(--space-24); }
+}
+
+@media (max-width: 620px) {
+  .contact-form-card { padding: var(--space-24); }
+}
