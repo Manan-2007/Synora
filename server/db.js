@@ -18,9 +18,24 @@ import mysql from "mysql2/promise";
    "no database" and the app stays on browser storage. */
 export const configured = !!process.env.DB_HOST || !process.env.VERCEL;
 
-/* Environment variables pasted as one line carry "\n" instead of real
-   line breaks; turn them back into a valid PEM. */
-const ca = process.env.DB_SSL_CA ? process.env.DB_SSL_CA.replace(/\\n/g, "\n") : null;
+/* Rebuild the certificate as a clean PEM whatever shape it was pasted in:
+   with line breaks, with "\n" escapes, or squashed onto one line (a
+   single-line input field drops the breaks). Each certificate's base64 body
+   is re-wrapped at 64 characters. */
+function normalisePem(text) {
+  const blocks = String(text).replace(/\\n/g, "\n")
+    .match(/-----BEGIN CERTIFICATE-----([\s\S]*?)-----END CERTIFICATE-----/g);
+  if (!blocks) return null;
+  return blocks.map((block) => {
+    const body = block
+      .replace("-----BEGIN CERTIFICATE-----", "")
+      .replace("-----END CERTIFICATE-----", "")
+      .replace(/[^A-Za-z0-9+/=]/g, "");
+    return "-----BEGIN CERTIFICATE-----\n" + body.match(/.{1,64}/g).join("\n") + "\n-----END CERTIFICATE-----";
+  }).join("\n") + "\n";
+}
+
+const ca = process.env.DB_SSL_CA ? normalisePem(process.env.DB_SSL_CA) : null;
 
 export const pool = mysql.createPool({
   host: process.env.DB_HOST || "127.0.0.1",
