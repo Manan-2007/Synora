@@ -379,6 +379,8 @@ The live site at **[synora-v1.vercel.app](https://synora-v1.vercel.app/)** deplo
 
 * Vercel detects Vite, runs `npm run build` and serves `dist/`.
 * [`vercel.json`](vercel.json) rewrites every path to `index.html`, so refreshing a deep link such as `/dashboard` still loads the app and React Router takes over.
+* Old links from the vanilla version (`/app/dashboard.html` and so on) permanently redirect to their new routes (`/dashboard`).
+* Hashed build files under `/assets/` are cached for a year, since every rebuild gives them new names.
 * Vercel Web Analytics is enabled through the snippet in `index.html`.
 
 ---
