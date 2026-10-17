@@ -28,10 +28,13 @@ export const api = {
   /* True when the API answers and can reach MySQL. Checked fresh each
      time, so starting the server later is picked up on the next sign-in.
      On Vercel /api/health is rewritten to index.html — HTML, not JSON —
-     which also reads as "no API". */
+     which also reads as "no API".
+     The wait is generous on purpose: an idle serverless API plus a fresh
+     database connection can take a few seconds to answer the first time.
+     Without a database the answer comes back at once either way. */
   async available() {
     try {
-      const res = await fetch("/api/health", { signal: AbortSignal.timeout(2000) });
+      const res = await fetch("/api/health", { signal: AbortSignal.timeout(10000) });
       const isJSON = (res.headers.get("content-type") || "").includes("application/json");
       return res.ok && isJSON && (await res.json()).ok === true;
     } catch {
