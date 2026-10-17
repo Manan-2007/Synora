@@ -78,19 +78,22 @@ export const api = {
   },
 
   signup: (account) => request("POST", "/signup", account),
-  login: (username, key) => request("POST", "/login", { username, key }),
+  login: (username, key, legacyKey) => request("POST", "/login", { username, key, legacyKey }),
   logout: (token) => request("POST", "/logout", undefined, token),
-  /* `username` lets the server refuse a save addressed to another account. */
-  save: (username, collections, token) => request("PUT", "/data", { username, collections }, token),
+  /* `changes`: per collection, { upsert: [items], delete: [ids] } (profile and
+     meta: the whole object). `username` lets the server refuse a save
+     addressed to another account. */
+  save: (username, changes, token) => request("PUT", "/data", { username, changes }, token),
+  load: (token) => request("GET", "/data", undefined, token),
 
   /* Last-chance save while the page is closing: keepalive lets the request
      finish after the tab is gone. */
-  saveOnExit(username, collections, token) {
+  saveOnExit(username, changes, token) {
     fetch("/api/data", {
       method: "PUT",
       keepalive: true,
       headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
-      body: JSON.stringify({ username, collections }),
+      body: JSON.stringify({ username, changes }),
     }).catch(() => {});
   },
 };

@@ -2,8 +2,8 @@
    Collections ⇄ tables.
 
    The app keeps each user's data as ten "collections" (the same
-   shapes it stores in localStorage). This file converts each one
-   to rows in its MySQL table and back again:
+   shapes it stores in localStorage). This file converts them to
+   rows in their MySQL tables and back again:
 
      profile        → users (name, email) + profiles
      meta           → user_meta
@@ -16,15 +16,14 @@
      achievements   → achievements
      notifications  → notifications
 
-   Writes replace a collection as a whole: the app always sends the
-   full, current list, so "delete this user's rows, insert the new
-   ones" inside one transaction is simple and always consistent.
-   Subjects are the exception (see saveSubjects).
+   Saving is by CHANGE, never by replacing a whole list: the app
+   sends, per collection, the items it added or edited ("upsert")
+   and the ids it deleted ("delete"). Rows it did not mention are
+   left alone, so an item added on another device survives a save
+   from a device that has not seen it yet. profile and meta are one
+   row each and are saved whole.
    ========================================================= */
 
-/* The order matters when several collections arrive together: subjects
-   must exist before the timetable, attendance and grades that point at
-   them (foreign keys). */
 export const COLLECTIONS = [
   "profile", "meta", "subjects",
   "tasks", "notes", "timetable", "attendance", "cgpa",
@@ -38,9 +37,20 @@ const GRADES = ["O", "A+", "A", "B+", "B", "E1", "E2", "E3"];
 
 /* ---- Value helpers: app value → column value ---- */
 
-/* Text clipped to the column's length, so one over-long value can't make
-   the whole save fail. */
-const str = (v, max) => String(v ?? "").slice(0, max);
+/* Text clipped to a VARCHAR's length in characters (whole characters, so an
+   emoji is never cut in half). */
+const str = (v, max) => Array.from(String(v ?? "")).slice(0, max).join("");
+
+/* TEXT holds at most 65,535 BYTES. Longer text is cut to fit rather than
+   failing the whole save; the forms stop well before this. */
+const TEXT_BYTES = 65535;
+function text(v) {
+  if (v === null || v === undefined || v === "") return null;
+  const s = String(v);
+  if (Buffer.byteLength(s) <= TEXT_BYTES) return s;
+  return Buffer.from(s).subarray(0, TEXT_BYTES).toString().replace(/�+$/, "");
+}
+
 const int = (v) => Math.max(0, Math.trunc(Number(v) || 0));
 const oneOf = (v, allowed, fallback) => (allowed.includes(v) ? v : fallback);
 
@@ -63,18 +73,8 @@ const toTime = (v) => (/^\d{2}:\d{2}$/.test(String(v || "")) ? v + ":00" : null)
 const fromDateTime = (v) => (v ? v.replace(" ", "T") + "Z" : null);
 const fromTime = (v) => (v ? v.slice(0, 5) : "");
 
-/* Insert many rows at once: INSERT INTO t (a, b) VALUES (…), (…). */
-async function insertRows(conn, table, columns, rows) {
-  if (!rows.length) return;
-  await conn.query(`INSERT INTO ${table} (${columns.join(", ")}) VALUES ?`, [rows]);
-}
-
-async function replaceRows(conn, table, userId, columns, rows) {
-  await conn.query(`DELETE FROM ${table} WHERE user_id = ?`, [userId]);
-  await insertRows(conn, table, ["user_id", ...columns], rows.map((r) => [userId, ...r]));
-}
-
 const asList = (v) => (Array.isArray(v) ? v : []);
+const pos = (r, i) => int(r && r._pos !== undefined ? r._pos : i);
 
 /* Subject ids that exist for this user right now. Rows that point at a
    subject that is gone are skipped instead of breaking the foreign key. */
@@ -83,146 +83,171 @@ async function subjectIds(conn, userId) {
   return new Set(rows.map((r) => r.id));
 }
 
-/* ---- Writers: one per collection ---- */
-
-const writers = {
-  async profile(conn, userId, p) {
-    if (!p || typeof p !== "object") return;
-    /* Name and email live on the account row. */
-    const names = [];
-    const values = [];
-    if (p.firstName) { names.push("first_name = ?"); values.push(str(p.firstName, 60)); }
-    if (p.lastName)  { names.push("last_name = ?");  values.push(str(p.lastName, 60)); }
-    if (p.email)     { names.push("email = ?");      values.push(str(p.email, 255)); }
-    if (names.length) {
-      await conn.query(`UPDATE users SET ${names.join(", ")} WHERE id = ?`, [...values, userId]);
-    }
-
-    let avatar = p.avatar;
-    if (typeof avatar === "string") avatar = { type: "illustration", id: avatar };   // older shape
-    const avatarType = avatar && ["illustration", "initials"].includes(avatar.type) ? avatar.type : null;
-
-    await conn.query(
-      `REPLACE INTO profiles
-         (user_id, avatar_type, avatar_id, program, semester, target_attendance, appearance, onboarded)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        userId,
-        avatarType,
-        avatarType ? str(avatar.id, 40) : null,
-        str(p.program, 120),
-        str(p.semester, 20),
-        Math.min(100, int(p.targetAttendance) || 75),
-        p.appearance === "dark" ? "dark" : "light",
-        !!p.onboarded,
-      ],
-    );
+/* ---- List collections: one table each ----
+   key:      the column that identifies a row (with user_id)
+   columns:  the columns written, in order
+   row:      app item → column values
+   valid:    which items can be stored (bad ones are skipped, not fatal)
+   needsSubject: rows that must point at an existing subject */
+const LISTS = {
+  subjects: {
+    table: "subjects", key: "id",
+    columns: ["id", "name", "credits", "track_attendance", "position"],
+    row: (s, i) => [str(s.id, 40), str(s.name, 100), Math.min(255, int(s.credits)), s.trackAttendance !== false, pos(s, i)],
   },
-
-  async meta(conn, userId, m) {
-    if (!m || typeof m !== "object") return;
-    await conn.query(
-      `REPLACE INTO user_meta (user_id, streak, last_completion_date, demo, demo_version)
-       VALUES (?, ?, ?, ?, ?)`,
-      [userId, int(m.streak), toDate(m.lastCompletionDate), !!m.demo,
-        m.demoVersion == null ? null : int(m.demoVersion)],
-    );
+  tasks: {
+    table: "tasks", key: "id",
+    columns: ["id", "title", "subject", "description", "deadline", "priority", "status", "created_at", "completed_at", "position"],
+    row: (t, i) => [
+      str(t.id, 40), str(t.title, 255), str(t.subject, 100), text(t.description),
+      toDate(t.deadline), oneOf(t.priority, PRIORITIES, "medium"), oneOf(t.status, STATUSES, "not-started"),
+      toDateTime(t.createdAt), toDateTime(t.completedAt), pos(t, i),
+    ],
   },
-
-  /* Subjects are upserted and only the missing ones deleted. Deleting
-     every subject first would cascade away the timetable, attendance and
-     grades that point at the subjects that are staying. */
-  async subjects(conn, userId, list) {
-    const rows = asList(list).filter((s) => s && s.id);
-    const ids = rows.map((s) => str(s.id, 40));
-
-    if (ids.length) {
-      await conn.query("DELETE FROM subjects WHERE user_id = ? AND id NOT IN (?)", [userId, ids]);
-      await conn.query(
-        `INSERT INTO subjects (user_id, id, name, credits, track_attendance, position) VALUES ?
-         ON DUPLICATE KEY UPDATE name = VALUES(name), credits = VALUES(credits),
-           track_attendance = VALUES(track_attendance), position = VALUES(position)`,
-        [rows.map((s, i) => [userId, str(s.id, 40), str(s.name, 100), Math.min(255, int(s.credits)),
-          s.trackAttendance !== false, i])],
-      );
-    } else {
-      await conn.query("DELETE FROM subjects WHERE user_id = ?", [userId]);
-    }
+  notes: {
+    table: "notes", key: "id",
+    columns: ["id", "title", "body", "category", "created_at", "updated_at", "position"],
+    row: (n, i) => [str(n.id, 40), str(n.title, 255), text(n.body), str(n.category, 100),
+      toDateTime(n.createdAt), toDateTime(n.updatedAt), pos(n, i)],
   },
-
-  async tasks(conn, userId, list) {
-    await replaceRows(conn, "tasks", userId,
-      ["id", "title", "subject", "description", "deadline", "priority", "status", "created_at", "completed_at", "position"],
-      asList(list).filter((t) => t && t.id).map((t, i) => [
-        str(t.id, 40), str(t.title, 255), str(t.subject, 100), t.description ? String(t.description) : null,
-        toDate(t.deadline), oneOf(t.priority, PRIORITIES, "medium"), oneOf(t.status, STATUSES, "not-started"),
-        toDateTime(t.createdAt), toDateTime(t.completedAt), i,
-      ]));
+  timetable: {
+    table: "timetable_classes", key: "id", needsSubject: true,
+    columns: ["id", "subject_id", "day", "start_time", "end_time", "room", "teacher", "position"],
+    valid: (c) => DAYS.includes(c.day),
+    row: (c, i) => [str(c.id, 40), c.subjectId, c.day, toTime(c.startTime), toTime(c.endTime),
+      str(c.room, 100), str(c.teacher, 100), pos(c, i)],
   },
-
-  async notes(conn, userId, list) {
-    await replaceRows(conn, "notes", userId,
-      ["id", "title", "body", "category", "created_at", "updated_at", "position"],
-      asList(list).filter((n) => n && n.id).map((n, i) => [
-        str(n.id, 40), str(n.title, 255), n.body ? String(n.body) : null, str(n.category, 100),
-        toDateTime(n.createdAt), toDateTime(n.updatedAt), i,
-      ]));
+  attendance: {
+    table: "attendance", key: "id", needsSubject: true,
+    columns: ["id", "subject_id", "total", "attended", "position"],
+    row: (a, i) => {
+      const total = int(a.total);
+      return [str(a.id, 40), a.subjectId, total, Math.min(int(a.attended), total), pos(a, i)];
+    },
   },
-
-  async timetable(conn, userId, list) {
-    const known = await subjectIds(conn, userId);
-    await replaceRows(conn, "timetable_classes", userId,
-      ["id", "subject_id", "day", "start_time", "end_time", "room", "teacher", "position"],
-      asList(list).filter((c) => c && c.id && known.has(c.subjectId) && DAYS.includes(c.day)).map((c, i) => [
-        str(c.id, 40), c.subjectId, c.day, toTime(c.startTime), toTime(c.endTime),
-        str(c.room, 100), str(c.teacher, 100), i,
-      ]));
+  /* The app keeps grades as cgpa = { subjects: [...] }; changes arrive as
+     those inner rows. */
+  cgpa: {
+    table: "grades", key: "id", needsSubject: true,
+    columns: ["id", "subject_id", "grade", "position"],
+    row: (g, i) => [str(g.id, 40), g.subjectId, oneOf(g.grade, GRADES, null), pos(g, i)],
   },
-
-  async attendance(conn, userId, list) {
-    const known = await subjectIds(conn, userId);
-    await replaceRows(conn, "attendance", userId,
-      ["id", "subject_id", "total", "attended", "position"],
-      asList(list).filter((a) => a && a.id && known.has(a.subjectId)).map((a, i) => {
-        const total = int(a.total);
-        return [str(a.id, 40), a.subjectId, total, Math.min(int(a.attended), total), i];
-      }));
+  /* achievements = { unlocked: { id: date } }; changes arrive as { id, unlockedAt }. */
+  achievements: {
+    table: "achievements", key: "achievement_id",
+    columns: ["achievement_id", "unlocked_at"],
+    valid: (a) => !!toDateTime(a.unlockedAt),
+    row: (a) => [str(a.id, 40), toDateTime(a.unlockedAt)],
   },
-
-  async cgpa(conn, userId, value) {
-    const known = await subjectIds(conn, userId);
-    const list = value && Array.isArray(value.subjects) ? value.subjects : [];
-    await replaceRows(conn, "grades", userId,
-      ["id", "subject_id", "grade", "position"],
-      list.filter((g) => g && g.id && known.has(g.subjectId)).map((g, i) => [
-        str(g.id, 40), g.subjectId, oneOf(g.grade, GRADES, null), i,
-      ]));
-  },
-
-  async achievements(conn, userId, value) {
-    const unlocked = value && value.unlocked && typeof value.unlocked === "object" ? value.unlocked : {};
-    await replaceRows(conn, "achievements", userId,
-      ["achievement_id", "unlocked_at"],
-      Object.entries(unlocked)
-        .map(([id, when]) => [str(id, 40), toDateTime(when)])
-        .filter(([, when]) => when));
-  },
-
-  async notifications(conn, userId, list) {
-    await replaceRows(conn, "notifications", userId,
-      ["id", "notif_key", "type", "title", "body", "created_at", "is_read", "is_seen", "position"],
-      asList(list).filter((n) => n && n.id).map((n, i) => [
-        str(n.id, 40), n.key ? str(n.key, 160) : null, str(n.type || "info", 20), str(n.title, 255),
-        n.body ? String(n.body) : null, toDateTime(n.createdAt), !!n.read, !!n.seen, i,
-      ]));
+  notifications: {
+    table: "notifications", key: "id",
+    columns: ["id", "notif_key", "type", "title", "body", "created_at", "is_read", "is_seen", "position"],
+    row: (n, i) => [str(n.id, 40), n.key ? str(n.key, 160) : null, str(n.type || "info", 20), str(n.title, 255),
+      text(n.body), toDateTime(n.createdAt), !!n.read, !!n.seen, pos(n, i)],
   },
 };
 
-/* Save the collections in `data` (any subset), in dependency order. */
-export async function saveCollections(conn, userId, data) {
-  for (const name of COLLECTIONS) {
-    if (Object.prototype.hasOwnProperty.call(data, name)) await writers[name](conn, userId, data[name]);
+async function upsertRows(conn, userId, spec, items, known) {
+  const rows = asList(items)
+    .filter((r) => r && r.id)
+    .filter((r) => !spec.valid || spec.valid(r))
+    .filter((r) => !spec.needsSubject || known.has(r.subjectId))
+    .map((r, i) => [userId, ...spec.row(r, i)]);
+  if (!rows.length) return;
+  const cols = ["user_id", ...spec.columns];
+  const updates = spec.columns.filter((c) => c !== spec.key).map((c) => `${c} = VALUES(${c})`).join(", ");
+  await conn.query(`INSERT INTO ${spec.table} (${cols.join(", ")}) VALUES ? ON DUPLICATE KEY UPDATE ${updates}`, [rows]);
+}
+
+async function deleteRows(conn, userId, spec, ids) {
+  const list = asList(ids).filter((id) => typeof id === "string" && id).map((id) => str(id, 40));
+  if (!list.length) return;
+  await conn.query(`DELETE FROM ${spec.table} WHERE user_id = ? AND ${spec.key} IN (?)`, [userId, list]);
+}
+
+/* ---- Single-row collections ---- */
+
+async function saveProfile(conn, userId, p) {
+  if (!p || typeof p !== "object") return;
+  /* Name and email live on the account row. */
+  const names = [];
+  const values = [];
+  if (p.firstName) { names.push("first_name = ?"); values.push(str(p.firstName, 60)); }
+  if (p.lastName)  { names.push("last_name = ?");  values.push(str(p.lastName, 60)); }
+  if (p.email)     { names.push("email = ?");      values.push(str(p.email, 255)); }
+  if (names.length) {
+    await conn.query(`UPDATE users SET ${names.join(", ")} WHERE id = ?`, [...values, userId]);
   }
+
+  let avatar = p.avatar;
+  if (typeof avatar === "string") avatar = { type: "illustration", id: avatar };   // older shape
+  const avatarType = avatar && ["illustration", "initials"].includes(avatar.type) ? avatar.type : null;
+
+  await conn.query(
+    `REPLACE INTO profiles
+       (user_id, avatar_type, avatar_id, program, semester, target_attendance, appearance, onboarded)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      userId,
+      avatarType,
+      avatarType ? str(avatar.id, 40) : null,
+      str(p.program, 120),
+      str(p.semester, 20),
+      Math.min(100, int(p.targetAttendance) || 75),
+      p.appearance === "dark" ? "dark" : "light",
+      !!p.onboarded,
+    ],
+  );
+}
+
+async function saveMeta(conn, userId, m) {
+  if (!m || typeof m !== "object") return;
+  await conn.query(
+    `REPLACE INTO user_meta (user_id, streak, last_completion_date, demo, demo_version)
+     VALUES (?, ?, ?, ?, ?)`,
+    [userId, int(m.streak), toDate(m.lastCompletionDate), !!m.demo,
+      m.demoVersion == null ? null : int(m.demoVersion)],
+  );
+}
+
+/* Apply one save. `changes` maps collection → { upsert: [...], delete: [ids] }
+   (profile and meta → the whole object). Subjects go first so the rows that
+   point at them can be checked; deleting a subject also deletes its classes,
+   attendance and grade (ON DELETE CASCADE), as in the app. */
+export async function applyChanges(conn, userId, changes) {
+  const has = (name) => Object.prototype.hasOwnProperty.call(changes, name);
+  if (has("profile")) await saveProfile(conn, userId, changes.profile);
+  if (has("meta")) await saveMeta(conn, userId, changes.meta);
+
+  if (has("subjects")) {
+    await upsertRows(conn, userId, LISTS.subjects, changes.subjects.upsert, null);
+    await deleteRows(conn, userId, LISTS.subjects, changes.subjects.delete);
+  }
+  const known = await subjectIds(conn, userId);
+  for (const name of COLLECTIONS) {
+    if (name === "profile" || name === "meta" || name === "subjects" || !has(name)) continue;
+    const change = changes[name] || {};
+    await upsertRows(conn, userId, LISTS[name], change.upsert, known);
+    await deleteRows(conn, userId, LISTS[name], change.delete);
+  }
+}
+
+/* Earlier versions of the app sent whole collections. Treat them as
+   upserts only: nothing is deleted, so a stale copy can never wipe out
+   items another device added. */
+export function changesFromCollections(data) {
+  const changes = {};
+  for (const name of COLLECTIONS) {
+    if (!Object.prototype.hasOwnProperty.call(data, name)) continue;
+    const v = data[name];
+    if (name === "profile" || name === "meta") changes[name] = v;
+    else if (name === "cgpa") changes[name] = { upsert: v && v.subjects };
+    else if (name === "achievements") {
+      const unlocked = (v && v.unlocked) || {};
+      changes[name] = { upsert: Object.entries(unlocked).map(([id, unlockedAt]) => ({ id, unlockedAt })) };
+    } else changes[name] = { upsert: v };
+  }
+  return changes;
 }
 
 /* ---- Reader: every collection for one user, in the app's shapes ---- */

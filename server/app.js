@@ -12,7 +12,7 @@
      POST /api/login    check a password key       → { token, user, data }
      POST /api/logout   end this browser's session
      GET  /api/data     every collection for the signed-in user
-     PUT  /api/data     save some collections: { collections: { tasks: [...], ... } }
+     PUT  /api/data     save changes: { username, changes: { tasks: { upsert: [...], delete: [ids] }, ... } }
 
    Signed-in requests send "Authorization: Bearer <token>".
 
@@ -28,13 +28,15 @@ import crypto from "node:crypto";
 import express from "express";
 import bcrypt from "bcryptjs";
 import { pool, transaction, configured } from "./db.js";
-import { COLLECTIONS, saveCollections, loadCollections } from "./collections.js";
+import { COLLECTIONS, applyChanges, changesFromCollections, loadCollections } from "./collections.js";
 
 const app = express();
 app.use(express.json({ limit: "2mb" }));
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const KEY_RE = /^[0-9a-f]{1,32}$/;
+/* 64 hex characters (PBKDF2-SHA256); short ones are the older, weaker key
+   that accounts are upgraded from when they next sign in. */
+const KEY_RE = /^[0-9a-f]{1,64}$/;
 
 
 /* Slows down password guessing: at most 20 sign-in / sign-up attempts per
@@ -51,6 +53,11 @@ function rateLimit(req, res, next) {
   attempts.set(ip, recent);
   next();
 }
+
+/* Sign-ups are limited twice over: per address (above), and for the whole
+   site per hour, counted in the database so every serverless instance
+   shares the same limit. */
+const SIGNUPS_PER_HOUR = 60;
 
 const newToken = () => crypto.randomBytes(32).toString("hex");
 
@@ -94,7 +101,7 @@ app.get("/api/health", handle(async (req, res) => {
   } catch (err) {
     /* Only the error code (e.g. ER_ACCESS_DENIED_ERROR, ETIMEDOUT): enough to
        tell what is wrong with the setup, never a host name or password. */
-    console.error(err);
+    console.error("Health check failed:", err.code || err.name, err.sqlMessage || err.message);
     return res.status(500).json({ error: "database-unreachable", code: err.code || "unknown" });
   }
   res.json({ ok: true });
@@ -117,6 +124,9 @@ app.post("/api/signup", rateLimit, handle(async (req, res) => {
   const errors = signupErrors(b);
   if (Object.keys(errors).length) return res.status(400).json({ error: "invalid", fields: errors });
 
+  const [[recent]] = await pool.query("SELECT COUNT(*) AS n FROM users WHERE created_at >= NOW() - INTERVAL 1 HOUR");
+  if (recent.n >= SIGNUPS_PER_HOUR) return res.status(429).json({ error: "too-many-signups" });
+
   const passwordHash = await bcrypt.hash(b.key, 10);
   try {
     const [result] = await pool.query(
@@ -132,7 +142,7 @@ app.post("/api/signup", rateLimit, handle(async (req, res) => {
 }));
 
 app.post("/api/login", rateLimit, handle(async (req, res) => {
-  const { username, key } = req.body || {};
+  const { username, key, legacyKey } = req.body || {};
   if (!username || !KEY_RE.test(key || "")) return res.status(400).json({ error: "invalid" });
 
   const [rows] = await pool.query(
@@ -146,7 +156,11 @@ app.post("/api/login", rateLimit, handle(async (req, res) => {
 
   const user = rows[0];
   if (!(await bcrypt.compare(key, user.password_hash))) {
-    return res.status(401).json({ error: "wrong-password" });
+    /* Accounts made before the stronger key: the sign-in form also sends the
+       old key, and a match upgrades the stored hash to the new key. */
+    const upgrade = KEY_RE.test(legacyKey || "") && (await bcrypt.compare(legacyKey, user.password_hash));
+    if (!upgrade) return res.status(401).json({ error: "wrong-password" });
+    await pool.query("UPDATE users SET password_hash = ? WHERE id = ?", [await bcrypt.hash(key, 10), user.id]);
   }
 
   const token = await startSession(user.id);
@@ -180,15 +194,23 @@ app.put("/api/data", requireAuth, handle(async (req, res) => {
   if (typeof claimed === "string" && claimed.toLowerCase() !== String(req.username).toLowerCase()) {
     return res.status(409).json({ error: "wrong-account" });
   }
-  const incoming = (req.body && req.body.collections) || {};
-  const data = {};
-  for (const name of COLLECTIONS) if (name in incoming) data[name] = incoming[name];
-  await transaction((conn) => saveCollections(conn, req.userId, data));
+  const body = req.body || {};
+  const incoming = body.changes && typeof body.changes === "object" ? body.changes
+    : changesFromCollections(body.collections || {});
+  const changes = {};
+  for (const name of COLLECTIONS) if (name in incoming) changes[name] = incoming[name] || {};
+  await transaction((conn) => applyChanges(conn, req.userId, changes));
   res.status(204).end();
 }));
 
 app.use((err, req, res, next) => {
-  console.error(err);
+  /* Bad requests (unreadable JSON, too large) say so instead of a 500. */
+  if (err.status && err.status >= 400 && err.status < 500) {
+    return res.status(err.status).json({ error: err.type || "bad-request" });
+  }
+  /* Log what went wrong but never the data: MySQL errors carry the whole
+     SQL statement, values included. */
+  console.error("API error:", err.code || err.name, err.sqlMessage || err.message);
   res.status(500).json({ error: "server-error" });
 });
 

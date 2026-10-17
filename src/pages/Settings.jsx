@@ -69,7 +69,7 @@ function SubjectForm({ subject }) {
         <form className="stack" noValidate onSubmit={(e) => { e.preventDefault(); submit(); }}>
           <div className={"field" + (errors.name ? " is-invalid" : "")} style={{ margin: 0 }}>
             <label className="field__label" htmlFor="sf-name">Subject name</label>
-            <input className="input" id="sf-name" value={name} placeholder="e.g. DBMS" onChange={(e) => setName(e.target.value)} />
+            <input className="input" id="sf-name" maxLength={100} value={name} placeholder="e.g. DBMS" onChange={(e) => setName(e.target.value)} />
             <p className="field__error">{errors.name || ""}</p>
           </div>
           <div className={"field" + (errors.credits ? " is-invalid" : "")} style={{ margin: 0 }}>
@@ -133,11 +133,11 @@ function chooseTheme(value) {
   profile.save({ appearance: value });
 }
 
-function TextField({ label, id, value, onChange, placeholder = "", type = "text" }) {
+function TextField({ label, id, value, onChange, placeholder = "", type = "text", maxLength = 120 }) {
   return (
     <label className="field" style={{ margin: 0 }}>
       <span className="field__label">{label}</span>
-      <input className="input" type={type} id={id} value={value} placeholder={placeholder}
+      <input className="input" type={type} id={id} value={value} placeholder={placeholder} maxLength={maxLength}
         onChange={(e) => onChange(e.target.value)} />
     </label>
   );
@@ -246,7 +246,7 @@ export default function Settings() {
                     <p className="field__hint">Your username identifies your workspace and can't be changed.</p>
                   </div>
                   <TextField label="Email" id="s-email" type="email" placeholder="you@example.com"
-                    value={form.email} onChange={setField("email")} />
+                    value={form.email} onChange={setField("email")} maxLength={254} />
                 </div>
                 <div className="form-grid">
                   <TextField label="Program" id="s-program" placeholder="e.g. B.E CSE AIML"

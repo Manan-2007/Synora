@@ -92,14 +92,14 @@ function TaskForm({ task, isEdit }) {
         <form className="stack" noValidate onSubmit={(e) => { e.preventDefault(); submit(); }}>
           <div className={"field" + (titleError ? " is-invalid" : "")} style={{ margin: 0 }}>
             <label className="field__label" htmlFor="tf-title">Title</label>
-            <input className="input" id="tf-title" ref={titleRef} placeholder="e.g. Finish DBMS assignment" required
+            <input className="input" id="tf-title" maxLength={200} ref={titleRef} placeholder="e.g. Finish DBMS assignment" required
               {...bind("title")} />
             <p className="field__error">{titleError}</p>
           </div>
           <div className="form-grid">
             <div className="field" style={{ margin: 0 }}>
               <label className="field__label" htmlFor="tf-subject">Subject</label>
-              <input className="input" id="tf-subject" list="tf-subjects" autoComplete="off" placeholder="e.g. DBMS"
+              <input className="input" id="tf-subject" maxLength={100} list="tf-subjects" autoComplete="off" placeholder="e.g. DBMS"
                 {...bind("subject")} />
               <datalist id="tf-subjects">
                 {subjects.map((s) => <option key={s.id} value={s.name}></option>)}
@@ -126,7 +126,7 @@ function TaskForm({ task, isEdit }) {
           </div>
           <div className="field" style={{ margin: 0 }}>
             <label className="field__label" htmlFor="tf-desc">Notes</label>
-            <textarea className="input" id="tf-desc" placeholder="Optional details" {...bind("description")} />
+            <textarea className="input" id="tf-desc" maxLength={5000} placeholder="Optional details" {...bind("description")} />
           </div>
         </form>
       </div>

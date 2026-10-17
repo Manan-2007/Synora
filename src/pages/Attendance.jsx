@@ -68,7 +68,7 @@ function EditSubjectForm({ subject }) {
         <form className="stack" noValidate onSubmit={(e) => { e.preventDefault(); submit(); }}>
           <div className={fieldClass("name")} style={{ margin: 0 }}>
             <label className="field__label" htmlFor="ae-name">Subject name</label>
-            <input className="input" id="ae-name" {...bind("name")} />
+            <input className="input" id="ae-name" maxLength={100} {...bind("name")} />
             <p className="field__hint">Renaming updates this subject everywhere — attendance, CGPA and your timetable.</p>
             <p className="field__error">{errors.name || ""}</p>
           </div>

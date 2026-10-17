@@ -149,7 +149,7 @@ function ClassForm({ entry, isEdit, subjects, confirm }) {
                 <label className="field__label" htmlFor={"cf-" + x.key} style={{ margin: 0 }}>{x.label}</label>
                 <button type="button" className="tt-extra__remove" onClick={() => dropExtra(x.key)}>Remove</button>
               </div>
-              <input className="input" id={"cf-" + x.key} placeholder={x.placeholder}
+              <input className="input" id={"cf-" + x.key} maxLength={100} placeholder={x.placeholder}
                 ref={(el) => { extraRefs.current[x.key] = el; }} {...bind(x.key)} />
             </div>
           ))}

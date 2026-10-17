@@ -398,7 +398,7 @@ flowchart LR
 | **Pages** | One React component per route, styled with the design-system CSS | `src/pages/` |
 | **Framework-free logic** | Tasks, grades, attendance maths, notifications & achievements engine, auth | `src/lib/` |
 | **Store** | `localStorage` is the working copy. `useStore()` re-renders pages on every write (`useSyncExternalStore`) | `src/lib/storage.js` |
-| **Sync** | Watches writes and sends changed collections to the API, debounced and retried | `src/lib/sync.js` |
+| **Sync** | Sends only what changed (items added, edited, deleted) and re-loads changes from other devices | `src/lib/sync.js` |
 | **API** | Express routes for sign-up, sign-in, sign-out and saving / loading data | `server/app.js` |
 | **Serverless entry** | Runs the same Express app as a Vercel function | `api/index.js` |
 | **Database** | 12 normalised MySQL tables | `database/schema.sql` |
@@ -424,17 +424,24 @@ sequenceDiagram
     L-->>P: re-render (useStore)
     L->>Y: onWrite(tasks)
     Note over Y: waits 400 ms so a burst of edits becomes one save
-    Y->>A: PUT /api/data with the changed collections
+    Y->>Y: compare with the last synced copy (the "base")
+    Y->>A: PUT /api/data with only the changed items
     A->>A: check the session token and that it owns this account
-    A->>D: BEGIN, replace that user's rows, COMMIT
+    A->>D: BEGIN, upsert changed rows, delete removed ones, COMMIT
     D-->>A: ok
     A-->>Y: 204 No Content
     end
 ```
 
+- **Only what changed:** each browser keeps a copy of what it last synced (the *base*) and sends just
+  the difference. An item added on your phone is never deleted by a laptop that hasn't seen it yet.
+- **Every device catches up:** the app re-loads from MySQL when it opens, when the tab comes back into
+  view and every 2 minutes. It never overwrites edits that are still waiting to be saved.
+- **Every tab stays current:** a second tab of the app re-renders as soon as the first one saves.
 - **One transaction per save:** either every row lands or none does.
-- **Never stuck:** a failed save is retried every few seconds. If the database can't be reached at
-  all, the account is marked *unsynced* and uploaded as soon as it can be, with no need to sign in again.
+- **Never stuck:** a failed save retries with growing gaps (5 s up to 60 s). If the database can't be
+  reached at all, the changes wait in the browser and upload as soon as it can be, with no need to sign in
+  again.
 
 ### Signing in, and the password that never leaves the browser
 
@@ -447,7 +454,7 @@ sequenceDiagram
     participant D as MySQL
     rect rgb(250, 249, 247)
     S->>B: username + password
-    B->>B: key = hash(password)
+    B->>B: key = PBKDF2(password, username), 210,000 rounds
     Note over B: the password itself is never sent
     B->>A: POST /api/login with username + key
     A->>D: SELECT password_hash
@@ -468,7 +475,11 @@ sequenceDiagram
     end
 ```
 
-- The server stores only **`bcrypt(key)`**, never the password or the key itself.
+- The server stores only **`bcrypt(key)`**, never the password or the key itself. The key is
+  PBKDF2-SHA256 salted with the username, so a leaked key is slow to turn back into a password.
+- **Signing out** of a database account removes its key and workspace from that browser. On a
+  shared computer, the next person finds nothing. Changes that couldn't be saved yet stay until the next
+  sign-in uploads them.
 - Each browser session token is tied to its account, and the API refuses (`409`) a save addressed to a
   different account.
 - **Auto-connect:** while someone is signed in without a database session (a cold start, the
@@ -640,7 +651,6 @@ flash of the wrong one.
   - semantic landmarks and a *Skip to content* link;
   - every input has a real `<label>` and its own error message;
   - dialogs trap focus and close with `Escape`;
-  - colour contrast checked in both themes;
   - `prefers-reduced-motion` respected (the splash loader shortens from 2 s to 0.6 s).
 
 ---
@@ -738,6 +748,11 @@ The live site deploys automatically from `main` on **Vercel**.
 - It also permanently redirects old `/app/*.html` links, and caches hashed assets for a year.
 - The database connection comes only from Vercel's environment variables (`DB_HOST`, `DB_PASSWORD`, `DB_SSL_CA`, …), never from the repository.
 - Until those variables are set, `/api/health` answers *no database* and the site runs on browser storage.
+- Security headers on every response:
+  - a strict **Content-Security-Policy** (scripts only from the site itself);
+  - `X-Frame-Options: DENY` (no clickjacking);
+  - `X-Content-Type-Options: nosniff`, `Referrer-Policy` and `Permissions-Policy`.
+- Sign-ups are capped per address and for the whole site per hour.
 
 ---
 
@@ -758,7 +773,8 @@ bcrypt hashes.
 <details>
 <summary><b>What is the demo account?</b></summary>
 <br>A sample student, Arshpreet Kaur, with a full semester of tasks, timetable, grades, attendance and
-notes. It is one shared account: anyone who uses it on the live site sees the same workspace.
+notes. It is one shared account: anyone who uses it on the live site sees the same workspace. It resets
+itself to fresh sample data once a day, so its deadlines always look current.
 </details>
 
 <details>

@@ -91,6 +91,15 @@ export function subscribe(fn) {
   return () => listeners.delete(fn);
 }
 
+/* Another tab of this site wrote to localStorage (the "storage" event only
+   fires in the OTHER tabs): re-render here too, so a tab never shows — and
+   then saves over — data another tab has already changed. */
+if (typeof window !== "undefined") {
+  window.addEventListener("storage", (e) => {
+    if (e.key === null || e.key.startsWith("synora")) emitChange();
+  });
+}
+
 export function getVersion() {
   return version;
 }

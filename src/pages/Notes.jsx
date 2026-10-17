@@ -36,18 +36,18 @@ function NoteForm({ note, isEdit }) {
         <form className="stack" noValidate onSubmit={(e) => { e.preventDefault(); submit(); }}>
           <div className={"field" + (titleError ? " is-invalid" : "")} style={{ margin: 0 }}>
             <label className="field__label" htmlFor="nf-title">Title</label>
-            <input className="input" id="nf-title" ref={titleRef} value={title} placeholder="Note title" required
+            <input className="input" id="nf-title" maxLength={200} ref={titleRef} value={title} placeholder="Note title" required
               onChange={(e) => setTitle(e.target.value)} />
             <p className="field__error">{titleError}</p>
           </div>
           <div className="field" style={{ margin: 0 }}>
             <label className="field__label" htmlFor="nf-cat">Category</label>
-            <input className="input" id="nf-cat" value={category} placeholder="e.g. Networks (optional)"
+            <input className="input" id="nf-cat" maxLength={60} value={category} placeholder="e.g. Networks (optional)"
               onChange={(e) => setCategory(e.target.value)} />
           </div>
           <div className="field" style={{ margin: 0 }}>
             <label className="field__label" htmlFor="nf-body">Note</label>
-            <textarea className="input" id="nf-body" style={{ minHeight: 140 }} placeholder="Capture a thought…"
+            <textarea className="input" id="nf-body" maxLength={20000} style={{ minHeight: 140 }} placeholder="Capture a thought…"
               value={body} onChange={(e) => setBody(e.target.value)} />
           </div>
         </form>

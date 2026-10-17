@@ -50,7 +50,7 @@ export function AcademicStep({ draft, update, headingRef }) {
       <div className="ob-fields">
         <div className="field">
           <label className="field__label" htmlFor="ob-program">What program are you in?</label>
-          <input className="input" id="ob-program" list="ob-programs" placeholder="e.g. B.E CSE AIML"
+          <input className="input" id="ob-program" maxLength={120} list="ob-programs" placeholder="e.g. B.E CSE AIML"
             autoComplete="off" value={draft.program} onChange={(e) => update({ program: e.target.value })} />
           <datalist id="ob-programs">
             {PROGRAMS.map((p) => <option key={p} value={p}></option>)}
@@ -108,7 +108,7 @@ function SubjectRow({ subject: s, n, onChange, onRemove }) {
       <div className="ob-subject__main">
         <div className="ob-subject__field">
           <label className="ob-subject__label" htmlFor={"ob-sub-" + s.id}>{"Subject " + n}</label>
-          <input className="input input--sm" id={"ob-sub-" + s.id} data-sub-name value={s.name}
+          <input className="input input--sm" id={"ob-sub-" + s.id} maxLength={100} data-sub-name value={s.name}
             placeholder="e.g. DBMS" onChange={(e) => onChange(s.id, { name: e.target.value })} />
         </div>
         <div className="ob-subject__field ob-subject__field--credits">

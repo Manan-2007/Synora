@@ -25,16 +25,20 @@ timetable, attendance, grades, achievements and notifications.
 * A browser can't talk to MySQL directly, so an **API** (Node.js + Express + `mysql2`) sits in
   between. On Vercel it runs as a serverless function. On your computer the same code runs
   with `npm run server`.
-* The app still works from `localStorage`, so pages open instantly. Each change is sent to
-  the API within about half a second ([`src/lib/sync.js`](../src/lib/sync.js)), and the API
-  writes it to MySQL in one transaction.
+* The app still works from `localStorage`, so pages open instantly. Within about half a second of
+  a change, the app sends **only what changed** (items added, edited or deleted) to the API
+  ([`src/lib/sync.js`](../src/lib/sync.js)), which writes it to MySQL in one transaction. Items
+  added on another device are never touched by a save from a device that hasn't seen them.
+* The app **re-loads from MySQL** when it opens, when the tab comes back into view and every 2
+  minutes, so every device catches up with the others.
 * **Signing in** loads that account's data from MySQL, so your workspace follows you to any
   browser or device. **The password never leaves the browser:** it is turned into a key there,
-  and the server stores only a **bcrypt** hash of that key.
+  and the server stores only a **bcrypt** hash of that key. **Signing out** removes the key and
+  the workspace from that browser.
 * **The demo account** (`arsh2309`) is saved in the database like any other account. Everyone
   who clicks *Use the demo account* shares that one workspace, so a change made there is seen
-  by the next visitor. The first time it reaches the database, the shipped sample data is
-  uploaded, not one browser's edited copy.
+  by the next visitor. It **resets itself to fresh sample data once a day**, so its deadlines stay
+  current and one visitor's changes only last until the next day.
 * **Nobody ever has to sign out and back in.** If the database can't be reached (a slow
   start, Aiven powered off), the app keeps working from the browser copy. Every 30 seconds,
   and whenever the tab comes back into view, it retries. As soon as the database answers, it
@@ -178,12 +182,19 @@ the local connection and use **Server → Data Import** with that file.
 
 ## Security notes
 
-* The password itself is never sent or stored. The browser derives a key from it, and the server keeps only a **bcrypt** hash of that key.
+* The password itself is never sent or stored. The browser derives a key from it (PBKDF2-SHA256,
+  210,000 rounds, salted with the username), and the server keeps only a **bcrypt** hash of that
+  key. Accounts created before the stronger key are upgraded automatically at their next sign-in.
+* Signing out removes the account's key and workspace from the browser.
 * Every query uses **placeholders** (`?`), so input can't change the SQL (no SQL injection).
 * The live database connection is encrypted (**TLS**) and the server's certificate is checked
   against Aiven's CA.
-* Sign-in and sign-up are rate-limited (20 attempts per IP address every 10 minutes per server
-  instance).
+* Sign-in and sign-up are rate-limited: 20 attempts per IP address every 10 minutes per server
+  instance, and at most 60 new accounts per hour for the whole site.
+* Text longer than a column allows is trimmed to fit instead of failing the save. The forms
+  already stop well before those limits.
+* Server logs record what went wrong, never the data being saved.
+* The site sends a strict Content-Security-Policy and other security headers (`vercel.json`).
 * The cloud credentials live only in Vercel's environment variables, never in this repository.
 
 ## Start over

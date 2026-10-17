@@ -28,11 +28,18 @@ import { saveThemePreference } from "./theme.js";
 const USERNAME = "arsh2309";
 const PASSWORD = "arsh2309";       // public demo credential — not a real secret
 
-/* Bump whenever the shipped demo data below changes. The demo seeds once
-   and then behaves like an editable workspace; comparing this against the
-   version stored in meta forces a fresh re-seed when (and only when) the
-   fixture changes, so the demo always matches what ships. */
+/* Bump whenever the shipped demo data below changes. */
 const SEED_VERSION = 2;
+
+/* The demo is one shared account in the database, and its deadlines are
+   relative to the day it was seeded. So it re-seeds once a day: meta keeps
+   a stamp of the fixture version and the seeding date (2 × 10⁸ + YYYYMMDD,
+   e.g. 220261018), and any other stamp means "seed again". A visitor's
+   edits last for the rest of that day; the next day starts clean, with
+   fresh overdue / due-today / upcoming work. */
+function seedStamp() {
+  return SEED_VERSION * 1e8 + Number(toISODate(new Date()).replaceAll("-", ""));
+}
 
 const ACCOUNT = {
   firstName: "Arshpreet",
@@ -232,7 +239,7 @@ function seed() {
 
   store.update("meta", (m) => {
     m.demo = true;
-    m.demoVersion = SEED_VERSION;
+    m.demoVersion = seedStamp();
     m.streak = 2;
     m.lastCompletionDate = toISODate(new Date(Date.now() - 86400000));
     return m;
@@ -243,12 +250,11 @@ function seed() {
 }
 
 /* Make sure the account exists in synora-users. If it already does, its
-   password hash is re-synced to the constant above: the demo account
-   belongs to the app, so the app owns its credential. hashFn comes from
-   auth.js, which owns the hashing. */
-function ensureAccount(hashFn) {
+   key is re-synced to the constant password above: the demo account
+   belongs to the app, so the app owns its credential. The key comes from
+   auth.js, which owns the key derivation. */
+function ensureAccount(passHash) {
   const users = readJSON(KEYS.users, []);
-  const passHash = hashFn(PASSWORD);
   const existing = users.find((u) => String(u.username).toLowerCase() === USERNAME);
 
   if (existing) {
@@ -283,10 +289,11 @@ export const demo = {
     return !!u && u.toLowerCase() === USERNAME;
   },
 
-  /* True on the very first sign-in, and again after SEED_VERSION is bumped.
-     Must be called while the demo account is the current session. */
+  /* True on the very first sign-in, on the first sign-in of each new day,
+     and after SEED_VERSION is bumped. Must be called while the demo account
+     is the current session. */
   needsSeed() {
     const m = store.get("meta");
-    return !m.demo || m.demoVersion !== SEED_VERSION;
+    return !m.demo || m.demoVersion !== seedStamp();
   },
 };
