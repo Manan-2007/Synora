@@ -89,6 +89,18 @@ function forgetApiSession() {
    Returns { field: message } when the database refuses the account
    (the username is taken there), otherwise {}. */
 export async function createAccount(v) {
+  switching += 1;
+  let refusedFields;
+  try {
+    refusedFields = await createAccountAs(v);
+  } finally {
+    switching -= 1;
+  }
+  connect();
+  return refusedFields;
+}
+
+async function createAccountAs(v) {
   forgetApiSession();
 
   const key = hash(v.password);
@@ -125,7 +137,6 @@ export async function createAccount(v) {
     email: v.email,
     onboarded: false,
   });
-  connect();
   return {};
 }
 
@@ -181,6 +192,18 @@ async function adoptServerSession(username, token, data) {
    workspace from MySQL, a wrong one is refused. An account it has never
    seen is checked in this browser and then linked by connect(). */
 export async function signIn(username, password) {
+  switching += 1;
+  let user;
+  try {
+    user = await signInAs(username, password);
+  } finally {
+    switching -= 1;
+  }
+  connect();   // links the account if this sign-in could not reach the database
+  return user;
+}
+
+async function signInAs(username, password) {
   forgetApiSession();
   const key = hash(password);
   if (await api.available()) {
@@ -200,9 +223,7 @@ export async function signIn(username, password) {
     }
   }
 
-  const user = localSignIn(username, password);
-  if (user) connect();
-  return user;
+  return localSignIn(username, password);
 }
 
 /* ---- Linking the signed-in account to the database ----
@@ -217,6 +238,11 @@ export async function signIn(username, password) {
 const refused = new Set();
 let connecting = null;
 
+/* While a sign-in or sign-up is switching accounts, the background link
+   must stay out of the way: it could otherwise reconnect the account being
+   left and hand its database session to the one taking over. */
+let switching = 0;
+
 export function connect() {
   if (!connecting) connecting = linkAccount().catch(() => {}).finally(() => { connecting = null; });
   return connecting;
@@ -224,14 +250,14 @@ export function connect() {
 
 async function linkAccount() {
   const username = session.username();
-  if (!username || api.token() || refused.has(username)) return;
+  if (switching || !username || api.token() || refused.has(username)) return;
   const account = findUser(username);
   if (!account || !account.passHash) return;
   if (!(await api.available())) return;
-  if (session.username() !== username || api.token()) return;   // changed while waiting
+  if (switching || session.username() !== username || api.token()) return;   // changed while waiting
 
   const res = await api.login(username, account.passHash);
-  if (session.username() !== username) return;
+  if (switching || session.username() !== username) return;
   if (res.ok) {
     await adoptServerSession(username, res.body.token, res.body.data);
     return;
@@ -247,7 +273,7 @@ async function linkAccount() {
     email: account.email || p.email,
     key: account.passHash,
   });
-  if (session.username() !== username) return;
+  if (switching || session.username() !== username) return;
   if (created.status === 409 || created.status === 400) { refused.add(username); return; }
   if (!created.ok) return;
   api.setToken(created.body.token);
