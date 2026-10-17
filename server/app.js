@@ -36,9 +36,6 @@ app.use(express.json({ limit: "2mb" }));
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const KEY_RE = /^[0-9a-f]{1,32}$/;
 
-/* The demo account is a sample workspace that lives in each browser on its
-   own; it never reaches the database, so nobody can claim its username. */
-const RESERVED = new Set(["arsh2309"]);
 
 /* Slows down password guessing: at most 20 sign-in / sign-up attempts per
    IP address every 10 minutes. On Vercel each running instance counts on
@@ -117,7 +114,6 @@ app.post("/api/signup", rateLimit, handle(async (req, res) => {
   const b = req.body || {};
   const errors = signupErrors(b);
   if (Object.keys(errors).length) return res.status(400).json({ error: "invalid", fields: errors });
-  if (RESERVED.has(String(b.username).toLowerCase())) return res.status(409).json({ error: "username-taken" });
 
   const passwordHash = await bcrypt.hash(b.key, 10);
   try {

@@ -8,7 +8,7 @@
 -- =========================================================
 
 USE synora;
-SET @user = 'your_username';
+SET @user = 'arsh2309';   -- the demo account; change it to see another one
 
 -- 1. Every account (passwords are only stored as bcrypt hashes)
 SELECT id, username, first_name, last_name, email, created_at

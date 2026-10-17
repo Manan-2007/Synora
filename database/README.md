@@ -31,9 +31,10 @@ timetable, attendance, grades, achievements and notifications.
 * **Signing in** loads that account's data from MySQL, so your workspace follows you to any
   browser or device. **The password never leaves the browser:** it is turned into a key there,
   and the server stores only a **bcrypt** hash of that key.
-* **The demo account** (`arsh2309`) is a sample that every visitor gets their own copy of in
-  their own browser. It is never saved to the database, so one visitor's edits can't change
-  what the next one sees. To see your data in Workbench, create your own account.
+* **The demo account** (`arsh2309`) is saved in the database like any other account. Everyone
+  who clicks *Use the demo account* shares that one workspace, so a change made there is seen
+  by the next visitor. The first time it reaches the database, the shipped sample data is
+  uploaded, not one browser's edited copy.
 * **Nobody ever has to sign out and back in.** If the database can't be reached (a slow
   start, Aiven powered off), the app keeps working from the browser copy. Every 30 seconds,
   and whenever the tab comes back into view, it retries. As soon as the database answers, it
@@ -105,9 +106,10 @@ database.
   **Select Rows – Limit 1000**.
 * **See changes live:** add or edit something on the site, then click **↻** above the result
   grid. The change is there within a second.
-* **Run the ready-made queries:** **File → Open SQL Script… → `database/queries.sql`**. Set your
-  username in the `SET @user = '…';` line, run the first two lines once, then put the cursor
-  inside any query and press **⌘ ↵** / **Ctrl + Enter**. It includes:
+* **Run the ready-made queries:** **File → Open SQL Script… → `database/queries.sql`**. It
+  starts on the demo account (`SET @user = 'arsh2309';`); change that line to see another
+  account. Run the first two lines once, then put the cursor inside any query and press
+  **⌘ ↵** / **Ctrl + Enter**. It includes:
   * every account and row counts per user
   * **CGPA worked out in SQL** (a credit-weighted `JOIN` of `grades` and `subjects`)
   * attendance % against the target

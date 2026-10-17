@@ -182,11 +182,6 @@ async function adoptServerSession(username, token, data) {
    seen is checked in this browser and then linked by connect(). */
 export async function signIn(username, password) {
   forgetApiSession();
-  /* The demo is a sample workspace that every visitor gets their own copy
-     of, in their own browser. It never touches the database, so one
-     visitor's edits can't change what the next one sees. */
-  if (username.toLowerCase() === demo.username) return localSignIn(username, password);
-
   const key = hash(password);
   if (await api.available()) {
     let res = null;
@@ -229,7 +224,7 @@ export function connect() {
 
 async function linkAccount() {
   const username = session.username();
-  if (!username || username.toLowerCase() === demo.username || api.token() || refused.has(username)) return;
+  if (!username || api.token() || refused.has(username)) return;
   const account = findUser(username);
   if (!account || !account.passHash) return;
   if (!(await api.available())) return;
@@ -256,6 +251,9 @@ async function linkAccount() {
   if (created.status === 409 || created.status === 400) { refused.add(username); return; }
   if (!created.ok) return;
   api.setToken(created.body.token);
+  /* The demo's first copy in the database is the shipped sample data, not
+     whatever this one browser's copy had been edited into. */
+  if (demo.isCurrent()) demo.seed();
   await pushAll();
 }
 

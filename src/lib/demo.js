@@ -15,8 +15,10 @@
    for Everyone do not: they count fully towards the CGPA while
    being absent from attendance entirely.
 
-   The password is a LOCAL demo credential for this project
-   only. It unlocks nothing but a browser's localStorage.
+   Like any account it is saved in the database, so every
+   visitor who uses it shares ONE workspace. The password is a
+   public demo credential (it is shown on the sign-in page) and
+   unlocks nothing but this sample workspace.
    ========================================================= */
 
 import { KEYS, readJSON, writeJSON, store, session, profile } from "./storage.js";
@@ -24,7 +26,7 @@ import { toISODate } from "./util.js";
 import { saveThemePreference } from "./theme.js";
 
 const USERNAME = "arsh2309";
-const PASSWORD = "arsh2309";       // local demo credential — not a real secret
+const PASSWORD = "arsh2309";       // public demo credential — not a real secret
 
 /* Bump whenever the shipped demo data below changes. The demo seeds once
    and then behaves like an editable workspace; comparing this against the

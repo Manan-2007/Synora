@@ -20,7 +20,6 @@
 
 import { onWrite, readJSON, writeJSON, session, userKey, KEYS } from "./storage.js";
 import { api } from "./api.js";
-import { demo } from "./demo.js";
 
 /* The per-user collections that have a table in MySQL. The onboarding
    draft is left out: it is a scratch copy that onboarding throws away. */
@@ -141,7 +140,7 @@ onWrite((key) => {
     if (!session.username()) endSession();
     return;
   }
-  if (!collectionOf(key) || session.username() === demo.username) return;
+  if (!collectionOf(key)) return;
   if (!api.token()) {
     markUnsynced(session.username());
     return;

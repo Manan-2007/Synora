@@ -406,7 +406,7 @@ React app (localStorage) ──/api──► Express API (Vercel serverless func
 * **Real authentication:** the password never leaves the browser. A key derived from it is sent instead, and the server stores only a **bcrypt** hash of that key. Signing in issues a random session token that is deleted on sign-out. Sign-in attempts are rate-limited.
 * **Automatic sync:** the app works from a browser copy, so pages open instantly. Every change is also sent to MySQL within about half a second, in a single transaction.
 * **Never stuck:** if the database can't be reached, Synora keeps working from the browser copy and retries in the background (every 30 seconds and when the tab is reopened). It links the account and uploads everything as soon as it can, with no need to sign in again.
-* **Demo stays separate:** the demo account is a per-browser sample and is never saved to the database.
+* **Demo included:** the demo account is stored in the database too. Everyone who uses it shares one sample workspace.
 
 ---
 
@@ -455,7 +455,7 @@ Yes. Synora has no paid tiers, no premium locked features, no trial periods, and
 Yes. Synora uses client-side account records to isolate tasks, timetables, and grades for individual users sharing the same browser. Creating an account takes less than a minute.
 
 #### Where is my academic data saved?
-In Synora's MySQL database, linked to your account, so signing in anywhere brings your workspace with you. A copy is kept in your browser's `localStorage` so pages open instantly. Passwords are stored only as bcrypt hashes. The demo account is the exception: it lives only in your browser.
+In Synora's MySQL database, linked to your account, so signing in anywhere brings your workspace with you. A copy is kept in your browser's `localStorage` so pages open instantly. Passwords are stored only as bcrypt hashes.
 
 #### Does Synora work on mobile browsers?
 Yes. Synora is fully responsive and runs smoothly in modern mobile browsers on both iOS and Android.

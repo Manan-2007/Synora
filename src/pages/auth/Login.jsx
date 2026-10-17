@@ -96,8 +96,8 @@ export default function Login() {
           <button type="submit" className="btn btn--primary btn--lg btn--block" ref={submitRef} disabled={busy}>Sign in</button>
         </form>
 
-        {/* The credential is local to this project and unlocks nothing but
-            this browser's localStorage. */}
+        {/* A public demo credential: it unlocks nothing but the shared
+            sample workspace. */}
         <div className="auth-demo">
           <p className="auth-demo__title">Just looking around?</p>
           <p className="auth-demo__text">
