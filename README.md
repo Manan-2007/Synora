@@ -151,7 +151,7 @@ Synora takes you from a blank slate to a structured academic routine in three cl
     └─────────────────────────┘
 ```
 
-1. **Create Your Account:** Register with your name, username, email, and password. Synora creates a dedicated local workspace partition directly inside your browser.
+1. **Create Your Account:** Register with your name, username, email, and password. Synora creates your account in its database, with a working copy in your browser.
 2. **Make Synora Yours:** Step through an onboarding flow to pick an illustrated avatar or initials color, set your academic program and semester, define your subjects with credit weightings, and set your target attendance percentage.
 3. **Start With a Clear Week:** Your dashboard opens with subjects already interconnected. Timetable entries, grade sheets, attendance monitors, and task forms read from the same subject catalog.
 
@@ -258,7 +258,7 @@ localStorage
 ### Architectural Notes & Invariants
 * **Isolated Multi-User Support:** User data is segregated by username keys (`synora:<username>:<collection>`). Multiple students can use the same browser without their records mixing.
 * **Derived State:** Percentages, CGPA totals, deadline statuses (Overdue/Due Today), and streak counts are **derived at runtime** rather than stored as static values.
-* **Follows You Everywhere:** Because the workspace is saved in MySQL, signing in on any browser or device restores it. If the database can't be reached, the app keeps working from the browser copy and uploads the changes at the next sign-in.
+* **Follows You Everywhere:** Because the workspace is saved in MySQL, signing in on any browser or device restores it. If the database can't be reached, the app keeps working from the browser copy and uploads everything by itself as soon as it can.
 
 ---
 
@@ -403,9 +403,9 @@ React app (localStorage) ──/api──► Express API (Vercel serverless func
 ```
 
 * **12 normalised tables:** `users`, `sessions`, `profiles`, `user_meta`, `subjects`, `tasks`, `notes`, `timetable_classes`, `attendance`, `grades`, `achievements` and `notifications`. They are linked by primary and foreign keys with `ON DELETE CASCADE`.
-* **Real authentication:** passwords are stored as **bcrypt** hashes. Signing in issues a random session token that is deleted on sign-out. Sign-in attempts are rate-limited.
+* **Real authentication:** the password never leaves the browser. A key derived from it is sent instead, and the server stores only a **bcrypt** hash of that key. Signing in issues a random session token that is deleted on sign-out. Sign-in attempts are rate-limited.
 * **Automatic sync:** the app works from a browser copy, so pages open instantly. Every change is also sent to MySQL within about half a second, in a single transaction.
-* **Never stuck:** if the database can't be reached, Synora keeps working from the browser copy and uploads the changes at the next sign-in.
+* **Never stuck:** if the database can't be reached, Synora keeps working from the browser copy and retries in the background (every 30 seconds and when the tab is reopened). It links the account and uploads everything as soon as it can, with no need to sign in again.
 * **Demo stays separate:** the demo account is a per-browser sample and is never saved to the database.
 
 ---

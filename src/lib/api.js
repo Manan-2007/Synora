@@ -27,8 +27,8 @@ async function request(method, path, body, token) {
 export const api = {
   /* True when the API answers and can reach MySQL. Checked fresh each
      time, so starting the server later is picked up on the next sign-in.
-     On Vercel /api/health is rewritten to index.html — HTML, not JSON —
-     which also reads as "no API".
+     A dev server without the API answers with index.html — HTML, not
+     JSON — which also reads as "no API".
      The wait is generous on purpose: an idle serverless API plus a fresh
      database connection can take a few seconds to answer the first time.
      Without a database the answer comes back at once either way. */
@@ -53,7 +53,7 @@ export const api = {
   },
 
   signup: (account) => request("POST", "/signup", account),
-  login: (username, password) => request("POST", "/login", { username, password }),
+  login: (username, key) => request("POST", "/login", { username, key }),
   logout: (token) => request("POST", "/logout", undefined, token),
   save: (collections, token) => request("PUT", "/data", { collections }, token),
 

@@ -28,13 +28,16 @@ timetable, attendance, grades, achievements and notifications.
 * The app still works from `localStorage`, so pages open instantly. Each change is sent to
   the API within about half a second ([`src/lib/sync.js`](../src/lib/sync.js)), and the API
   writes it to MySQL in one transaction.
-* **Signing in** checks the password against MySQL (stored as a **bcrypt** hash) and loads
-  that account's data, so your workspace follows you to any browser or device.
+* **Signing in** loads that account's data from MySQL, so your workspace follows you to any
+  browser or device. **The password never leaves the browser:** it is turned into a key there,
+  and the server stores only a **bcrypt** hash of that key.
 * **The demo account** (`arsh2309`) is a sample that every visitor gets their own copy of in
   their own browser. It is never saved to the database, so one visitor's edits can't change
   what the next one sees. To see your data in Workbench, create your own account.
-* If no database is reachable, the app quietly falls back to browser storage. Changes made
-  meanwhile are uploaded the next time you sign in.
+* **Nobody ever has to sign out and back in.** If the database can't be reached (a slow
+  start, Aiven powered off), the app keeps working from the browser copy. Every 30 seconds,
+  and whenever the tab comes back into view, it retries. As soon as the database answers, it
+  creates or links the account and uploads everything on its own.
 
 ---
 
@@ -148,7 +151,7 @@ the local connection and use **Server → Data Import** with that file.
 
 | Table | One row per… | Notes |
 | :--- | :--- | :--- |
-| `users` | account | `username` is unique (case-insensitive); `password_hash` is bcrypt |
+| `users` | account | `username` is unique (case-insensitive); `password_hash` is bcrypt of the browser-derived key |
 | `sessions` | signed-in browser | random 64-character token, valid 30 days; deleted on sign-out |
 | `profiles` | account | avatar, program, semester, attendance target, theme, onboarding done |
 | `user_meta` | account | completion streak |
@@ -173,7 +176,7 @@ the local connection and use **Server → Data Import** with that file.
 
 ## Security notes
 
-* Passwords are hashed with **bcrypt** on the server and are never stored or logged as text.
+* The password itself is never sent or stored. The browser derives a key from it, and the server keeps only a **bcrypt** hash of that key.
 * Every query uses **placeholders** (`?`), so input can't change the SQL (no SQL injection).
 * The live database connection is encrypted (**TLS**) and the server's certificate is checked
   against Aiven's CA.

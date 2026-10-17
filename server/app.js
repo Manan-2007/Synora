@@ -9,12 +9,19 @@
 
      GET  /api/health   is the API up and the database reachable?
      POST /api/signup   create an account          → { token }
-     POST /api/login    check a password           → { token, user, data }
+     POST /api/login    check a password key       → { token, user, data }
      POST /api/logout   end this browser's session
      GET  /api/data     every collection for the signed-in user
      PUT  /api/data     save some collections: { collections: { tasks: [...], ... } }
 
    Signed-in requests send "Authorization: Bearer <token>".
+
+   Passwords: the browser never sends the password itself. It sends
+   a key derived from it (the same one it keeps for signing in
+   without the database, see src/lib/auth.js), and the server
+   stores only a bcrypt hash of that key. Because the browser
+   already holds the key, it can connect an account to the
+   database later on its own, without asking for the password.
    ========================================================= */
 
 import crypto from "node:crypto";
@@ -27,6 +34,7 @@ const app = express();
 app.use(express.json({ limit: "2mb" }));
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const KEY_RE = /^[0-9a-f]{1,32}$/;
 
 /* The demo account is a sample workspace that lives in each browser on its
    own; it never reaches the database, so nobody can claim its username. */
@@ -93,14 +101,15 @@ app.get("/api/health", handle(async (req, res) => {
   res.json({ ok: true });
 }));
 
-/* The same rules the signup form checks, enforced again here. */
+/* The same rules the signup form checks, enforced again here. (Password
+   strength is checked in the browser: the server only ever sees the key.) */
 function signupErrors(b) {
   const errors = {};
   if (!b.firstName) errors.firstName = "required";
   if (!b.lastName) errors.lastName = "required";
   if (!b.email || !EMAIL_RE.test(b.email)) errors.email = "invalid";
   if (!/^[a-zA-Z0-9_]{3,20}$/.test(b.username || "")) errors.username = "invalid";
-  if (typeof b.password !== "string" || b.password.length < 8) errors.password = "invalid";
+  if (!KEY_RE.test(b.key || "")) errors.key = "invalid";
   return errors;
 }
 
@@ -110,7 +119,7 @@ app.post("/api/signup", rateLimit, handle(async (req, res) => {
   if (Object.keys(errors).length) return res.status(400).json({ error: "invalid", fields: errors });
   if (RESERVED.has(String(b.username).toLowerCase())) return res.status(409).json({ error: "username-taken" });
 
-  const passwordHash = await bcrypt.hash(b.password, 10);
+  const passwordHash = await bcrypt.hash(b.key, 10);
   try {
     const [result] = await pool.query(
       "INSERT INTO users (username, first_name, last_name, email, password_hash) VALUES (?, ?, ?, ?, ?)",
@@ -125,8 +134,8 @@ app.post("/api/signup", rateLimit, handle(async (req, res) => {
 }));
 
 app.post("/api/login", rateLimit, handle(async (req, res) => {
-  const { username, password } = req.body || {};
-  if (!username || !password) return res.status(400).json({ error: "invalid" });
+  const { username, key } = req.body || {};
+  if (!username || !KEY_RE.test(key || "")) return res.status(400).json({ error: "invalid" });
 
   const [rows] = await pool.query(
     "SELECT id, username, first_name, last_name, email, password_hash FROM users WHERE username = ?",
@@ -138,7 +147,7 @@ app.post("/api/login", rateLimit, handle(async (req, res) => {
   if (!rows.length) return res.status(404).json({ error: "no-account" });
 
   const user = rows[0];
-  if (!(await bcrypt.compare(String(password), user.password_hash))) {
+  if (!(await bcrypt.compare(key, user.password_hash))) {
     return res.status(401).json({ error: "wrong-password" });
   }
 

@@ -4,15 +4,17 @@
    Accounts live in localStorage under "synora-users"; the
    signed-in person is remembered under "synora-session".
 
-   When the local MySQL API is running (server/), accounts are
-   also created and checked there, with bcrypt-hashed passwords,
-   and signing in loads the workspace from the database. Without
-   the API (e.g. on the deployed site) everything below works
-   from localStorage alone.
+   When the MySQL API is reachable (server/), accounts are also
+   created and checked there and signing in loads the workspace
+   from the database. Without it everything below works from
+   localStorage alone, and connect() links the account to the
+   database by itself as soon as the API can be reached.
 
-   A note on security: the localStorage copy of the password is
-   hashed as a courtesy, but that is obfuscation, NOT real
-   security — anyone with access to the browser can read it.
+   The password never leaves the browser. hash() turns it into a
+   key; the browser keeps that key to sign in on its own, and
+   sends it to the API, which stores only a bcrypt hash of it.
+   Holding the key is what lets connect() create or sign in to
+   the database account later without asking for the password.
    ========================================================= */
 
 import { KEYS, readJSON, writeJSON, session, profile } from "./storage.js";
@@ -21,8 +23,8 @@ import { demo } from "./demo.js";
 import { api } from "./api.js";
 import { applyServerData, hasUnsynced, pushAll, withoutSync } from "./sync.js";
 
-/* Tiny, dependency-free string hash (cyrb53). Good enough to avoid
-   storing passwords in the clear; not a real, salted, server-side hash. */
+/* Tiny, dependency-free string hash (cyrb53): the password's "key".
+   Not a strong hash on its own — the server bcrypt-hashes it again. */
 export function hash(str) {
   let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
   for (let i = 0, ch; i < str.length; i++) {
@@ -89,16 +91,16 @@ function forgetApiSession() {
 export async function createAccount(v) {
   forgetApiSession();
 
+  const key = hash(v.password);
   if (await api.available()) {
     try {
       const res = await api.signup({
-        firstName: v.firstName, lastName: v.lastName, username: v.username,
-        email: v.email, password: v.password,
+        firstName: v.firstName, lastName: v.lastName, username: v.username, email: v.email, key,
       });
       if (res.status === 409) return { username: "That username is already taken." };
       if (res.ok) api.setToken(res.body.token);
     } catch {
-      // The API went away mid-way: the account still works in this browser.
+      // The API went away mid-way: connect() links the account later.
     }
   }
 
@@ -109,7 +111,7 @@ export async function createAccount(v) {
     fullName: fullName(v.firstName, v.lastName),
     username: v.username,
     email: v.email,
-    passHash: hash(v.password),
+    passHash: key,
     createdAt: new Date().toISOString(),
   });
   writeJSON(KEYS.users, users);
@@ -123,6 +125,7 @@ export async function createAccount(v) {
     email: v.email,
     onboarded: false,
   });
+  connect();
   return {};
 }
 
@@ -144,8 +147,8 @@ function seedDemoIfNeeded() {
 }
 
 /* Keep a browser copy of an account the database knows, so it can still
-   sign in here when the API is not running. */
-function rememberAccount(user, password) {
+   sign in here when the API is not reachable. */
+function rememberAccount(user, key) {
   const users = getUsers();
   const record = {
     firstName: user.firstName,
@@ -153,7 +156,7 @@ function rememberAccount(user, password) {
     fullName: fullName(user.firstName, user.lastName),
     username: user.username,
     email: user.email,
-    passHash: hash(password),
+    passHash: key,
   };
   const existing = users.find((u) => u.username.toLowerCase() === user.username.toLowerCase());
   if (existing) Object.assign(existing, record);
@@ -161,62 +164,109 @@ function rememberAccount(user, password) {
   writeJSON(KEYS.users, users);
 }
 
+/* A signed-in session from the database: keep its token and bring this
+   browser's copy and the database's into step. Changes made here while
+   the database was unreachable are newer than its copy, so they are
+   uploaded; otherwise the database's copy is loaded. */
+async function adoptServerSession(username, token, data) {
+  api.setToken(token);
+  if (hasUnsynced(username)) await pushAll();
+  else applyServerData(username, data);
+}
+
 /* Returns the account on success, null on a mismatch (deliberately vague —
    the caller never says which half was wrong).
 
-   With the API running, the database decides:
-     • known account, right password → load its workspace from MySQL
-     • wrong password                 → null
-     • account the database has never seen but this browser has
-       (created before the database existed, or while the API was
-       off) → check it here, then upload the account and its data */
+   When the database is reachable it decides: the right key loads the
+   workspace from MySQL, a wrong one is refused. An account it has never
+   seen is checked in this browser and then linked by connect(). */
 export async function signIn(username, password) {
   forgetApiSession();
   /* The demo is a sample workspace that every visitor gets their own copy
      of, in their own browser. It never touches the database, so one
      visitor's edits can't change what the next one sees. */
   if (username.toLowerCase() === demo.username) return localSignIn(username, password);
-  if (!(await api.available())) return localSignIn(username, password);
 
-  let res;
-  try {
-    res = await api.login(username, password);
-  } catch {
-    return localSignIn(username, password);
-  }
-
-  if (res.ok) {
-    const { token, user, data } = res.body;
-    rememberAccount(user, password);
-    api.setToken(token);
-    withoutSync(() => session.start(user.username));
-    /* Changes made here while the database was unreachable are newer than
-       the database's copy: upload them rather than overwrite them. */
-    if (hasUnsynced(user.username)) await pushAll();
-    else applyServerData(user.username, data);
-    seedDemoIfNeeded();
-    return findUser(user.username);
-  }
-
-  if (res.status === 401) return null;
-
-  const user = localSignIn(username, password);
-  if (user && res.status === 404) {
+  const key = hash(password);
+  if (await api.available()) {
+    let res = null;
     try {
-      const up = await api.signup({
-        firstName: user.firstName || profile.get().firstName,
-        lastName: user.lastName || profile.get().lastName,
-        username: user.username,
-        email: user.email || profile.get().email,
-        password,
-      });
-      if (up.ok) {
-        api.setToken(up.body.token);
-        await pushAll();
-      }
+      res = await api.login(username, key);
     } catch {
-      // Upload failed: the account keeps working in this browser.
+      // Unreachable after all: fall through to this browser's copy.
+    }
+    if (res && res.status === 401) return null;
+    if (res && res.ok) {
+      const { token, user, data } = res.body;
+      rememberAccount(user, key);
+      withoutSync(() => session.start(user.username));
+      await adoptServerSession(user.username, token, data);
+      return findUser(user.username);
     }
   }
+
+  const user = localSignIn(username, password);
+  if (user) connect();
   return user;
+}
+
+/* ---- Linking the signed-in account to the database ----
+
+   Runs whenever someone is signed in here without a database session:
+   the account was created or signed in while the API was unreachable,
+   or its session expired. It signs in with the key this browser keeps
+   (or creates the database account if there is none) and syncs, with no
+   need to sign out and back in. Accounts the database refuses (taken
+   username, different password) are left alone until the next page load. */
+
+const refused = new Set();
+let connecting = null;
+
+export function connect() {
+  if (!connecting) connecting = linkAccount().catch(() => {}).finally(() => { connecting = null; });
+  return connecting;
+}
+
+async function linkAccount() {
+  const username = session.username();
+  if (!username || username.toLowerCase() === demo.username || api.token() || refused.has(username)) return;
+  const account = findUser(username);
+  if (!account || !account.passHash) return;
+  if (!(await api.available())) return;
+  if (session.username() !== username || api.token()) return;   // changed while waiting
+
+  const res = await api.login(username, account.passHash);
+  if (session.username() !== username) return;
+  if (res.ok) {
+    await adoptServerSession(username, res.body.token, res.body.data);
+    return;
+  }
+  if (res.status === 401) { refused.add(username); return; }
+  if (res.status !== 404) return;                                // try again later
+
+  const p = profile.get();
+  const created = await api.signup({
+    firstName: account.firstName || p.firstName,
+    lastName: account.lastName || p.lastName,
+    username: account.username,
+    email: account.email || p.email,
+    key: account.passHash,
+  });
+  if (session.username() !== username) return;
+  if (created.status === 409 || created.status === 400) { refused.add(username); return; }
+  if (!created.ok) return;
+  api.setToken(created.body.token);
+  await pushAll();
+}
+
+/* Try on load, every 30 seconds, and whenever the tab comes back into
+   view or the network returns. Each try is a no-op once connected. */
+export function startAutoConnect() {
+  connect();
+  setInterval(connect, 30000);
+  window.addEventListener("online", connect);
+  window.addEventListener("focus", connect);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") connect();
+  });
 }

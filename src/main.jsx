@@ -2,13 +2,17 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router";
 import App from "./App.jsx";
-// Mirrors every save into the local MySQL database when its API is running.
+// Mirrors every save into the MySQL database, and links a signed-in account
+// to it whenever the API becomes reachable.
 import "./lib/sync.js";
+import { startAutoConnect } from "./lib/auth.js";
 
 // Global design system. Page-specific stylesheets are mounted per route (usePageStyles).
 import "./styles/tokens.css";
 import "./styles/base.css";
 import "./styles/components.css";
+
+startAutoConnect();
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
