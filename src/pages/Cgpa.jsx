@@ -175,13 +175,13 @@ export default function Cgpa() {
             <div className="card__body" style={{ padding: 0 }}>
               {subjects.length ? (
                 <div className="table-wrap">
-                  <table className="table">
+                  <table className="table table--grades">
                     <thead>
                       <tr>
                         <th>Subject</th>
-                        <th style={{ width: 90 }}>Credits</th>
-                        <th style={{ width: 220 }}>Grade</th>
-                        <th style={{ width: 110 }}>Points</th>
+                        <th className="col-credits">Credits</th>
+                        <th className="col-grade">Grade</th>
+                        <th className="col-points">Points</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -199,10 +199,16 @@ export default function Cgpa() {
                             <td className="muted">{s.credits || "—"}</td>
                             <td>
                               <label className="visually-hidden" htmlFor={"g-" + s.id}>{"Grade for " + s.name}</label>
-                              <select className="select select--sm" id={"g-" + s.id} value={grade}
-                                onChange={(e) => setGrade(s.id, e.target.value)}>
-                                <GradeOptions />
-                              </select>
+                              {/* On a phone the column is too narrow for "A+ · 9 points",
+                                  so the box shows just the grade code on top of the
+                                  select; tapping it still opens the full list. */}
+                              <span className="grade-select">
+                                <select className="select select--sm" id={"g-" + s.id} value={grade}
+                                  onChange={(e) => setGrade(s.id, e.target.value)}>
+                                  <GradeOptions />
+                                </select>
+                                <span className="grade-select__code" aria-hidden="true">{grade || "—"}</span>
+                              </span>
                             </td>
                             <td>
                               {point === undefined

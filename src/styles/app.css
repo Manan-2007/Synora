@@ -732,6 +732,55 @@ textarea.input { min-height: 96px; resize: vertical; line-height: var(--leading-
 .table tbody tr:hover { background-color: var(--color-surface-sunken); }
 .table td .row { gap: var(--space-8); }
 
+/* CGPA grades table */
+.table--grades .col-credits { width: 90px; }
+.table--grades .col-grade { width: 220px; }
+.table--grades .col-points { width: 110px; }
+
+.grade-select { position: relative; display: block; }
+.grade-select__code { display: none; }
+
+/* A phone has no room for "A+ · 9 points" (the select was squeezed until
+   no text showed at all): the box shows only the grade code, laid over
+   the select so a tap still opens the full list. The select's own text
+   is made transparent; its options keep their colour for browsers that
+   draw the list themselves. */
+@media (max-width: 560px) {
+  .table--grades th, .table--grades td { padding-left: var(--space-8); padding-right: var(--space-8); }
+  .table--grades .col-credits, .table--grades .col-grade, .table--grades .col-points { width: auto; }
+
+  .grade-select .select {
+    min-width: 4.5rem;
+    padding-left: var(--space-12);
+    padding-right: var(--space-24);
+    background-position: right var(--space-8) center;
+    color: transparent;
+  }
+  .grade-select .select option,
+  .grade-select .select optgroup { color: var(--color-text); }
+
+  .grade-select__code {
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: var(--space-12);
+    transform: translateY(-50%);
+    pointer-events: none;
+    font-size: var(--text-small);
+    font-weight: var(--weight-semibold);
+    color: var(--color-text);
+  }
+}
+
+/* The smallest phones (iPhone SE, 320px): a little tighter still, so the
+   Points column fits without scrolling sideways. */
+@media (max-width: 360px) {
+  .table--grades th, .table--grades td { padding-left: 6px; padding-right: 6px; }
+  .table--grades th { letter-spacing: 0.02em; }
+  .grade-select .select { min-width: 3.75rem; padding-left: var(--space-8); }
+  .grade-select__code { left: var(--space-8); }
+}
+
 /* ============================ 10. EMPTY STATES ======= */
 
 .empty {
