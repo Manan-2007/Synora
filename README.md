@@ -8,7 +8,7 @@ Live site: https://synora-v1.vercel.app/
 
 ## Quick start
 
-Needs Node.js 22.22 or newer. Run the launcher from this folder. It installs dependencies on
+Needs Node.js 22.22 or newer. Run the launcher from the repository root. It installs dependencies on
 first run, starts the dev server and opens Synora in your browser; press Ctrl+C (or close the
 window) to stop it.
 
@@ -25,6 +25,5 @@ npm run dev
 
 ## Deployment
 
-Vercel builds this folder (Project Settings → Build and Deployment → Root Directory =
-`Synora_react`). [`vercel.json`](vercel.json) sends every route to `index.html` so React
+Vercel builds the repository root with the Vite preset. [`vercel.json`](vercel.json) sends every route to `index.html` so React
 Router can handle deep links such as `/dashboard` on refresh.
