@@ -217,14 +217,20 @@ Class and due-today reminders reach a phone or computer even with Synora closed,
 GitHub can start scheduled runs a few minutes late, so a class reminder arrives somewhere between 20
 and about 5 minutes before the class.
 
-## 8. Timetable from a photo (Anthropic)
+## 8. Timetable from a photo (Gemini, free)
 
-*Timetable → Scan a photo* sends the picture to Claude, which lists the classes for you to check.
+*Timetable → Scan a photo* sends the picture to an AI model, which lists the classes for you to check.
+Google's Gemini has a free tier, so that's the easy choice:
 
-1. Create an API key at [console.anthropic.com](https://console.anthropic.com/) (it needs a little
-   prepaid credit; a scan costs around a cent).
-2. In Vercel add `ANTHROPIC_API_KEY` (*Sensitive*). Optional: `SCAN_MODEL` (default `claude-sonnet-5-5`).
-3. **Redeploy.** Each account can scan 15 times a day.
+1. Go to [aistudio.google.com/apikey](https://aistudio.google.com/apikey), sign in with a Google
+   account, and click **Create API key** (pick or create any project). Copy the key.
+2. In Vercel add `GEMINI_API_KEY` (*Sensitive*), then **Redeploy**.
+3. Optional: `GEMINI_MODEL` picks the model (default `gemini-flash-latest`, which follows Google's
+   newest Flash model).
+
+Each account can scan 15 times a day. On Gemini's free tier Google may use what's sent to improve its
+products, so scan only the timetable itself. To use Claude instead, set `ANTHROPIC_API_KEY` (and
+optionally `SCAN_MODEL`); if both keys are set, Gemini is used.
 
 ---
 
@@ -306,5 +312,6 @@ DROP DATABASE synora;
 | *Forgot password?* says email isn't set up | Add `BREVO_API_KEY` and `MAIL_FROM` in Vercel (part 6), then **Redeploy**. |
 | Settings says reminders with Synora closed "aren't set up" | Add the VAPID keys and `CRON_SECRET` (part 7), then **Redeploy**. |
 | Reminders on, but nothing arrives with Synora closed | Check the GitHub secret `CRON_SECRET` matches Vercel's, and the *Push reminders* workflow runs green. |
-| Scanning says it "isn't set up" | Add `ANTHROPIC_API_KEY` (part 8), then **Redeploy**. |
+| Scanning says it "isn't set up" | Add `GEMINI_API_KEY` (part 8), then **Redeploy**. |
+| Scanning says "Couldn't read that timetable" | Vercel → Logs shows the reason (`Scan failed: Gemini 4xx …`): a mistyped key, or the free tier's per-minute limit (wait a minute). |
 | Local API: `ALTER command denied` / `CREATE command denied` | Run `local-user.sql` again (it grants `CREATE` and `ALTER`). |

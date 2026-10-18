@@ -44,6 +44,7 @@ import bcrypt from "bcryptjs";
 import { pool, transaction, configured } from "./db.js";
 import { ensureSchema } from "./migrate.js";
 import { pushReady, subscribe, unsubscribe, sendToUser, tick } from "./push.js";
+import { scanProvider, readTimetable } from "./scan.js";
 import { COLLECTIONS, applyChanges, changesFromCollections, loadCollections } from "./collections.js";
 
 const app = express();
@@ -408,11 +409,11 @@ app.delete("/api/files/:id", requireAuth, handle(async (req, res) => {
 }));
 
 /* ---- Timetable from a photo or PDF ----
-   The image goes to Claude (Anthropic's API) with instructions to list
-   every class as JSON; the app then shows the result for checking before
-   anything is saved. Needs ANTHROPIC_API_KEY in the server's environment
-   (SCAN_MODEL picks the model). Each user gets 15 scans a day, per
-   server instance. */
+   The image goes to an AI model (server/scan.js: Google Gemini or
+   Anthropic Claude, whichever key the server has) with instructions to
+   list every class as JSON; the app then shows the result for checking
+   before anything is saved. Each user gets 15 scans a day, per server
+   instance. */
 const SCAN_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const SCAN_TYPES = /^(image\/(png|jpeg|gif|webp)|application\/pdf)$/;
 const scans = new Map();
@@ -449,7 +450,7 @@ function cleanClasses(list) {
 }
 
 app.post("/api/timetable/scan", requireAuth, express.raw({ type: () => true, limit: FILE_MAX + 1024 }), handle(async (req, res) => {
-  if (!process.env.ANTHROPIC_API_KEY) return res.status(503).json({ error: "scan-not-set-up" });
+  if (!scanProvider()) return res.status(503).json({ error: "scan-not-set-up" });
   const mime = String(req.query.type || "").toLowerCase();
   if (!SCAN_TYPES.test(mime)) return res.status(415).json({ error: "file-type" });
   if (!Buffer.isBuffer(req.body) || !req.body.length) return res.status(400).json({ error: "invalid" });
@@ -460,26 +461,9 @@ app.post("/api/timetable/scan", requireAuth, express.raw({ type: () => true, lim
   scans.set(req.userId, { day, count: count + 1 });
 
   const subjects = String(req.query.subjects || "").split("\n").map((x) => x.trim()).filter(Boolean).slice(0, 40);
-  const media = { type: "base64", media_type: mime, data: req.body.toString("base64") };
-  const part = mime === "application/pdf" ? { type: "document", source: media } : { type: "image", source: media };
   let answer;
   try {
-    const r = await fetch((process.env.ANTHROPIC_BASE_URL || "https://api.anthropic.com") + "/v1/messages", {
-      method: "POST",
-      headers: { "x-api-key": process.env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-      body: JSON.stringify({
-        model: process.env.SCAN_MODEL || "claude-sonnet-5-5",
-        max_tokens: 6000,
-        messages: [{ role: "user", content: [part, { type: "text", text: SCAN_PROMPT(subjects) }] }],
-      }),
-      signal: AbortSignal.timeout(55000),
-    });
-    if (!r.ok) {
-      console.error("Scan failed:", r.status, (await r.text()).slice(0, 300));
-      return res.status(502).json({ error: "scan-failed" });
-    }
-    const body = await r.json();
-    answer = (body.content || []).filter((c) => c.type === "text").map((c) => c.text).join("");
+    answer = await readTimetable(mime, req.body, SCAN_PROMPT(subjects));
   } catch (err) {
     console.error("Scan failed:", err.name, err.message);
     return res.status(502).json({ error: "scan-failed" });

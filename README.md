@@ -464,7 +464,7 @@ flowchart LR
 | **Serverless entry** | Runs the same Express app as a Vercel function | `api/index.js` |
 | **Database** | 20 MySQL tables (19 per-account + contact messages) | `database/schema.sql` |
 | **Push** | Stores push subscriptions; a scheduled call sends class and due-today reminders | `server/push.js` |
-| **Timetable scan** | Sends a timetable photo or PDF to Claude (Anthropic API) and returns the classes it lists | `server/app.js` |
+| **Timetable scan** | Sends a timetable photo or PDF to Google Gemini (or Claude) and returns the classes it lists | `server/scan.js` |
 | **Offline & install** | Web app manifest and a service worker that caches the app shell | `public/sw.js` |
 
 ### Every change, saved twice
@@ -822,7 +822,7 @@ tokens (`--glass-*` and `--app-ambient` in `tokens.css`):
 | **Hosting** | Vercel (Mumbai region, next to the database): static build, serverless API, Web Analytics |
 | **Email** | Brevo's transactional API, for password-reset links (one `fetch`, no SDK) |
 | **Quality** | ESLint (React hooks rules) and a GitHub Actions check (lint + build) on every push |
-| **AI** | Claude (Anthropic API) reads timetable photos and PDFs, server-side |
+| **AI** | Google Gemini (free tier) or Claude reads timetable photos and PDFs, server-side |
 | **Push** | Web Push with VAPID (`web-push`), scheduled by GitHub Actions and Vercel cron |
 | **Runtime dependencies** | `react`, `react-dom`, `react-router` in the app, and `express`, `mysql2`, `bcryptjs`, `web-push` in the API. Nothing else. |
 
@@ -914,7 +914,7 @@ The live site deploys automatically from `main` on **Vercel**.
 - New tables and columns are added to the live database automatically after a deploy.
 - Password-reset emails need `BREVO_API_KEY` and `MAIL_FROM` (a sender verified in Brevo). Without them, *Forgot password?* says email isn't set up yet. See [`database/README.md`](database/README.md#6-password-reset-emails-brevo).
 - Push reminders need `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` and `CRON_SECRET` in Vercel, and the same `CRON_SECRET` as a GitHub repository secret (for the 10-minute schedule in `.github/workflows/push-tick.yml`). See [part 7](database/README.md#7-push-reminders-with-synora-closed).
-- Timetable scanning needs `ANTHROPIC_API_KEY` (and optionally `SCAN_MODEL`). See [part 8](database/README.md#8-timetable-from-a-photo-anthropic).
+- Timetable scanning needs `GEMINI_API_KEY` (free, from Google AI Studio) or `ANTHROPIC_API_KEY`. See [part 8](database/README.md#8-timetable-from-a-photo-gemini-free).
 - Every one of these is optional: without its keys a feature says it isn't set up, and everything else works.
 - Until those variables are set, `/api/health` answers *no database* and the site runs on browser storage.
 - Security headers on every response:

@@ -13,7 +13,7 @@ import { uid } from "../../lib/util.js";
    Timetable from a photo, screenshot or PDF.
 
    1. pick or take a picture
-   2. the API reads it (Claude, server-side) and lists the classes
+   2. the API reads it (Gemini or Claude, server-side) and lists the classes
    3. everything is shown for checking: untick, fix a time, pick the
       right subject, then replace the timetable or add to it.
    Subjects the timetable names but the account doesn't have yet are
@@ -40,7 +40,7 @@ const ERRORS = {
   415: "Use a photo (JPG, PNG, WebP) or a PDF.",
   429: "That's a lot of scans today. Try again tomorrow, or add classes by hand.",
   502: "Couldn't read that timetable just now. Try again, or try a clearer photo.",
-  503: "Timetable scanning isn't set up on this server yet (it needs an Anthropic API key).",
+  503: "Timetable scanning isn't set up on this server yet (it needs a Gemini API key).",
 };
 
 function ScanDialog() {
