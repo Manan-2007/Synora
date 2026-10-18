@@ -36,6 +36,8 @@ function matchSubject(name, subjects) {
 
 const ERRORS = {
   401: "Sign in again to scan a timetable.",
+  500: "Something went wrong on the server. Please try again.",
+  504: "That timetable took too long to read. Try a photo of just one week, cropped close, or a screenshot or PDF.",
   413: "That file is too big: the limit is 3.5 MB.",
   415: "Use a photo (JPG, PNG, WebP) or a PDF.",
   429: "That's a lot of scans today. Try again tomorrow, or add classes by hand.",
@@ -48,6 +50,7 @@ const REASONS = {
   key: "The scanning service rejected the server's API key. The key in Vercel (GEMINI_API_KEY) needs checking.",
   quota: "The scanning service's limit was reached (the free tier allows a few scans a minute). Wait a minute and try again.",
   model: "The scanning model isn't available for this API key. Set GEMINI_MODEL in Vercel to a model the key can use.",
+  slow: "That timetable took too long to read. Try a photo of just one week, cropped close, or a screenshot or PDF.",
 };
 
 function ScanDialog() {
@@ -67,7 +70,7 @@ function ScanDialog() {
     e.target.value = "";
     if (!f) return;
     setError("");
-    const ready = f.type === "application/pdf" ? f : await shrinkImage(f, 2400, 0.88);
+    const ready = f.type === "application/pdf" ? f : await shrinkImage(f, 2000, 0.85, true);
     if (ready.size > FILE_MAX) { setError(ERRORS[413]); return; }
     setFile(ready);
     setPreview(ready.type.startsWith("image/") ? URL.createObjectURL(ready) : null);

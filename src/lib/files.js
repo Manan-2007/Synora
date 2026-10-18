@@ -40,20 +40,22 @@ function typeOf(file) {
   return EXT_TYPES[ext] || "";
 }
 
-/* Shrink a photo the browser can decode; anything else is sent as it is. */
-export async function shrinkImage(file, maxSide = 2000, quality = 0.85) {
+/* Shrink a photo the browser can decode; anything else is sent as it is.
+   `force` always re-encodes to JPEG (the timetable scanner wants a format
+   every AI service reads, not HEIC). */
+export async function shrinkImage(file, maxSide = 2000, quality = 0.85, force = false) {
   if (!/^image\/(png|jpeg|webp|heic|heif)$/.test(typeOf(file))) return file;
   let bitmap;
   try { bitmap = await createImageBitmap(file); } catch { return file; }   // e.g. HEIC on Chrome
   const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
-  if (scale === 1 && file.size < 1.2 * 1024 * 1024) { bitmap.close(); return file; }
+  if (!force && scale === 1 && file.size < 1.2 * 1024 * 1024) { bitmap.close(); return file; }
   const canvas = document.createElement("canvas");
   canvas.width = Math.round(bitmap.width * scale);
   canvas.height = Math.round(bitmap.height * scale);
   canvas.getContext("2d").drawImage(bitmap, 0, 0, canvas.width, canvas.height);
   bitmap.close();
   const blob = await new Promise((r) => canvas.toBlob(r, "image/jpeg", quality));
-  if (!blob || blob.size >= file.size) return file;
+  if (!blob || (!force && blob.size >= file.size)) return file;
   return new File([blob], file.name.replace(/\.[^.]+$/, "") + ".jpg", { type: "image/jpeg" });
 }
 

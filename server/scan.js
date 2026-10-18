@@ -27,30 +27,40 @@ function reasonFor(status, text) {
   return "failed";
 }
 
-/* The chosen model first; if Google says it isn't available or has no
-   free allowance on this key, the Flash-Lite model next. */
-async function gemini(mime, base64, prompt) {
-  const models = [...new Set([process.env.GEMINI_MODEL || "gemini-flash-latest", "gemini-flash-lite-latest"])];
+/* The chosen model first, thinking turned down to "low" (a dense timetable
+   otherwise kept it thinking past the 60 s the server has); if that fails or
+   runs long, Flash-Lite, which answers fastest. Both fit inside 60 s. A
+   model that rejects the thinking setting is asked again without it. */
+async function geminiCall(model, mime, base64, prompt, ms, thinking) {
   const base = process.env.GEMINI_BASE_URL || "https://generativelanguage.googleapis.com";
+  const generationConfig = { responseMimeType: "application/json", temperature: 0.1 };
+  if (thinking) generationConfig.thinkingConfig = { thinkingLevel: "low" };
+  const r = await fetch(`${base}/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+    method: "POST",
+    headers: { "x-goog-api-key": process.env.GEMINI_API_KEY, "content-type": "application/json" },
+    body: JSON.stringify({ contents: [{ role: "user", parts: [{ inline_data: { mime_type: mime, data: base64 } }, { text: prompt }] }], generationConfig }),
+    signal: AbortSignal.timeout(ms),
+  });
+  if (r.ok) {
+    const body = await r.json();
+    const parts = (body.candidates && body.candidates[0] && body.candidates[0].content && body.candidates[0].content.parts) || [];
+    return parts.filter((p) => !p.thought).map((p) => p.text || "").join("");
+  }
+  const text = (await r.text()).slice(0, 400);
+  if (thinking && r.status === 400 && /thinking/i.test(text)) return geminiCall(model, mime, base64, prompt, ms, false);
+  throw new ScanError(`Gemini ${model} ${r.status}: ${text}`, reasonFor(r.status, text));
+}
+
+async function gemini(mime, base64, prompt) {
+  const attempts = [[process.env.GEMINI_MODEL || "gemini-flash-latest", 34000], ["gemini-flash-lite-latest", 22000]];
   let last;
-  for (const model of models) {
-    const r = await fetch(`${base}/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
-      method: "POST",
-      headers: { "x-goog-api-key": process.env.GEMINI_API_KEY, "content-type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ inline_data: { mime_type: mime, data: base64 } }, { text: prompt }] }],
-        generationConfig: { responseMimeType: "application/json", temperature: 0.1 },
-      }),
-      signal: AbortSignal.timeout(50000),
-    });
-    if (r.ok) {
-      const body = await r.json();
-      const parts = (body.candidates && body.candidates[0] && body.candidates[0].content && body.candidates[0].content.parts) || [];
-      return parts.map((p) => p.text || "").join("");
+  for (const [model, ms] of attempts) {
+    try {
+      return await geminiCall(model, mime, base64, prompt, ms, true);
+    } catch (err) {
+      last = err instanceof ScanError ? err : new ScanError(`Gemini ${model}: ${err.name} ${err.message}`, err.name === "TimeoutError" ? "slow" : "failed");
+      if (last.reason === "key") break;          // another model won't help
     }
-    const text = (await r.text()).slice(0, 400);
-    last = new ScanError(`Gemini ${model} ${r.status}: ${text}`, reasonFor(r.status, text));
-    if (last.reason === "key") break;          // another model won't help
   }
   throw last;
 }
