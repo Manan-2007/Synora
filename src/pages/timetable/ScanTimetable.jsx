@@ -43,6 +43,13 @@ const ERRORS = {
   503: "Timetable scanning isn't set up on this server yet (it needs a Gemini API key).",
 };
 
+/* Why the AI service said no (server/scan.js). */
+const REASONS = {
+  key: "The scanning service rejected the server's API key. The key in Vercel (GEMINI_API_KEY) needs checking.",
+  quota: "The scanning service's limit was reached (the free tier allows a few scans a minute). Wait a minute and try again.",
+  model: "The scanning model isn't available for this API key. Set GEMINI_MODEL in Vercel to a model the key can use.",
+};
+
 function ScanDialog() {
   const close = useModalClose();
   const input = useRef(null);
@@ -78,7 +85,10 @@ function ScanDialog() {
         headers: { Authorization: "Bearer " + token, "Content-Type": "application/octet-stream" },
         body: file,
       });
-      if (!res.ok) throw new Error(ERRORS[res.status] || ERRORS[502]);
+      if (!res.ok) {
+        const why = res.status === 502 ? ((await res.json().catch(() => ({}))).reason || "") : "";
+        throw new Error(REASONS[why] || ERRORS[res.status] || ERRORS[502]);
+      }
       const data = await res.json();
       setNote(data.note || "");
       setRows(data.classes.map((c) => ({ ...c, key: uid("scan"), keep: true, subjectId: matchSubject(c.subject, subjects) })));

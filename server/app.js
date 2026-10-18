@@ -466,7 +466,7 @@ app.post("/api/timetable/scan", requireAuth, express.raw({ type: () => true, lim
     answer = await readTimetable(mime, req.body, SCAN_PROMPT(subjects));
   } catch (err) {
     console.error("Scan failed:", err.name, err.message);
-    return res.status(502).json({ error: "scan-failed" });
+    return res.status(502).json({ error: "scan-failed", reason: err.reason || "failed" });
   }
   let parsed = {};
   try { parsed = JSON.parse(answer.slice(answer.indexOf("{"), answer.lastIndexOf("}") + 1)); } catch { /* unreadable answer */ }
