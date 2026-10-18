@@ -241,8 +241,8 @@ async function saveProfile(conn, userId, p) {
 
   await conn.query(
     `REPLACE INTO profiles
-       (user_id, avatar_type, avatar_id, program, semester, target_attendance, appearance, onboarded)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+       (user_id, avatar_type, avatar_id, program, semester, target_attendance, appearance, time_format, onboarded)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       userId,
       avatarType,
@@ -251,6 +251,7 @@ async function saveProfile(conn, userId, p) {
       str(p.semester, 20),
       Math.min(100, int(p.targetAttendance) || 75),
       p.appearance === "dark" ? "dark" : "light",
+      ["12h", "24h"].includes(p.timeFormat) ? p.timeFormat : "auto",
       !!p.onboarded,
     ],
   );
@@ -331,6 +332,7 @@ export async function loadCollections(conn, userId) {
     semester: p ? p.semester : "",
     targetAttendance: p ? p.target_attendance : 75,
     appearance: p ? p.appearance : "light",
+    timeFormat: (p && p.time_format) || "auto",
     onboarded: p ? !!p.onboarded : false,
   };
 

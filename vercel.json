@@ -80,7 +80,7 @@
       "destination": "/api?path=:path*"
     },
     {
-      "source": "/((?!api/|api$).*)",
+      "source": "/((?!api/|api$)(?!.*\\.[A-Za-z0-9]+$).*)",
       "destination": "/index.html"
     }
   ],

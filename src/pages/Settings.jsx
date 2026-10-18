@@ -591,6 +591,20 @@ export default function Settings() {
                   );
                 })}
               </div>
+              <div className="settings-time">
+                <span className="field__label" id="time-format-label">Time</span>
+                <div className="segmented" role="group" aria-labelledby="time-format-label">
+                  {[["auto", "Like this device", "Auto"], ["12h", "12-hour · 2:30 PM", "2:30 PM"], ["24h", "24-hour · 14:30", "14:30"]].map(([value, label, short]) => {
+                    const on = (profile.get().timeFormat || "auto") === value;
+                    return (
+                      <button key={value} type="button" className={on ? "is-active" : ""} aria-pressed={on}
+                        onClick={() => { profile.save({ timeFormat: value }); toast.success("Time format saved", label.split(" · ")[0] + "."); }}>
+                        <span className="st-long">{label}</span><span className="st-short" aria-hidden="true">{short}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
               <div className="row row--wrap" style={{ gap: 12, marginTop: 16 }}>
                 <button type="button" className="btn btn--ghost" onClick={() => { resetTour(); navigate("/dashboard"); }}>
                   <Icon name="sparkle" size={16} />Take the tour again

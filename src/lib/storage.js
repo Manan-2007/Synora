@@ -63,6 +63,7 @@ const DEFAULTS = {
     semester: "",
     targetAttendance: 75,
     appearance: "light",
+    timeFormat: "auto",      // "auto" (the device's habit) | "12h" | "24h"
     onboarded: false,
   },
   meta: {
@@ -370,6 +371,7 @@ export const profile = {
       semester: p.semester || "",
       targetAttendance: Number(p.targetAttendance) || 75,
       appearance: p.appearance || "light",
+      timeFormat: ["12h", "24h"].includes(p.timeFormat) ? p.timeFormat : "auto",
       onboarded: !!p.onboarded,
     };
   },

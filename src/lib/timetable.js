@@ -4,6 +4,7 @@
 
 import { store } from "./storage.js";
 import { refresh } from "./engine.js";
+import { formatRange } from "./time.js";
 
 export const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
@@ -33,7 +34,7 @@ export function removeClass(id) {
   refresh();
 }
 
+/* "9:00–10:00 AM" or "09:00–10:00", per Settings → Appearance (lib/time.js). */
 export function timeLabel(entry) {
-  if (!entry.startTime) return "";
-  return entry.startTime + (entry.endTime ? "–" + entry.endTime : "");
+  return formatRange(entry.startTime, entry.endTime);
 }

@@ -17,6 +17,7 @@ import Tour from "../components/Tour.jsx";
 import { overall } from "../lib/semesters.js";
 import { classesToMark, markClass } from "../lib/attendance.js";
 import { toast } from "../lib/toast.js";
+import { formatTime } from "../lib/time.js";
 
 /* The command centre: who am I, what's due today, what's overdue,
    what's next, and how am I doing academically. */
@@ -409,7 +410,7 @@ export default function Dashboard() {
                   <div className="agenda-list">
                     {classes.map((c) => (
                       <div className="agenda-row" key={c.id}>
-                        <time>{c.start}</time>
+                        <time>{formatTime(c.start)}</time>
                         <span className="subject-dot" style={{ ...subjectVar(c.color), alignSelf: "center" }} aria-hidden="true"></span>
                         <span>
                           <span className="agenda-row__subject">{c.subject}</span>

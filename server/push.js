@@ -83,9 +83,17 @@ async function once(userId, key) {
 
 export async function tick(now = new Date()) {
   if (!pushReady()) return { skipped: "not-set-up" };
-  const [users] = await pool.query("SELECT user_id, MIN(tz) AS tz FROM push_subscriptions GROUP BY user_id");
+  const [users] = await pool.query(
+    `SELECT s.user_id, MIN(s.tz) AS tz, MIN(p.time_format) AS fmt
+     FROM push_subscriptions s LEFT JOIN profiles p ON p.user_id = s.user_id GROUP BY s.user_id`);
   let sent = 0;
-  for (const { user_id: userId, tz } of users) {
+  for (const { user_id: userId, tz, fmt } of users) {
+    /* The account's 12/24-hour choice; "auto" reads as 12-hour, the usual habit on phones. */
+    const show = (hhmm) => {
+      if (fmt === "24h") return hhmm;
+      const [hh, mm] = hhmm.split(":").map(Number);
+      return `${hh % 12 || 12}:${String(mm).padStart(2, "0")} ${hh < 12 ? "AM" : "PM"}`;
+    };
     const t = localNow(tz, now);
 
     const [classes] = await pool.query(
@@ -97,7 +105,7 @@ export async function tick(now = new Date()) {
       const inMin = h * 60 + m - t.minutes;
       if (inMin > 0 && inMin <= 20 && await once(userId, `class:${c.id}:${t.date}`)) {
         sent += await sendToUser(userId, {
-          title: `${c.name} at ${c.start}`,
+          title: `${c.name} at ${show(c.start)}`,
           body: `Starts in ${inMin} minute${inMin === 1 ? "" : "s"}${c.room ? " · " + c.room : ""}`,
           tag: "class-" + c.id, url: "/timetable",
         });

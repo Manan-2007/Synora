@@ -8,6 +8,7 @@ import { store } from "../../lib/storage.js";
 import { toast } from "../../lib/toast.js";
 import { DAYS, todayName, allClasses, getClass, removeClass, timeLabel } from "../../lib/timetable.js";
 import { subjectVar } from "../../lib/colors.js";
+import { hourLabel, clockTime } from "../../lib/time.js";
 import EmptyArt from "../../components/EmptyArt.jsx";
 import { exportCalendar } from "../../lib/ics.js";
 import { useScanTimetable } from "./ScanTimetable.jsx";
@@ -98,7 +99,6 @@ const toMinutes = (t) => {
   const m = /^(\d{1,2}):(\d{2})/.exec(t || "");
   return m ? Number(m[1]) * 60 + Number(m[2]) : null;
 };
-const hourLabel = (h) => (h === 0 || h === 24 ? "12 am" : h === 12 ? "12 pm" : h < 12 ? h + " am" : (h - 12) + " pm");
 
 /* Side-by-side lanes for classes that overlap on the same day. */
 function layLanes(items) {
@@ -172,7 +172,7 @@ function WeekBoard({ list, today, onOpen }) {
               </button>
             ))}
             {day === today && nowTop !== null && (
-              <span className="tt-now" style={{ top: nowTop }} role="img" aria-label={"Now, " + now.toTimeString().slice(0, 5)}></span>
+              <span className="tt-now" style={{ top: nowTop }} role="img" aria-label={"Now, " + clockTime(now)}></span>
             )}
           </div>
         );

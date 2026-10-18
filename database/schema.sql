@@ -58,6 +58,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   semester          VARCHAR(20)  NOT NULL DEFAULT '',
   target_attendance TINYINT UNSIGNED NOT NULL DEFAULT 75,
   appearance        ENUM('light', 'dark') NOT NULL DEFAULT 'light',
+  time_format       ENUM('auto', '12h', '24h') NOT NULL DEFAULT 'auto',   -- how times are shown
   onboarded         BOOLEAN      NOT NULL DEFAULT FALSE,
   PRIMARY KEY (user_id),
   CONSTRAINT fk_profiles_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE

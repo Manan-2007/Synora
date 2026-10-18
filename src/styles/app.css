@@ -2805,19 +2805,38 @@ body.app::before {
 .scan__reading { display: flex; align-items: center; gap: 10px; margin: 14px 0 0; font-size: var(--text-small); }
 .scan__spin { width: 18px; height: 18px; flex: none; border-radius: 50%; border: 2.5px solid color-mix(in srgb, var(--color-brand) 25%, transparent);
   border-top-color: var(--color-brand); animation: page-spin .8s linear infinite; }
-.scan__rows { display: flex; flex-direction: column; gap: 6px; max-height: 46vh; overflow-y: auto; padding-right: 4px; }
-.scan__row { display: grid; grid-template-columns: auto minmax(0, 1.5fr) 80px 128px 128px minmax(0, 1fr); gap: 6px; align-items: center; }
-.scan__row input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--color-brand); }
-.scan__row.is-off > *:not(input[type="checkbox"]) { opacity: .45; }
+.scan__rows { display: flex; flex-direction: column; gap: 6px; max-height: 50vh; overflow-y: auto; padding-right: 4px; }
+.scan__row { display: grid; grid-template-columns: 22px minmax(0, 1.5fr) 84px 132px 132px minmax(0, 1fr); gap: 6px; align-items: center; }
+.scan__keep { width: 18px; height: 18px; accent-color: var(--color-brand); }
+.scan__field { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+/* Captions read by screen readers everywhere, shown on phones */
+.scan__field > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.scan__field .input, .scan__field .select { width: 100%; min-width: 0; }
+/* iOS draws time inputs at their own width and height: make them behave like the other fields */
+.scan__field input[type="time"] { -webkit-appearance: none; appearance: none; min-height: 36px; text-align: left; line-height: 1.2; }
+.scan__field input[type="time"]::-webkit-date-and-time-value { text-align: left; }
+.scan__row.is-off .scan__field { opacity: .45; }
 .scan__mode { margin-top: 14px; }
 @media (max-width: 760px) {
-  .scan__row { grid-template-columns: auto 1fr 1fr; padding: 8px; border-radius: 14px; background: var(--glass-tint); }
-  .scan__row > select:first-of-type { grid-column: 2 / -1; }
-  .scan__row > input[type="checkbox"] { grid-row: span 3; }
+  .scan__rows { gap: 10px; max-height: 56vh; }
+  .scan__row {
+    grid-template-columns: 22px minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas: "keep subject subject" ". start end" ". day room";
+    gap: 8px; padding: 12px; border-radius: 18px;
+    background: var(--glass-tint); border: 1px solid var(--glass-border); box-shadow: var(--glass-highlight), 0 0 0 1px var(--glass-edge);
+  }
+  .scan__keep { grid-area: keep; }
+  .scan__subject { grid-area: subject; }
+  .scan__day { grid-area: day; }
+  .scan__start { grid-area: start; }
+  .scan__end { grid-area: end; }
+  .scan__room { grid-area: room; }
+  .scan__subject > span { position: absolute; }
+  .scan__field:not(.scan__subject) > span { position: static; width: auto; height: auto; clip: auto; font-size: 0.6875rem; font-weight: var(--weight-semibold); color: var(--color-text-muted); }
+  .scan__subject .select { font-weight: var(--weight-semibold); }
+  .scan__field input[type="time"]::-webkit-calendar-picker-indicator { display: none; }
+  .modal--lg .modal__body { padding: 18px 14px; }
 }
-.reminders-push { display: flex; align-items: flex-start; gap: 8px; color: var(--color-text-muted); }
-.reminders-push svg { flex: none; margin-top: 2px; }
-.reminders-push--on { color: var(--status-low-text); }
 
 /* Calendar on phones: title on its own line, then view switch and arrows in one row */
 @media (max-width: 560px) {
@@ -2826,3 +2845,15 @@ body.app::before {
   .cal__views { margin-right: auto; }
   .cal__nav .icon-btn { width: 36px; height: 36px; }
 }
+.settings-time { display: flex; flex-direction: column; gap: 8px; margin-top: 18px; }
+.settings-time .segmented { align-self: flex-start; }
+.st-short { display: none; }
+@media (max-width: 560px) {
+  .settings-time .segmented { align-self: stretch; overflow: visible; }
+  .settings-time .segmented button { flex: 1; padding: 8px 6px; }
+  .settings-time .st-long { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .settings-time .st-short { display: inline; }
+}
+.reminders-push { display: flex; align-items: flex-start; gap: 8px; color: var(--color-text-muted); }
+.reminders-push svg { flex: none; margin-top: 2px; }
+.reminders-push--on { color: var(--status-low-text); }

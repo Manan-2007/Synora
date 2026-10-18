@@ -131,7 +131,7 @@ function ScanDialog() {
         <div className="modal__body scan">
           {rows.length ? (
             <p className="text-small" style={{ margin: "0 0 12px" }}>
-              Found <strong>{rows.length}</strong> classes{days ? " on " + days + " days" : ""}. Check them, untick anything wrong, then save.
+              Found <strong>{rows.length}</strong> classes{days ? " on " + days + (days === 1 ? " day" : " days") : ""}. Check them, untick anything wrong, then save.
             </p>
           ) : (
             <p className="text-small" style={{ margin: 0 }}>No classes found in that picture.{note ? " " + note : ""} Try a clearer photo, or add classes by hand.</p>
@@ -140,17 +140,28 @@ function ScanDialog() {
           <div className="scan__rows">
             {rows.map((r) => (
               <div key={r.key} className={"scan__row" + (r.keep ? "" : " is-off")}>
-                <input type="checkbox" checked={r.keep} aria-label={"Keep " + r.subject + " on " + r.day} onChange={(e) => edit(r.key, { keep: e.target.checked })} />
-                <select className="select select--sm" aria-label="Subject" value={r.subjectId} onChange={(e) => edit(r.key, { subjectId: e.target.value })}>
-                  {subjects.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-                  <option value={NEW}>New: {r.subject}</option>
-                </select>
-                <select className="select select--sm" aria-label="Day" value={r.day} onChange={(e) => edit(r.key, { day: e.target.value })}>
-                  {DAYS.map((d) => <option key={d} value={d}>{d.slice(0, 3)}</option>)}
-                </select>
-                <input className="input input--sm" type="time" aria-label="Starts" value={r.start} onChange={(e) => edit(r.key, { start: e.target.value })} />
-                <input className="input input--sm" type="time" aria-label="Ends" value={r.end} onChange={(e) => edit(r.key, { end: e.target.value })} />
-                <input className="input input--sm" aria-label="Room" placeholder="Room" value={r.room} maxLength={100} onChange={(e) => edit(r.key, { room: e.target.value })} />
+                <input type="checkbox" className="scan__keep" checked={r.keep} aria-label={"Keep " + r.subject + " on " + r.day}
+                  onChange={(e) => edit(r.key, { keep: e.target.checked })} />
+                <label className="scan__field scan__subject"><span>Subject</span>
+                  <select className="select select--sm" value={r.subjectId} onChange={(e) => edit(r.key, { subjectId: e.target.value })}>
+                    {subjects.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                    <option value={NEW}>New: {r.subject}</option>
+                  </select>
+                </label>
+                <label className="scan__field scan__day"><span>Day</span>
+                  <select className="select select--sm" value={r.day} onChange={(e) => edit(r.key, { day: e.target.value })}>
+                    {DAYS.map((d) => <option key={d} value={d}>{d.slice(0, 3)}</option>)}
+                  </select>
+                </label>
+                <label className="scan__field scan__start"><span>Starts</span>
+                  <input className="input input--sm" type="time" value={r.start} onChange={(e) => edit(r.key, { start: e.target.value })} />
+                </label>
+                <label className="scan__field scan__end"><span>Ends</span>
+                  <input className="input input--sm" type="time" value={r.end} onChange={(e) => edit(r.key, { end: e.target.value })} />
+                </label>
+                <label className="scan__field scan__room"><span>Room</span>
+                  <input className="input input--sm" placeholder="Room" value={r.room} maxLength={100} onChange={(e) => edit(r.key, { room: e.target.value })} />
+                </label>
               </div>
             ))}
           </div>

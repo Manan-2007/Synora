@@ -25,6 +25,7 @@ const COLUMNS = [
   ["timetable_classes", "last_marked", "DATE NULL AFTER teacher"],
   ["user_meta", "checklist_dismissed", "BOOLEAN NOT NULL DEFAULT FALSE AFTER demo_version"],
   ["tasks", "attachments", "JSON NULL AFTER subtasks"],
+  ["profiles", "time_format", "ENUM('auto', '12h', '24h') NOT NULL DEFAULT 'auto' AFTER appearance"],
   ["notes", "attachments", "JSON NULL AFTER category"],
 ];
 

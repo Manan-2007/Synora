@@ -18,6 +18,7 @@ import { allClasses, todayName } from "./timetable.js";
 import { allTasks } from "./tasks.js";
 import { todayISO } from "./util.js";
 import { api } from "./api.js";
+import { formatTime } from "./time.js";
 
 const KEY = "synora-reminders";      // { enabled }
 const SHOWN = "synora-reminded";     // { date, keys: ["class:<id>", "due:<date>"] } — today's only
@@ -183,7 +184,7 @@ export function checkReminders(now = new Date()) {
     if (start === null || !name) continue;
     const inMin = start - nowMin;
     if (inMin > 0 && inMin <= CLASS_LEAD_MIN && once("class:" + c.id)) {
-      notify(name + " at " + c.startTime,
+      notify(name + " at " + formatTime(c.startTime),
         "Starts in " + inMin + (inMin === 1 ? " minute" : " minutes") + (c.room ? " · " + c.room : ""), "class-" + c.id);
     }
   }

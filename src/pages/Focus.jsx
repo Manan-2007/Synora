@@ -5,6 +5,7 @@ import { store } from "../lib/storage.js";
 import { allTasks } from "../lib/tasks.js";
 import { subjectVar } from "../lib/colors.js";
 import { toast } from "../lib/toast.js";
+import { clockTime } from "../lib/time.js";
 import { formatDate, toISODate, todayISO } from "../lib/util.js";
 import {
   MODES, LENGTHS, ROUNDS, timer, subscribeTimer, remainingMs, durationOf, inProgress,
@@ -33,7 +34,7 @@ function useTicker(running) {
 function whenLabel(iso) {
   const d = new Date(iso);
   const day = toISODate(d);
-  const time = d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+  const time = clockTime(d);
   return (day === todayISO() ? "Today" : formatDate(day)) + ", " + time;
 }
 

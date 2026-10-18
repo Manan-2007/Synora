@@ -10,6 +10,7 @@ import { store, profile } from "./storage.js";
 import { refresh } from "./engine.js";
 import { uid, clamp, plural, todayISO } from "./util.js";
 import { todayName } from "./timetable.js";
+import { formatRange } from "./time.js";
 
 export function attendanceTarget() {
   return Number(profile.get().targetAttendance) || 75;
@@ -125,7 +126,7 @@ export function classesToMark(now = new Date()) {
     .map((c) => ({ c, s: store.subjects.byId(c.subjectId) }))
     .filter(({ s }) => s && s.trackAttendance)
     .sort((a, b) => (a.c.startTime < b.c.startTime ? -1 : 1))
-    .map(({ c, s }) => ({ id: c.id, subject: s.name, color: s.color, room: c.room || "", time: c.startTime + "–" + c.endTime, subjectId: s.id }));
+    .map(({ c, s }) => ({ id: c.id, subject: s.name, color: s.color, room: c.room || "", time: formatRange(c.startTime, c.endTime), subjectId: s.id }));
 }
 
 /* outcome: "attended" (held +1, attended +1), "missed" (held +1) or

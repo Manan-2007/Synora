@@ -15,7 +15,7 @@
    Bump VERSION to drop the cached page and small files.
    ========================================================= */
 
-const VERSION = "v2";
+const VERSION = "v3";
 const PAGE = "synora-page-" + VERSION;
 const FILES = "synora-files-" + VERSION;
 const ASSETS = "synora-assets";          // kept across versions; trimmed below
@@ -63,6 +63,10 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
   if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/_vercel/")) return;
+  /* Icons and the manifest always come straight from the network: iOS
+     reads them when adding to the Home Screen, and a stale or wrong cached
+     copy there shows a plain letter instead of the logo. */
+  if (/^\/(apple-touch-icon|favicon|icons\/|manifest\.webmanifest)/.test(url.pathname)) return;
 
   if (request.mode === "navigate") event.respondWith(page(request));
   else if (url.pathname.startsWith("/assets/")) event.respondWith(asset(request));
