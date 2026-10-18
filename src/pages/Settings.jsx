@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { useNavigate } from "react-router";
 import Icon from "../components/Icon.jsx";
 import AvatarPicker from "../components/AvatarPicker.jsx";
@@ -12,6 +12,7 @@ import { GRADES } from "../lib/grades.js";
 import { setTheme } from "../lib/theme.js";
 import { clamp, EMAIL_RE } from "../lib/util.js";
 import { toast } from "../lib/toast.js";
+import { install } from "../lib/install.js";
 
 /* =========================================================
    Settings — who you are, what you study, how it looks, and
@@ -131,6 +132,49 @@ function AvatarDialog() {
 function chooseTheme(value) {
   setTheme(value);
   profile.save({ appearance: value });
+}
+
+/* Install Synora as an app (home screen / dock): opens straight into the
+   workspace, full screen, and loads even offline. */
+function InstallCard() {
+  const state = useSyncExternalStore(install.subscribe, install.state);
+  return (
+    <div className="card">
+      <div className="card__header"><span className="card__title">Install the app</span></div>
+      <div className="card__body stack" style={{ gap: 12 }}>
+        {state === "installed" ? (
+          <p className="text-small muted" style={{ margin: 0 }}>
+            You're using Synora as an installed app. It opens straight into your workspace and loads even offline.
+          </p>
+        ) : (
+          <>
+            <p className="text-small muted" style={{ margin: 0 }}>
+              Put Synora on your home screen or dock: it opens straight into your workspace, full screen,
+              and loads even when you're offline.
+            </p>
+            {state === "available" && (
+              <div className="row row--wrap" style={{ gap: 12 }}>
+                <button type="button" className="btn btn--primary" onClick={() => install.prompt()}>
+                  <Icon name="plus" size={16} /> Install Synora
+                </button>
+              </div>
+            )}
+            {state === "ios" && (
+              <p className="text-small" style={{ margin: 0 }}>
+                In Safari, tap <strong>Share</strong> and then <strong>Add to Home Screen</strong>.
+              </p>
+            )}
+            {state === "manual" && (
+              <p className="text-small" style={{ margin: 0 }}>
+                Use your browser's menu: <strong>Install Synora</strong> or <strong>Add to Home screen</strong>.
+                (In Safari on a Mac: <strong>File → Add to Dock</strong>.)
+              </p>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
 }
 
 function TextField({ label, id, value, onChange, placeholder = "", type = "text", maxLength = 120 }) {
@@ -389,6 +433,8 @@ export default function Settings() {
           </div>
 
           {/* ---- Account ---- */}
+          <InstallCard />
+
           <div className="card">
             <div className="card__header"><span className="card__title">Account</span></div>
             <div className="card__body stack" style={{ gap: 16 }}>

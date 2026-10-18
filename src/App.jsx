@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router";
 import AppLayout from "./layouts/AppLayout.jsx";
 import Landing from "./pages/landing/Landing.jsx";
@@ -16,6 +16,21 @@ import Achievements from "./pages/Achievements.jsx";
 import Notifications from "./pages/Notifications.jsx";
 import Settings from "./pages/Settings.jsx";
 import { applyStoredTheme } from "./lib/theme.js";
+import { session, profile } from "./lib/storage.js";
+
+/* Someone who is already signed in has no reason to see the landing or
+   sign-in pages: opening the site takes them straight back to their
+   workspace (or to onboarding, if that isn't finished). Decided once, when
+   the page opens — so signing in on /login still shows its "You're signed
+   in" screen. Each route gets its own `key`, so the check runs again on
+   every visit. */
+function GuestOnly({ children }) {
+  const [home] = useState(() => {
+    if (!session.isAuthed()) return null;
+    return profile.get().onboarded ? "/dashboard" : "/onboarding";
+  });
+  return home ? <Navigate to={home} replace /> : children;
+}
 
 export default function App() {
   const { pathname, hash } = useLocation();
@@ -33,9 +48,9 @@ export default function App() {
 
   return (
     <Routes>
-      <Route path="/" element={<Landing />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
+      <Route path="/" element={<GuestOnly key="landing"><Landing /></GuestOnly>} />
+      <Route path="/login" element={<GuestOnly key="login"><Login /></GuestOnly>} />
+      <Route path="/signup" element={<GuestOnly key="signup"><Signup /></GuestOnly>} />
       <Route path="/onboarding" element={<Onboarding />} />
       <Route element={<AppLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />

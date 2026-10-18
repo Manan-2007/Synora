@@ -115,7 +115,6 @@ export default function Topbar({ title, onMenuToggle }) {
               </span>
             </div>
             <Link className="menu-link" to="/settings"><Icon name="settings" size={16} />Settings</Link>
-            <Link className="menu-link" to="/"><Icon name="grid" size={16} />Landing page</Link>
             <button type="button" className="menu-link menu-link--danger" onClick={signOut}>
               <Icon name="logout" size={16} />Sign out
             </button>
