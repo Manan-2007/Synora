@@ -91,6 +91,7 @@ export default function Login() {
                 onChange={(e) => setShowPassword(e.target.checked)} />
               <label htmlFor="show-password">Show password</label>
             </span>
+            <Link className="auth-forgot" to="/forgot">Forgot password?</Link>
           </div>
 
           <button type="submit" className="btn btn--primary btn--lg btn--block" ref={submitRef} disabled={busy}>Sign in</button>

@@ -13,6 +13,10 @@
      POST /api/logout   end this browser's session
      GET  /api/data     every collection for the signed-in user
      POST /api/contact  store a message from the landing page's contact form
+     POST /api/password          change the password (signed in)
+     POST /api/account/delete    delete the account and everything in it (signed in)
+     POST /api/password/forgot   email a one-time reset link (Brevo)
+     POST /api/password/reset    set a new password with that link
      PUT  /api/data     save changes: { username, changes: { tasks: { upsert: [...], delete: [ids] }, ... } }
 
    Signed-in requests send "Authorization: Bearer <token>".
@@ -210,6 +214,111 @@ app.post("/api/contact", rateLimit, handle(async (req, res) => {
     throw err;
   }
   res.status(201).json({ ok: true });
+}));
+
+/* ---- Password & account ---- */
+
+/* The stored hash matches `key`, or — for an account still on the older key
+   — `legacyKey`. */
+async function keyMatches(userId, key, legacyKey) {
+  const [[u]] = await pool.query("SELECT password_hash FROM users WHERE id = ?", [userId]);
+  if (!u) return false;
+  if (KEY_RE.test(key || "") && (await bcrypt.compare(key, u.password_hash))) return true;
+  return KEY_RE.test(legacyKey || "") && (await bcrypt.compare(legacyKey, u.password_hash));
+}
+
+app.post("/api/password", requireAuth, rateLimit, handle(async (req, res) => {
+  const { currentKey, legacyKey, newKey } = req.body || {};
+  if (!KEY_RE.test(newKey || "")) return res.status(400).json({ error: "invalid" });
+  if (!(await keyMatches(req.userId, currentKey, legacyKey))) return res.status(401).json({ error: "wrong-password" });
+  await pool.query("UPDATE users SET password_hash = ? WHERE id = ?", [await bcrypt.hash(newKey, 10), req.userId]);
+  /* Every other browser signed in to this account is signed out. */
+  await pool.query("DELETE FROM sessions WHERE user_id = ? AND token <> ?", [req.userId, req.token]);
+  res.status(204).end();
+}));
+
+app.post("/api/account/delete", requireAuth, rateLimit, handle(async (req, res) => {
+  const { key, legacyKey } = req.body || {};
+  if (!(await keyMatches(req.userId, key, legacyKey))) return res.status(401).json({ error: "wrong-password" });
+  /* ON DELETE CASCADE removes everything the account owns. */
+  await pool.query("DELETE FROM users WHERE id = ?", [req.userId]);
+  res.status(204).end();
+}));
+
+/* Password reset by email, through Brevo (set BREVO_API_KEY and MAIL_FROM,
+   a sender address verified in Brevo). Only a SHA-256 of each token is
+   stored; a link works once, for 30 minutes. The reply never says whether
+   an account matched. */
+const RESET_MINUTES = 30;
+const sha256 = (s) => crypto.createHash("sha256").update(s).digest("hex");
+const emailReady = () => !!(process.env.BREVO_API_KEY && process.env.MAIL_FROM);
+
+async function sendResetEmail(user, link) {
+  const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: { "api-key": process.env.BREVO_API_KEY, "Content-Type": "application/json", accept: "application/json" },
+    body: JSON.stringify({
+      sender: { email: process.env.MAIL_FROM, name: "Synora" },
+      to: [{ email: user.email, name: user.first_name + " " + user.last_name }],
+      subject: "Reset your Synora password",
+      textContent: "Hi " + user.first_name + ",\n\nSomeone (hopefully you) asked to reset the password for the Synora account " +
+        user.username + ". Open this link within " + RESET_MINUTES + " minutes to choose a new one:\n\n" + link +
+        "\n\nIf it wasn't you, ignore this email: your password stays as it is.\n\n— Synora",
+      htmlContent: "<div style=\"font-family:Inter,Arial,sans-serif;font-size:15px;color:#22252B;line-height:1.6;max-width:480px\">" +
+        "<p>Hi " + escapeHTML(user.first_name) + ",</p>" +
+        "<p>Someone (hopefully you) asked to reset the password for the Synora account <strong>" + escapeHTML(user.username) + "</strong>.</p>" +
+        "<p><a href=\"" + link + "\" style=\"display:inline-block;padding:12px 20px;border-radius:10px;background:#53655C;color:#fff;text-decoration:none;font-weight:600\">Choose a new password</a></p>" +
+        "<p style=\"color:#5F6A70;font-size:13px\">The link works once, for " + RESET_MINUTES + " minutes. If it wasn't you, ignore this email: your password stays as it is.</p>" +
+        "<p style=\"color:#5F6A70;font-size:13px\">— Synora</p></div>",
+    }),
+  });
+  if (!res.ok) throw new Error("Brevo replied " + res.status);
+}
+
+function escapeHTML(s) {
+  return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+}
+
+app.post("/api/password/forgot", rateLimit, handle(async (req, res) => {
+  if (!emailReady()) return res.status(503).json({ error: "email-not-set-up" });
+  const who = String((req.body || {}).who || "").trim();
+  if (!who) return res.status(400).json({ error: "invalid" });
+  const [users] = await pool.query(
+    "SELECT id, username, first_name, last_name, email FROM users WHERE username = ? OR email = ? LIMIT 3",
+    [who, who],
+  );
+  const base = process.env.APP_URL || "https://" + req.get("host");
+  for (const user of users) {
+    const token = crypto.randomBytes(32).toString("hex");
+    await pool.query("DELETE FROM password_resets WHERE user_id = ? OR expires_at < NOW()", [user.id]);
+    await pool.query("INSERT INTO password_resets (token_hash, user_id, expires_at) VALUES (?, ?, NOW() + INTERVAL ? MINUTE)",
+      [sha256(token), user.id, RESET_MINUTES]);
+    const link = base + "/reset?u=" + encodeURIComponent(user.username) + "&token=" + token;
+    try {
+      await sendResetEmail(user, link);
+    } catch (err) {
+      console.error("Reset email failed:", err.message);
+    }
+  }
+  res.json({ ok: true });
+}));
+
+app.post("/api/password/reset", rateLimit, handle(async (req, res) => {
+  const { token, username, newKey } = req.body || {};
+  if (!/^[0-9a-f]{64}$/.test(token || "") || !KEY_RE.test(newKey || "") || !username) {
+    return res.status(400).json({ error: "invalid" });
+  }
+  const [rows] = await pool.query(
+    `SELECT r.user_id FROM password_resets r JOIN users u ON u.id = r.user_id
+     WHERE r.token_hash = ? AND r.expires_at > NOW() AND u.username = ?`,
+    [sha256(token), String(username)],
+  );
+  if (!rows.length) return res.status(410).json({ error: "link-expired" });
+  const userId = rows[0].user_id;
+  await pool.query("UPDATE users SET password_hash = ? WHERE id = ?", [await bcrypt.hash(newKey, 10), userId]);
+  await pool.query("DELETE FROM password_resets WHERE user_id = ?", [userId]);
+  await pool.query("DELETE FROM sessions WHERE user_id = ?", [userId]);   // sign out everywhere
+  res.status(204).end();
 }));
 
 app.post("/api/logout", requireAuth, handle(async (req, res) => {

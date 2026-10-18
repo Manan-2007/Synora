@@ -24,7 +24,7 @@ import { KEYS, readJSON, writeJSON, session, profile } from "./storage.js";
 import { fullName, EMAIL_RE } from "./util.js";
 import { demo } from "./demo.js";
 import { api } from "./api.js";
-import { adoptSession, refresh, uploadAll, withoutSync } from "./sync.js";
+import { adoptSession, refresh, uploadAll, withoutSync, isLinked, forgetLocally } from "./sync.js";
 
 /* The password's key: PBKDF2-SHA256 through the browser's own crypto, with
    the username as salt, so one key can't be reused across accounts and a
@@ -72,6 +72,14 @@ export async function ensureDemoAccount() {
   demo.ensureAccount(await deriveKey(demo.username, demo.password));
 }
 
+/* The password rules, shared by sign-up, change and reset. */
+export function passwordProblem(password) {
+  if (!password) return "Choose a password.";
+  if (password.length < 8) return "Use at least 8 characters.";
+  if (!/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) return "Include at least one letter and one number.";
+  return "";
+}
+
 /* Returns { field: message } for everything wrong — empty when valid. */
 export function validateSignup(v) {
   const errors = {};
@@ -86,9 +94,8 @@ export function validateSignup(v) {
   else if (!/^[a-zA-Z0-9_]{3,20}$/.test(v.username)) errors.username = "3–20 characters: letters, numbers and underscores only.";
   else if (findUser(v.username)) errors.username = "That username is already taken.";
 
-  if (!v.password) errors.password = "Choose a password.";
-  else if (v.password.length < 8) errors.password = "Use at least 8 characters.";
-  else if (!/[a-zA-Z]/.test(v.password) || !/[0-9]/.test(v.password)) errors.password = "Include at least one letter and one number.";
+  const pw = passwordProblem(v.password);
+  if (pw) errors.password = pw;
 
   if (v.confirm !== v.password) errors.confirm = "Passwords don't match.";
 
@@ -332,4 +339,91 @@ export function startAutoConnect() {
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") connect();
   });
+}
+
+/* ---- Changing the password, deleting the account, resetting ----
+   Each returns {} on success, or { field: message } (form, current, …). */
+
+function keyMatchesLocally(account, key, password) {
+  if (!account || !account.passHash) return false;
+  return isStrongKey(account.passHash) ? account.passHash === key : account.passHash === hash(password);
+}
+
+function setLocalKey(username, key) {
+  const users = getUsers();
+  const u = users.find((x) => x.username.toLowerCase() === username.toLowerCase());
+  if (!u) return;
+  u.passHash = key;
+  writeJSON(KEYS.users, users);
+}
+
+export async function changePassword(current, next) {
+  const username = session.username();
+  if (!username) return { form: "You're not signed in." };
+  if (demo.isCurrent()) return { form: "The demo account is shared, so its password can't be changed." };
+  const currentKey = await deriveKey(username, current);
+  const newKey = await deriveKey(username, next);
+
+  if (isLinked(username)) {
+    /* The database holds the password: it has to agree. */
+    const token = api.token();
+    if (!token) return { form: "You're offline right now. Connect to the internet to change your password." };
+    let res = null;
+    try { res = await api.changePassword(currentKey, hash(current), newKey, token); } catch { /* unreachable */ }
+    if (!res) return { form: "Couldn't reach the server. Try again in a moment." };
+    if (res.status === 401) return { current: "That isn't your current password." };
+    if (!res.ok) return { form: "Couldn't change the password right now. Try again in a moment." };
+  } else if (!keyMatchesLocally(findUser(username), currentKey, current)) {
+    return { current: "That isn't your current password." };
+  }
+  setLocalKey(username, newKey);
+  return {};
+}
+
+export async function deleteAccount(password) {
+  const username = session.username();
+  if (!username) return { form: "You're not signed in." };
+  if (demo.isCurrent()) return { form: "The demo account is shared, so it can't be deleted." };
+  const key = await deriveKey(username, password);
+
+  if (isLinked(username)) {
+    const token = api.token();
+    if (!token) return { form: "You're offline right now. Connect to the internet to delete your account." };
+    let res = null;
+    try { res = await api.deleteAccount(key, hash(password), token); } catch { /* unreachable */ }
+    if (!res) return { form: "Couldn't reach the server. Try again in a moment." };
+    if (res.status === 401) return { password: "That password isn't right." };
+    if (!res.ok) return { form: "Couldn't delete the account right now. Try again in a moment." };
+  } else if (!keyMatchesLocally(findUser(username), key, password)) {
+    return { password: "That password isn't right." };
+  }
+  /* Gone from the database; now from this browser too. */
+  api.clearToken();
+  forgetLocally(username);
+  session.signOut();
+  return {};
+}
+
+/* "Forgot password?": "sent" (always, whether or not an account matched),
+   "not-set-up" (no email service configured) or "error". */
+export async function requestReset(who) {
+  if (!(await api.available())) return "error";
+  try {
+    const res = await api.forgotPassword(who);
+    if (res.status === 503) return "not-set-up";
+    return res.ok ? "sent" : "error";
+  } catch {
+    return "error";
+  }
+}
+
+export async function resetPassword(username, token, password) {
+  const key = await deriveKey(username, password);
+  let res = null;
+  try { res = await api.resetPassword(token, username, key); } catch { /* unreachable */ }
+  if (!res) return { form: "Couldn't reach the server. Try again in a moment." };
+  if (res.status === 410) return { form: "This link has expired or was already used. Ask for a new one." };
+  if (!res.ok) return { form: "Couldn't reset the password right now. Try again in a moment." };
+  setLocalKey(username, key);
+  return {};
 }

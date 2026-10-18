@@ -4,6 +4,8 @@ import AppLayout from "./layouts/AppLayout.jsx";
 import Landing from "./pages/landing/Landing.jsx";
 import Login from "./pages/auth/Login.jsx";
 import Signup from "./pages/auth/Signup.jsx";
+import Forgot from "./pages/auth/Forgot.jsx";
+import Reset from "./pages/auth/Reset.jsx";
 import Onboarding from "./pages/onboarding/Onboarding.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Tasks from "./pages/Tasks.jsx";
@@ -51,6 +53,8 @@ export default function App() {
       <Route path="/" element={<GuestOnly key="landing"><Landing /></GuestOnly>} />
       <Route path="/login" element={<GuestOnly key="login"><Login /></GuestOnly>} />
       <Route path="/signup" element={<GuestOnly key="signup"><Signup /></GuestOnly>} />
+      <Route path="/forgot" element={<GuestOnly key="forgot"><Forgot /></GuestOnly>} />
+      <Route path="/reset" element={<Reset />} />
       <Route path="/onboarding" element={<Onboarding />} />
       <Route element={<AppLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />

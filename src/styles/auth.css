@@ -80,6 +80,9 @@
   margin-top: var(--space-24);
 }
 
+.auth-forgot { font-size: var(--text-small); font-weight: var(--weight-medium); color: var(--color-brand); }
+.auth-forgot:hover { text-decoration: underline; }
+
 .auth-options {
   display: flex;
   align-items: center;

@@ -13,6 +13,8 @@ import { setTheme } from "../lib/theme.js";
 import { clamp, EMAIL_RE } from "../lib/util.js";
 import { toast } from "../lib/toast.js";
 import { install } from "../lib/install.js";
+import { changePassword, deleteAccount, passwordProblem } from "../lib/auth.js";
+import { demo } from "../lib/demo.js";
 import ColorPicker from "../components/ColorPicker.jsx";
 import { nextColor, subjectVar } from "../lib/colors.js";
 import EmptyArt from "../components/EmptyArt.jsx";
@@ -141,6 +143,108 @@ function AvatarDialog() {
 function chooseTheme(value) {
   setTheme(value);
   profile.save({ appearance: value });
+}
+
+/* Change password: the current one, then the new one twice. */
+function PasswordForm() {
+  const close = useModalClose();
+  const [v, setV] = useState({ current: "", next: "", confirm: "" });
+  const [errors, setErrors] = useState({});
+  const [busy, setBusy] = useState(false);
+  const set = (k) => (e) => setV((x) => ({ ...x, [k]: e.target.value }));
+
+  async function submit() {
+    if (busy) return;
+    const found = {};
+    if (!v.current) found.current = "Enter your current password.";
+    const pw = passwordProblem(v.next);
+    if (pw) found.next = pw;
+    else if (v.next === v.current) found.next = "Choose a password different from the current one.";
+    if (v.confirm !== v.next) found.confirm = "Passwords don't match.";
+    setErrors(found);
+    if (Object.keys(found).length) return;
+    setBusy(true);
+    const res = await changePassword(v.current, v.next);
+    setBusy(false);
+    if (Object.keys(res).length) { setErrors(res); return; }
+    close();
+    toast.success("Password changed", "Other devices signed in to your account have been signed out.");
+  }
+
+  const field = (k, label, autoComplete, hint) => (
+    <div className={"field" + (errors[k] ? " is-invalid" : "")} style={{ margin: 0 }}>
+      <label className="field__label" htmlFor={"pw-" + k}>{label}</label>
+      <input className="input" type="password" id={"pw-" + k} autoComplete={autoComplete} value={v[k]} onChange={set(k)} />
+      {hint && <p className="field__hint">{hint}</p>}
+      <p className="field__error">{errors[k] || ""}</p>
+    </div>
+  );
+
+  return (
+    <>
+      <div className="modal__body">
+        <form className="stack" noValidate onSubmit={(e) => { e.preventDefault(); submit(); }}>
+          {errors.form && <p className="contact-form__failure" role="alert" style={{ margin: 0 }}>{errors.form}</p>}
+          {field("current", "Current password", "current-password")}
+          {field("next", "New password", "new-password", "At least 8 characters, with a letter and a number.")}
+          {field("confirm", "Confirm new password", "new-password")}
+          <button type="submit" hidden aria-hidden="true" tabIndex={-1}></button>
+        </form>
+      </div>
+      <div className="modal__footer">
+        <button type="button" className="btn btn--ghost" onClick={close}>Cancel</button>
+        <button type="button" className="btn btn--primary" onClick={submit} disabled={busy}>
+          {busy ? "Changing…" : "Change password"}
+        </button>
+      </div>
+    </>
+  );
+}
+
+/* Delete the account: permanent, so it asks for the password. */
+function DeleteForm({ onDeleted }) {
+  const close = useModalClose();
+  const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState({});
+  const [busy, setBusy] = useState(false);
+
+  async function submit() {
+    if (busy) return;
+    if (!password) { setErrors({ password: "Enter your password to confirm." }); return; }
+    setBusy(true);
+    const res = await deleteAccount(password);
+    setBusy(false);
+    if (Object.keys(res).length) { setErrors(res); return; }
+    close();
+    onDeleted();
+  }
+
+  return (
+    <>
+      <div className="modal__body">
+        <form className="stack" noValidate onSubmit={(e) => { e.preventDefault(); submit(); }}>
+          <p style={{ margin: 0 }}>
+            This permanently deletes your account and <strong>everything in it</strong> (tasks, notes, timetable,
+            grades, attendance and achievements) from the database and from every device. It can't be undone.
+          </p>
+          {errors.form && <p className="contact-form__failure" role="alert" style={{ margin: 0 }}>{errors.form}</p>}
+          <div className={"field" + (errors.password ? " is-invalid" : "")} style={{ margin: 0 }}>
+            <label className="field__label" htmlFor="del-password">Your password</label>
+            <input className="input" type="password" id="del-password" autoComplete="current-password"
+              value={password} onChange={(e) => setPassword(e.target.value)} />
+            <p className="field__error">{errors.password || ""}</p>
+          </div>
+          <button type="submit" hidden aria-hidden="true" tabIndex={-1}></button>
+        </form>
+      </div>
+      <div className="modal__footer">
+        <button type="button" className="btn btn--ghost" onClick={close}>Keep my account</button>
+        <button type="button" className="btn btn--danger" onClick={submit} disabled={busy}>
+          {busy ? "Deleting…" : "Delete my account"}
+        </button>
+      </div>
+    </>
+  );
 }
 
 /* Install Synora as an app (home screen / dock): opens straight into the
@@ -458,7 +562,32 @@ export default function Settings() {
               </p>
               <div className="row row--wrap" style={{ gap: 12 }}>
                 <button type="button" className="btn btn--ghost" onClick={signOut}>Sign out</button>
+                {!demo.isCurrent() && (
+                  <button type="button" className="btn btn--ghost"
+                    onClick={() => modal.open({ title: "Change password", size: "sm", content: <PasswordForm /> })}>
+                    Change password
+                  </button>
+                )}
               </div>
+              {demo.isCurrent() ? (
+                <p className="text-small muted" style={{ margin: 0 }}>
+                  This is the shared demo account, so its password can't be changed and it can't be deleted.
+                </p>
+              ) : (
+                <div className="danger-zone">
+                  <div>
+                    <strong>Delete account</strong>
+                    <p className="text-small muted" style={{ margin: 0 }}>Remove your account and all of its data, everywhere.</p>
+                  </div>
+                  <button type="button" className="btn btn--danger btn--sm"
+                    onClick={() => modal.open({
+                      title: "Delete your account?", size: "sm",
+                      content: <DeleteForm onDeleted={() => { toast("Your account has been deleted"); navigate("/"); }} />,
+                    })}>
+                    Delete account
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

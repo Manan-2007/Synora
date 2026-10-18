@@ -86,6 +86,11 @@ export const api = {
   save: (username, changes, token) => request("PUT", "/data", { username, changes }, token),
   load: (token) => request("GET", "/data", undefined, token),
   contact: (message) => request("POST", "/contact", message),
+  changePassword: (currentKey, legacyKey, newKey, token) =>
+    request("POST", "/password", { currentKey, legacyKey, newKey }, token),
+  deleteAccount: (key, legacyKey, token) => request("POST", "/account/delete", { key, legacyKey }, token),
+  forgotPassword: (who) => request("POST", "/password/forgot", { who }),
+  resetPassword: (token, username, newKey) => request("POST", "/password/reset", { token, username, newKey }),
 
   /* Last-chance save while the page is closing: keepalive lets the request
      finish after the tab is gone. */

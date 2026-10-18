@@ -309,15 +309,20 @@ async function endSession(username) {
   }
   if (!isLinked(username)) return;
 
-  const users = readJSON(KEYS.users, []);
-  const kept = users.filter((u) => !same(u.username, username));
-  const pending = hasPending(username);
-  if (pending) {
+  if (hasPending(username)) {
+    const users = readJSON(KEYS.users, []);
     users.forEach((u) => { if (same(u.username, username)) delete u.passHash; });
     localStorage.setItem(KEYS.users, JSON.stringify(users));
     return;
   }
-  localStorage.setItem(KEYS.users, JSON.stringify(kept));
+  forgetLocally(username);
+}
+
+/* Remove an account from this browser entirely: its record, key,
+   workspace and sync state. */
+export function forgetLocally(username) {
+  const users = readJSON(KEYS.users, []);
+  localStorage.setItem(KEYS.users, JSON.stringify(users.filter((u) => !same(u.username, username))));
   const prefixes = ["synora:" + username + ":", "synora-base:" + username.toLowerCase(), legacyUnsyncedKey(username)];
   Object.keys(localStorage)
     .filter((k) => prefixes.some((p) => k === p || k.startsWith(p)))
