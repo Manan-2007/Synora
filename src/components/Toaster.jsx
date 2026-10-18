@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from "react";
 import Icon from "./Icon.jsx";
-import { subscribeToasts, getToasts } from "../lib/toast.js";
+import { subscribeToasts, getToasts, dismissToast } from "../lib/toast.js";
 
 const ICON_FOR = { success: "checkCircle", error: "alert", info: "info" };
 
@@ -10,7 +10,8 @@ export default function Toaster() {
   return (
     <div className="toast-region" aria-live="polite">
       {toasts.map((t) => (
-        <div key={t.id} className={"toast toast--" + t.type + (t.leaving ? " is-leaving" : "")} role="status">
+        <div key={t.id} className={"toast toast--" + t.type + (t.leaving ? " is-leaving" : "")} role="status"
+          onClick={() => dismissToast(t.id)}>
           <span className="toast__icon"><Icon name={ICON_FOR[t.type] || "info"} size={18} /></span>
           <span className="toast__body">
             <strong>{t.title}</strong>

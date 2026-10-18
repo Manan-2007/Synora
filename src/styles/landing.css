@@ -1547,3 +1547,119 @@ a.contact-item__value:hover { color: var(--color-brand); }
 @media (max-width: 620px) {
   .contact-form-card { padding: var(--space-24); }
 }
+
+/* =========================================================
+   GLASS — the iOS-style look (landing)
+   A slowly drifting colour wash behind everything; the header,
+   hero cards, stats and feature tiles are frosted glass over it.
+   Overrides only: the layout rules above stay as they were.
+   ========================================================= */
+
+.ambient { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: var(--app-ambient); }
+.ambient i { position: absolute; width: 48vmax; height: 48vmax; border-radius: 50%; filter: blur(70px); opacity: .55;
+  animation: ambient-drift 28s ease-in-out infinite alternate; }
+.ambient i:nth-child(1) { top: -18vmax; left: -12vmax; background: rgba(126, 160, 138, .7); }
+.ambient i:nth-child(2) { top: -14vmax; right: -16vmax; background: rgba(214, 180, 160, .75); animation-duration: 34s; animation-delay: -8s; }
+.ambient i:nth-child(3) { bottom: -22vmax; right: -6vmax; background: rgba(150, 172, 214, .55); animation-duration: 31s; animation-delay: -15s; }
+.ambient i:nth-child(4) { bottom: -20vmax; left: -14vmax; background: rgba(190, 212, 182, .6); animation-duration: 37s; animation-delay: -4s; }
+[data-theme="dark"] .ambient i { opacity: .26; }
+@keyframes ambient-drift { to { transform: translate(7vmax, 5vmax) scale(1.12); } }
+@media (prefers-reduced-motion: reduce) { .ambient i { animation: none; } }
+
+/* Floating capsule header */
+.site-header {
+  top: 12px;
+  width: min(calc(var(--container-max) + 16px), calc(100% - 24px));
+  margin: 12px auto 0;
+  border: 1px solid var(--glass-border);
+  border-radius: 26px;
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-highlight), 0 0 0 1px var(--glass-edge), var(--glass-shadow);
+}
+.site-header .container { padding-inline: 18px; }
+.site-header:has(.nav-checkbox:checked) { background: var(--glass-bg-strong); }
+.nav-panel { border-top-color: color-mix(in srgb, var(--color-border) 60%, transparent); }
+.nav-links a { border-radius: var(--radius-pill); transition: color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out); }
+.nav-links a:hover { background: var(--glass-tint); }
+.btn { border-radius: var(--radius-pill); }
+.btn--primary {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-brand) 82%, #fff) 0%, var(--color-brand) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28), 0 10px 24px -10px color-mix(in srgb, var(--color-brand) 85%, transparent);
+}
+.btn--ghost, .icon-btn {
+  background: var(--glass-tint);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  backdrop-filter: blur(14px) saturate(160%);
+  border-color: var(--glass-border);
+  box-shadow: var(--glass-highlight), 0 0 0 1px var(--glass-edge);
+}
+.icon-btn { border-radius: 50%; }
+
+/* Hero: the word "calm" in a soft gradient; frosted cards over the photo */
+.hero h1 em {
+  background: linear-gradient(100deg, var(--color-brand) 10%, #86A592 50%, var(--color-accent-bright) 95%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.hero-photo { border-radius: 34px; box-shadow: var(--glass-shadow-lg); }
+.hero-card, .hero-badge, .hero-chip {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  backdrop-filter: blur(22px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-highlight), 0 0 0 1px var(--glass-edge), var(--glass-shadow-lg);
+}
+.hero-card { border-radius: 24px; }
+.hero-card .task { background: color-mix(in srgb, var(--color-surface) 55%, transparent); border-radius: 14px; }
+.hero-chip { position: absolute; z-index: 2; display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 20px;
+  animation: rise 700ms var(--ease-out) both, float 7s ease-in-out 1s infinite alternate; }
+.hero-chip strong { display: block; font-family: var(--font-heading); font-size: 1.25rem; line-height: 1.1; }
+.hero-chip__label { display: block; font-size: 0.6875rem; font-weight: var(--weight-semibold); color: var(--color-text-muted); }
+.hero-chip--cgpa { top: -22px; right: 18px; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 132px; animation-delay: 350ms, 1s; }
+.hero-chip__bar { display: block; width: 100%; height: 6px; border-radius: 99px; background: color-mix(in srgb, var(--color-text) 10%, transparent); overflow: hidden; }
+.hero-chip__bar span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--color-brand), var(--color-accent-bright)); }
+.hero-chip--focus { bottom: 54px; left: -28px; animation-delay: 450ms, 2.2s; }
+.hero-chip__ring { width: 34px; height: 34px; border-radius: 50%; flex: none;
+  background: conic-gradient(var(--color-brand) 0 72%, color-mix(in srgb, var(--color-text) 10%, transparent) 72% 100%);
+  -webkit-mask: radial-gradient(circle, transparent 11px, #000 12px); mask: radial-gradient(circle, transparent 11px, #000 12px); }
+@keyframes float { to { transform: translateY(-8px); } }
+@media (prefers-reduced-motion: reduce) { .hero-chip { animation: none; } }
+@media (max-width: 900px) { .hero-chip--focus { left: 8px; } .hero-chip--cgpa { right: 8px; } }
+
+/* Stats: one frosted panel instead of a white band */
+.stats { background: transparent; border-block: 0; }
+.stats .container {
+  width: min(var(--container-max), calc(100% - 32px));
+  padding-inline: var(--space-24);
+  border: 1px solid var(--glass-border);
+  border-radius: 30px;
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-highlight), 0 0 0 1px var(--glass-edge), var(--glass-shadow);
+}
+.stat strong { background: linear-gradient(180deg, var(--color-accent), var(--color-brand)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.stat + .stat { border-left-color: color-mix(in srgb, var(--color-border) 60%, transparent); }
+
+/* Feature tiles, steps, FAQ, preview, contact: frosted panels */
+.card, .how-step, .step, .faq-item, .shots__stage, .contact-form-card {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-highlight), 0 0 0 1px var(--glass-edge), var(--glass-shadow);
+}
+.card, .how-step, .step, .contact-form-card { border-radius: 26px; }
+.shots__stage { border-radius: 30px; padding: 10px; }
+.shots__stage img { border-radius: 22px; }
+.card:hover { border-color: var(--glass-border); box-shadow: var(--glass-highlight), 0 0 0 1px var(--glass-edge), var(--glass-shadow-lg); transform: translateY(-4px); }
+.card__icon { width: 48px; height: 48px; border-radius: 15px; color: #fff;
+  background: linear-gradient(160deg, color-mix(in srgb, var(--color-brand) 70%, #fff), var(--color-brand));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), 0 8px 18px -8px color-mix(in srgb, var(--color-brand) 80%, transparent); }
+.card__icon--taupe { color: #fff; background: linear-gradient(160deg, #D2B5A3, #A07E6A); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), 0 8px 18px -8px rgba(160, 126, 106, .8); }
+.card__icon--ink { color: #fff; background: linear-gradient(160deg, #9AA8C8, #5F6E93); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), 0 8px 18px -8px rgba(95, 110, 147, .8); }
+.faq-item { border-radius: 20px; }
+@media (max-width: 640px) { .hero-chip--focus { display: none; } .hero-chip--cgpa { top: -16px; } }

@@ -27,6 +27,8 @@ if (typeof window !== "undefined") {
   }
 }
 
+const DISMISS_KEY = "synora-install-dismissed";
+
 export const install = {
   /* "installed" (running as the app), "available" (we can show the
      browser's prompt), "ios" (Add to Home Screen by hand) or "manual". */
@@ -36,6 +38,22 @@ export const install = {
     const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) ||
       (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
     return ios ? "ios" : "manual";
+  },
+  /* On iPhone and iPad: which browser, since each puts its Share button
+     somewhere else. "safari" | "chrome" | "other". */
+  iosBrowser() {
+    const ua = navigator.userAgent;
+    if (/CriOS/i.test(ua)) return "chrome";
+    if (/FxiOS|EdgiOS|OPiOS/i.test(ua)) return "other";
+    return "safari";
+  },
+  /* The dashboard's "add to home screen" card, until it's closed. */
+  dismissed() {
+    try { return localStorage.getItem(DISMISS_KEY) === "1"; } catch { return false; }
+  },
+  dismiss() {
+    try { localStorage.setItem(DISMISS_KEY, "1"); } catch { /* storage blocked */ }
+    notify();
   },
   subscribe(fn) {
     listeners.add(fn);

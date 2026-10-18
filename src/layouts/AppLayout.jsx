@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } fr
 import { Navigate, Outlet, useLocation } from "react-router";
 import Sidebar from "./Sidebar.jsx";
 import Topbar from "./Topbar.jsx";
+import TabBar from "./TabBar.jsx";
 import Toaster from "../components/Toaster.jsx";
 import CommandPalette from "../components/CommandPalette.jsx";
 import { ModalProvider } from "../components/modal/ModalProvider.jsx";
@@ -82,6 +83,7 @@ function AppShell({ title }) {
           </main>
         </div>
       </div>
+      <TabBar onMore={() => setNavOpen(true)} />
       <div className="drawer-backdrop" onClick={() => setNavOpen(false)} />
       <CommandPalette />
       <Toaster />

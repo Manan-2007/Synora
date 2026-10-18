@@ -111,6 +111,27 @@
   /* ---- Focus ---- */
   --focus-ring: 0 0 0 3px rgba(83, 101, 92, .28);
 
+  /* ---- Glass (the app's frosted, iOS-style surfaces) ----
+     Panels are translucent and blur what's behind them; the ambient
+     colour wash below gives them something to blur. */
+  --glass-bg: rgba(255, 255, 255, .58);
+  --glass-bg-strong: rgba(255, 255, 255, .80);
+  --glass-bg-hover: rgba(255, 255, 255, .78);
+  --glass-tint: rgba(255, 255, 255, .42);          /* chips, inputs, quiet buttons */
+  --glass-border: rgba(255, 255, 255, .75);
+  --glass-edge: rgba(34, 37, 43, .07);             /* the hairline outside the light edge */
+  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, .9), inset 0 -1px 0 rgba(255, 255, 255, .25);
+  --glass-shadow: 0 1px 2px rgba(34, 37, 43, .04), 0 10px 32px -8px rgba(40, 52, 46, .14);
+  --glass-shadow-lg: 0 2px 6px rgba(34, 37, 43, .05), 0 28px 70px -18px rgba(40, 52, 46, .28);
+  --glass-blur: blur(24px) saturate(180%);
+  --glass-radius: 22px;
+  --app-ambient:
+    radial-gradient(42rem 32rem at 8% -6%, rgba(126, 160, 138, .40), transparent 62%),
+    radial-gradient(38rem 30rem at 96% 2%, rgba(214, 186, 168, .48), transparent 64%),
+    radial-gradient(44rem 34rem at 78% 96%, rgba(150, 172, 214, .30), transparent 66%),
+    radial-gradient(36rem 30rem at 6% 92%, rgba(196, 214, 190, .34), transparent 64%),
+    linear-gradient(180deg, #F4F3F0 0%, #EEEDEA 100%);
+
   /* =======================================================
      The tokens below are theme-independent.
      ======================================================= */
@@ -256,4 +277,20 @@
   --shadow-xl: 0 24px 60px rgba(0, 0, 0, .5);
 
   --focus-ring: 0 0 0 3px rgba(143, 166, 151, .35);
+
+  --glass-bg: rgba(36, 40, 47, .52);
+  --glass-bg-strong: rgba(30, 33, 39, .82);
+  --glass-bg-hover: rgba(48, 53, 61, .62);
+  --glass-tint: rgba(255, 255, 255, .06);
+  --glass-border: rgba(255, 255, 255, .10);
+  --glass-edge: rgba(0, 0, 0, .35);
+  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, .08), inset 0 -1px 0 rgba(255, 255, 255, .02);
+  --glass-shadow: 0 1px 2px rgba(0, 0, 0, .25), 0 12px 36px -10px rgba(0, 0, 0, .55);
+  --glass-shadow-lg: 0 2px 6px rgba(0, 0, 0, .3), 0 30px 80px -20px rgba(0, 0, 0, .7);
+  --app-ambient:
+    radial-gradient(42rem 32rem at 8% -6%, rgba(92, 128, 106, .34), transparent 62%),
+    radial-gradient(38rem 30rem at 96% 2%, rgba(140, 112, 98, .26), transparent 64%),
+    radial-gradient(44rem 34rem at 78% 96%, rgba(84, 100, 150, .26), transparent 66%),
+    radial-gradient(36rem 30rem at 6% 92%, rgba(70, 100, 84, .22), transparent 64%),
+    linear-gradient(180deg, #121418 0%, #0F1114 100%);
 }

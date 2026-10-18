@@ -6,11 +6,13 @@ import TaskRow from "../components/tasks/TaskRow.jsx";
 import { useTaskForm } from "../components/tasks/TaskForm.jsx";
 import useStore from "../hooks/useStore.js";
 import { profile, store } from "../lib/storage.js";
-import { derive, streak } from "../lib/engine.js";
+import { derive, streak, achievements } from "../lib/engine.js";
 import { allTasks, toggleComplete } from "../lib/tasks.js";
 import { daysUntil, relativeDay, parseISODate, clamp, plural } from "../lib/util.js";
 import { subjectVar } from "../lib/colors.js";
 import EmptyArt from "../components/EmptyArt.jsx";
+import { InstallBanner } from "../components/InstallGuide.jsx";
+import { openPalette } from "../components/CommandPalette.jsx";
 import { overall } from "../lib/semesters.js";
 import { classesToMark, markClass } from "../lib/attendance.js";
 import { toast } from "../lib/toast.js";
@@ -212,17 +214,6 @@ function StatCard({ label, icon, value, foot, valueClass }) {
   );
 }
 
-function QuickAction({ label, icon, to, onClick }) {
-  const inner = (
-    <>
-      <span className="quick-action__icon"><Icon name={icon} size={18} /></span>
-      <span className="quick-action__label">{label}</span>
-    </>
-  );
-  return to
-    ? <Link className="quick-action" to={to}>{inner}</Link>
-    : <button className="quick-action" type="button" onClick={onClick}>{inner}</button>;
-}
 
 function LegendRow({ color, label, count }) {
   return (
@@ -243,6 +234,7 @@ export default function Dashboard() {
   const name = p.firstName || p.username || "there";
   const stats = derive.taskStats();
   const streakDays = streak.current();
+  const level = achievements.summary();
   const classes = derive.todaysClasses();
   const upcoming = derive.upcomingDeadlines(5);
   const att = derive.attendance();
@@ -285,18 +277,39 @@ export default function Dashboard() {
 
         {p.onboarded && <GettingStarted />}
         <AttendancePrompt />
+        <InstallBanner />
 
-        <div className="dash-hero">
-          <UserAvatar size={52} className="avatar--lg" />
-          <div>
-            <div className="dash-hero__greet">{greeting(now) + ", " + name}</div>
-            {course && <div className="dash-hero__course">{course}</div>}
-            <div className="dash-hero__sub">{heroSub(stats)}</div>
+        <section className="dash-hero" aria-label="Today">
+          <div className="dash-hero__top">
+            <UserAvatar size={56} className="avatar--lg" />
+            <div className="dash-hero__text">
+              <p className="dash-hero__date">{now.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" })}</p>
+              <h2 className="dash-hero__greet">{greeting(now) + ", " + name}</h2>
+              {course && <div className="dash-hero__course">{course}</div>}
+              <div className="dash-hero__sub">{heroSub(stats)}</div>
+            </div>
+            <div className="dash-hero__streak">
+              <span className="pill"><Icon name="flame" size={14} /><strong>{streakDays}</strong> day streak</span>
+              <Link className="pill pill--level" to="/achievements" aria-label={"Level " + level.level + ", " + level.title + ". See achievements"}>
+                <Icon name="star" size={14} /><strong>Lv {level.level}</strong> {level.title}
+              </Link>
+            </div>
           </div>
-          <div className="dash-hero__streak">
-            <span className="pill"><Icon name="flame" size={14} /><strong>{streakDays}</strong> day streak</span>
+          <div className="dash-quick">
+            <button type="button" className="dash-quick__item" onClick={() => openTaskForm(null)}>
+              <span className="dash-quick__icon"><Icon name="plus" size={20} /></span>New task
+            </button>
+            <Link className="dash-quick__item" to="/focus">
+              <span className="dash-quick__icon"><Icon name="timer" size={20} /></span>Focus
+            </Link>
+            <Link className="dash-quick__item" to="/notes?new=1">
+              <span className="dash-quick__icon"><Icon name="note" size={20} /></span>New note
+            </Link>
+            <button type="button" className="dash-quick__item" onClick={openPalette}>
+              <span className="dash-quick__icon"><Icon name="search" size={20} /></span>Search
+            </button>
           </div>
-        </div>
+        </section>
 
         <div className="stat-grid" style={{ marginTop: 24 }}>
           <StatCard label="Total tasks" icon="check" value={stats.total} foot={stats.completed + " completed"} />
@@ -355,16 +368,22 @@ export default function Dashboard() {
             </div>
 
             <div className="card">
-              <div className="card__header"><span className="card__title">Quick actions</span></div>
-              <div className="card__body">
-                <div className="quick-actions">
-                  <QuickAction label="Add task" icon="plus" onClick={() => openTaskForm(null)} />
-                  <QuickAction label="Add note" icon="note" to="/notes" />
-                  <QuickAction label="Calendar" icon="calendar" to="/calendar" />
-                  <QuickAction label="Attendance" icon="users" to="/attendance" />
-                  <QuickAction label="CGPA" icon="chart" to="/cgpa" />
-                  <QuickAction label="Timetable" icon="clock" to="/timetable" />
-                </div>
+              <div className="card__header">
+                <span className="card__title">Next badges</span>
+                <Link className="card__link" to="/achievements">All badges</Link>
+              </div>
+              <div className="card__body stack" style={{ gap: 14 }}>
+                {achievements.nextUp(3).map((a) => (
+                  <div key={a.id} className="dash-badge">
+                    <span className={"ach-badge ach-badge--t" + a.tier}><Icon name={a.icon} size={18} /></span>
+                    <div className="dash-badge__body">
+                      <strong>{a.title}</strong>
+                      <span>{a.desc}</span>
+                      <div className="meter"><span className="meter__fill" style={{ width: Math.round((a.current / a.goal) * 100) + "%" }}></span></div>
+                    </div>
+                    <span className="dash-badge__xp">+{a.xp} XP</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>

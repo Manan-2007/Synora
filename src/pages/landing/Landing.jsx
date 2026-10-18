@@ -101,7 +101,7 @@ const FAQ = [
   { q: "Where is my data stored?",
     a: "In Synora's database, linked to your account — so signing in on another browser or device brings your whole workspace with you. A copy is also kept in your browser so every page opens instantly. Passwords are stored only as a secure hash, never as plain text." },
   { q: "Does it work on mobile?",
-    a: "Yes. Synora is responsive and runs in any modern mobile browser. Sign in on your phone with the same account and your workspace is already there." },
+    a: "Yes. Synora is built for phones too, and you can add it to your home screen so it opens like an app, full screen and even offline. Sign in on your phone with the same account and your workspace is already there." },
 ];
 
 export default function Landing() {
@@ -120,6 +120,9 @@ export default function Landing() {
   return (
     <>
       <SplashLoader />
+
+      {/* The soft, slowly drifting colour wash the glass panels sit on. */}
+      <div className="ambient" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
 
       <a className="skip-link" href="#main">Skip to content</a>
 
@@ -143,7 +146,7 @@ export default function Landing() {
               <p className="hero-micro">
                 <span><CheckMark size={15} />Free to use</span>
                 <span><CheckMark size={15} />Sign up in under a minute</span>
-                <span><CheckMark size={15} />Runs in any browser</span>
+                <span><CheckMark size={15} />Installs on your phone</span>
               </p>
             </div>
 
@@ -160,6 +163,17 @@ export default function Landing() {
                   <path d="m12 3 2.4 5.5 6 .5-4.5 4 1.3 5.9L12 15.8 6.8 18.9 8.1 13l-4.5-4 6-.5L12 3Z" />
                 </svg>
                 6-day streak
+              </div>
+
+              <div className="hero-chip hero-chip--cgpa" aria-hidden="true">
+                <span className="hero-chip__label">Overall CGPA</span>
+                <strong>8.42</strong>
+                <span className="hero-chip__bar"><span style={{ width: "84%" }}></span></span>
+              </div>
+
+              <div className="hero-chip hero-chip--focus" aria-hidden="true">
+                <span className="hero-chip__ring"></span>
+                <span><strong>18:42</strong><span className="hero-chip__label">Focus · DBMS</span></span>
               </div>
 
               <div className="hero-card" aria-hidden="true">
@@ -220,7 +234,8 @@ export default function Landing() {
             </ul>
 
             <p className="features-note">
-              Plus a unified dashboard, light &amp; dark themes, and your data kept private to your account.
+              Plus a focus timer, ⌘K search, reminders, badges to earn, light &amp; dark themes, and an app you can
+              put on your home screen.
             </p>
           </div>
         </section>

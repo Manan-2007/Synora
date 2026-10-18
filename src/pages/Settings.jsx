@@ -13,6 +13,7 @@ import { setTheme } from "../lib/theme.js";
 import { clamp, EMAIL_RE } from "../lib/util.js";
 import { toast } from "../lib/toast.js";
 import { install } from "../lib/install.js";
+import { useInstall } from "../components/InstallGuide.jsx";
 import { reminderState, subscribeReminders, enableReminders, disableReminders, sendTestReminder } from "../lib/reminders.js";
 import { changePassword, deleteAccount, passwordProblem } from "../lib/auth.js";
 import { demo } from "../lib/demo.js";
@@ -252,6 +253,7 @@ function DeleteForm({ onDeleted }) {
    workspace, full screen, and loads even offline. */
 function InstallCard() {
   const state = useSyncExternalStore(install.subscribe, install.state);
+  const start = useInstall();
   return (
     <div className="card">
       <div className="card__header"><span className="card__title">Install the app</span></div>
@@ -266,17 +268,12 @@ function InstallCard() {
               Put Synora on your home screen or dock: it opens straight into your workspace, full screen,
               and loads even when you're offline.
             </p>
-            {state === "available" && (
+            {(state === "available" || state === "ios") && (
               <div className="row row--wrap" style={{ gap: 12 }}>
-                <button type="button" className="btn btn--primary" onClick={() => install.prompt()}>
-                  <Icon name="plus" size={16} /> Install Synora
+                <button type="button" className="btn btn--primary" onClick={start}>
+                  <Icon name="plus" size={16} /> {state === "ios" ? "Add to Home Screen" : "Install Synora"}
                 </button>
               </div>
-            )}
-            {state === "ios" && (
-              <p className="text-small" style={{ margin: 0 }}>
-                In Safari, tap <strong>Share</strong> and then <strong>Add to Home Screen</strong>.
-              </p>
             )}
             {state === "manual" && (
               <p className="text-small" style={{ margin: 0 }}>

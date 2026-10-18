@@ -154,7 +154,7 @@ flowchart LR
 
 ### 🔔 Reminders, badges & notifications
 - Optional **browser reminders**: 10 minutes before each class, and a morning note of what's due.
-- **7 badges** that unlock as you work, and one notification centre for deadlines, attendance and badges.
+- **33 badges** in bronze, silver and gold, earning XP and levels, with *Up next* showing what's closest. One notification centre for deadlines, attendance and badges.
 
 </td>
 </tr>
@@ -169,9 +169,9 @@ flowchart LR
 </td>
 <td valign="top">
 
-### 📱 Installable, light & dark
-- **Install it** like an app (home screen or dock). It opens instantly and works offline.
-- Two hand-tuned themes from one set of design tokens; layouts for phone, tablet and desktop.
+### 📱 Installable, glassy, light & dark
+- **Install it** like an app (home screen or dock, with step-by-step help on iPhone). It opens instantly and works offline.
+- A frosted-glass, iOS-style look in two hand-tuned themes, with a floating tab bar on phones.
 - A *Get started* checklist and friendly illustrations whenever a page is empty.
 
 </td>
@@ -271,7 +271,7 @@ The screens below come from the live app, signed in to the demo account.
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dark/achievements.webp">
   <img alt="Achievements" src="docs/screenshots/light/achievements.webp">
 </picture>
-<p align="center"><b>Achievements</b>: badges earned by actually studying</p>
+<p align="center"><b>Achievements</b>: 33 badges, XP and levels</p>
 </td>
 <td>
 <picture>

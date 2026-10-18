@@ -27,6 +27,16 @@ export function clearToasts() {
   emit();
 }
 
+/* Tapping a toast puts it away early. */
+export function dismissToast(id) {
+  toasts = toasts.map((t) => (t.id === id ? { ...t, leaving: true } : t));
+  emit();
+  window.setTimeout(() => {
+    toasts = toasts.filter((t) => t.id !== id);
+    emit();
+  }, LEAVE_MS);
+}
+
 /* toast(title, { type: "info" | "success" | "error", message, duration }) */
 export function toast(title, opts = {}) {
   const id = nextId++;
