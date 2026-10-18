@@ -18,7 +18,7 @@
   ],
   "headers": [
     {
-      "source": "/((?!icontest/a\\.html$|icons/|apple-touch-icon|favicon).*)",
+      "source": "/((?!icontest/[ad]\\.html$|icons/|apple-touch-icon|favicon).*)",
       "headers": [
         {
           "key": "Content-Security-Policy",
