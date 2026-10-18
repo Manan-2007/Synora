@@ -12,7 +12,6 @@ import { daysUntil, relativeDay, parseISODate, clamp, plural, toISODate } from "
 import { subjectVar } from "../lib/colors.js";
 import EmptyArt from "../components/EmptyArt.jsx";
 import { InstallBanner } from "../components/InstallGuide.jsx";
-import { openPalette } from "../components/CommandPalette.jsx";
 import Tour from "../components/Tour.jsx";
 import { overall } from "../lib/semesters.js";
 import { classesToMark, markClass } from "../lib/attendance.js";
@@ -363,9 +362,9 @@ export default function Dashboard() {
             <Link className="dash-quick__item" to="/notes?new=1">
               <span className="dash-quick__icon"><Icon name="note" size={20} /></span>New note
             </Link>
-            <button type="button" className="dash-quick__item" onClick={openPalette}>
-              <span className="dash-quick__icon"><Icon name="search" size={20} /></span>Search
-            </button>
+            <Link className="dash-quick__item" to="/attendance">
+              <span className="dash-quick__icon"><Icon name="users" size={20} /></span>Attendance
+            </Link>
           </div>
         </section>
 

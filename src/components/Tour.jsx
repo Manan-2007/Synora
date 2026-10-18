@@ -33,7 +33,7 @@ function markDone() {
 const STEPS = [
   { title: "Welcome to Synora 👋", text: "A 30-second look around. Use the arrow keys, or tap Next." },
   { target: ".dash-hero__top", title: "Your day at a glance", text: "The date, what's due, your streak and your level, all in one place." },
-  { target: ".dash-quick", title: "Quick actions", text: "Add a task or note, start a focus session, or search, from anywhere on the dashboard." },
+  { target: ".dash-quick", title: "Quick actions", text: "Add a task or note, start a focus session, or jump to attendance, right from the dashboard." },
   { target: ".topbar-search", title: "Search everything", text: "Find any task, note, subject or page. On a keyboard, press ⌘K or Ctrl+K." },
   { target: ".sidebar__nav", title: "Every page", text: "Tasks, calendar, timetable, notes, focus timer, CGPA and attendance live here." },
   { target: ".tabbar", title: "Your most-used pages", text: "Home, tasks, calendar and focus are one tap away. More opens everything else." },
