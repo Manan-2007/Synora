@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
-import { Link } from "react-router";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Link, useSearchParams } from "react-router";
 import Icon from "../../components/Icon.jsx";
 import { useModal, useModalClose } from "../../components/modal/ModalProvider.jsx";
 import { useClassForm } from "./ClassForm.jsx";
@@ -10,6 +10,7 @@ import { DAYS, todayName, allClasses, getClass, removeClass, timeLabel } from ".
 import { subjectVar } from "../../lib/colors.js";
 import EmptyArt from "../../components/EmptyArt.jsx";
 import { exportCalendar } from "../../lib/ics.js";
+import { useScanTimetable } from "./ScanTimetable.jsx";
 
 /* A weekly class schedule. Desktop shows a 7-day grid; on small screens
    the CSS stacks each day into its own card. */
@@ -191,7 +192,18 @@ export default function Timetable() {
   useStore();
   const openClassForm = useClassForm();
   const openSetup = useTimetableSetup();
+  const openScan = useScanTimetable();
   const list = allClasses();
+
+  /* /timetable?scan=1 (the dashboard's weekly check) opens the scanner. */
+  const [params, setParams] = useSearchParams();
+  const handled = useRef(false);
+  useEffect(() => {
+    if (params.get("scan") !== "1" || handled.current) return;
+    handled.current = true;
+    setParams({}, { replace: true });
+    openScan();
+  }, [params, setParams, openScan]);
   const today = todayName();
   const hasSubjects = store.subjects.all().length > 0;
 
@@ -202,8 +214,11 @@ export default function Timetable() {
         <div className="empty">
           <EmptyArt name="timetable" />
           <p className="empty__title">Add your subjects first</p>
-          <p className="empty__text">Your timetable is built from your subject list, so there is nothing to pick from yet.</p>
-          <Link className="btn btn--primary" to="/settings">Add subjects</Link>
+          <p className="empty__text">Your timetable is built from your subject list. Add them, or scan a photo of your timetable and Synora adds them for you.</p>
+          <div className="row row--wrap" style={{ justifyContent: "center", gap: 10, marginTop: 16 }}>
+            <button type="button" className="btn btn--primary" onClick={openScan}><Icon name="camera" size={16} />Scan a photo</button>
+            <Link className="btn btn--ghost" to="/settings">Add subjects</Link>
+          </div>
         </div>
       </div>
     );
@@ -213,8 +228,11 @@ export default function Timetable() {
         <div className="empty">
           <EmptyArt name="timetable" />
           <p className="empty__title">No classes yet</p>
-          <p className="empty__text">Walk through the week and add your classes — pick a subject, a day and a time.</p>
-          <button className="btn btn--primary" onClick={openSetup}>Set Timetable</button>
+          <p className="empty__text">Scan a photo of your timetable, or walk through the week and add your classes by hand.</p>
+          <div className="row row--wrap" style={{ justifyContent: "center", gap: 10, marginTop: 16 }}>
+            <button type="button" className="btn btn--primary" onClick={openScan}><Icon name="camera" size={16} />Scan a photo</button>
+            <button type="button" className="btn btn--ghost" onClick={openSetup}>Set it up by hand</button>
+          </div>
         </div>
       </div>
     );
@@ -261,6 +279,9 @@ export default function Timetable() {
               <Icon name="download" size={16} />Export
             </button>
           )}
+          <button type="button" className="btn btn--ghost" onClick={openScan}>
+            <Icon name="camera" size={16} />Scan a photo
+          </button>
           <button type="button" className="btn btn--ghost" onClick={() => openClassForm(null)}>
             <PlusIcon />
             Add class

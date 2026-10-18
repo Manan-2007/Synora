@@ -1,18 +1,19 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import Icon from "../components/Icon.jsx";
 import { UserAvatar } from "../components/AvatarArt.jsx";
 import TaskRow from "../components/tasks/TaskRow.jsx";
 import { useTaskForm } from "../components/tasks/TaskForm.jsx";
 import useStore from "../hooks/useStore.js";
-import { profile, store } from "../lib/storage.js";
+import { profile, store, session } from "../lib/storage.js";
 import { derive, streak, achievements } from "../lib/engine.js";
 import { allTasks, toggleComplete } from "../lib/tasks.js";
-import { daysUntil, relativeDay, parseISODate, clamp, plural } from "../lib/util.js";
+import { daysUntil, relativeDay, parseISODate, clamp, plural, toISODate } from "../lib/util.js";
 import { subjectVar } from "../lib/colors.js";
 import EmptyArt from "../components/EmptyArt.jsx";
 import { InstallBanner } from "../components/InstallGuide.jsx";
 import { openPalette } from "../components/CommandPalette.jsx";
+import Tour from "../components/Tour.jsx";
 import { overall } from "../lib/semesters.js";
 import { classesToMark, markClass } from "../lib/attendance.js";
 import { toast } from "../lib/toast.js";
@@ -23,6 +24,60 @@ import { toast } from "../lib/toast.js";
 /* Late night (midnight–5am) is still "evening", not morning. */
 /* After a class ends: did you go? One tap updates the attendance counts
    (lib/attendance.js markClass); each class is asked about once a day. */
+/* ---- End of the week: same timetable next week? ----
+   From Friday noon to Sunday, if there is a timetable, ask once per week
+   (remembered on this device). "It changed" offers the photo scanner or
+   the timetable page. */
+function nextMonday(now = new Date()) {
+  const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + ((8 - now.getDay()) % 7 || 7));
+  return toISODate(d);
+}
+const weekKey = () => "synora-tt-week:" + (session.username() || "");
+
+function WeekCheck() {
+  const navigate = useNavigate();
+  const [now] = useState(() => new Date());
+  const [answered, setAnswered] = useState(() => {
+    try { return localStorage.getItem(weekKey()) === nextMonday(now); } catch { return true; }
+  });
+  const [changed, setChanged] = useState(false);
+  const day = now.getDay();
+  const endOfWeek = day === 6 || day === 0 || (day === 5 && now.getHours() >= 12);
+  if (answered || !endOfWeek || !store.get("timetable").length) return null;
+
+  function remember() {
+    try { localStorage.setItem(weekKey(), nextMonday(now)); } catch { /* storage blocked */ }
+    setAnswered(true);
+  }
+
+  return (
+    <div className="card attend-ask week-check">
+      <h2 className="attend-ask__title">Same timetable next week?</h2>
+      {!changed ? (
+        <>
+          <p className="text-small muted" style={{ margin: "0 0 12px" }}>Keeps your classes, reminders and attendance prompts right.</p>
+          <div className="attend-ask__actions">
+            <button type="button" className="btn btn--primary btn--sm" onClick={() => { remember(); toast.success("Got it", "Next week keeps the same timetable."); }}>
+              Yes, same as this week
+            </button>
+            <button type="button" className="btn btn--ghost btn--sm" onClick={() => setChanged(true)}>No, it changed</button>
+          </div>
+        </>
+      ) : (
+        <>
+          <p className="text-small muted" style={{ margin: "0 0 12px" }}>Scan the new timetable, or change the classes by hand.</p>
+          <div className="attend-ask__actions">
+            <button type="button" className="btn btn--primary btn--sm" onClick={() => { remember(); navigate("/timetable?scan=1"); }}>
+              <Icon name="camera" size={14} />Scan a photo
+            </button>
+            <button type="button" className="btn btn--ghost btn--sm" onClick={() => { remember(); navigate("/timetable"); }}>Edit by hand</button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 function AttendancePrompt() {
   const [, tick] = useState(0);
   useEffect(() => {
@@ -276,7 +331,9 @@ export default function Dashboard() {
         )}
 
         {p.onboarded && <GettingStarted />}
+        {p.onboarded && <Tour />}
         <AttendancePrompt />
+        <WeekCheck />
         <InstallBanner />
 
         <section className="dash-hero" aria-label="Today">

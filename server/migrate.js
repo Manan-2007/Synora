@@ -24,6 +24,8 @@ const COLUMNS = [
   ["tasks", "subtasks", "JSON NULL AFTER repeat_rule"],
   ["timetable_classes", "last_marked", "DATE NULL AFTER teacher"],
   ["user_meta", "checklist_dismissed", "BOOLEAN NOT NULL DEFAULT FALSE AFTER demo_version"],
+  ["tasks", "attachments", "JSON NULL AFTER subtasks"],
+  ["notes", "attachments", "JSON NULL AFTER category"],
 ];
 
 /* Tables added after the first release. */
@@ -58,6 +60,39 @@ const TABLES = [
      PRIMARY KEY (user_id, id),
      KEY ix_focus_ended (user_id, ended_at),
      CONSTRAINT fk_focus_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+   )`,
+  `CREATE TABLE IF NOT EXISTS attachments (
+     user_id    INT UNSIGNED  NOT NULL,
+     id         VARCHAR(40)   NOT NULL,
+     owner_type ENUM('task', 'note') NOT NULL,
+     owner_id   VARCHAR(40)   NOT NULL,
+     name       VARCHAR(200)  NOT NULL,
+     mime       VARCHAR(100)  NOT NULL,
+     size       INT UNSIGNED  NOT NULL,
+     data       MEDIUMBLOB    NOT NULL,
+     created_at DATETIME(3)   NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+     PRIMARY KEY (user_id, id),
+     KEY ix_attachments_owner (user_id, owner_type, owner_id),
+     CONSTRAINT fk_attachments_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+   )`,
+  `CREATE TABLE IF NOT EXISTS push_subscriptions (
+     id         CHAR(64)      NOT NULL,
+     user_id    INT UNSIGNED  NOT NULL,
+     endpoint   TEXT          NOT NULL,
+     p256dh     VARCHAR(200)  NOT NULL,
+     auth       VARCHAR(100)  NOT NULL,
+     tz         VARCHAR(60)   NOT NULL DEFAULT 'Asia/Kolkata',
+     created_at DATETIME(3)   NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+     PRIMARY KEY (id),
+     KEY ix_push_user (user_id),
+     CONSTRAINT fk_push_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+   )`,
+  `CREATE TABLE IF NOT EXISTS push_sent (
+     user_id INT UNSIGNED NOT NULL,
+     \`key\`   VARCHAR(120) NOT NULL,
+     sent_at DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+     PRIMARY KEY (user_id, \`key\`),
+     CONSTRAINT fk_pushsent_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
    )`,
   `CREATE TABLE IF NOT EXISTS password_resets (
      token_hash CHAR(64)     NOT NULL,

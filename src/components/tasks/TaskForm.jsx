@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import { useModal, useModalClose } from "../modal/ModalProvider.jsx";
 import Icon from "../Icon.jsx";
+import Attachments, { useAttachmentDraft } from "../Attachments.jsx";
 import { PRIORITY, STATUS, REPEAT, newTask, saveTask, removeTask, repeatOf, nextMessage } from "../../lib/tasks.js";
 import { streak } from "../../lib/engine.js";
 import { store } from "../../lib/storage.js";
@@ -55,6 +56,7 @@ function TaskForm({ task, isEdit }) {
   });
   const [steps, setSteps] = useState(() => (task.subtasks || []).map((st) => ({ ...st })));
   const [newStep, setNewStep] = useState("");
+  const files = useAttachmentDraft(task.attachments);
   const stepRef = useRef(null);
   /* A datalist, not a select: it offers the user's own subjects without
      ruling out a task that belongs to none of them. */
@@ -90,6 +92,7 @@ function TaskForm({ task, isEdit }) {
       description: values.description.trim(),
       repeat: values.repeat,
       subtasks: steps.map((st) => ({ ...st, text: st.text.trim() })).filter((st) => st.text),
+      attachments: files.commit(),
     };
     // Keep completedAt consistent with status.
     if (values.status === "completed" && task.status !== "completed") {
@@ -186,6 +189,10 @@ function TaskForm({ task, isEdit }) {
               </div>
             )}
           </fieldset>
+          <div className="field" style={{ margin: 0 }}>
+            <span className="field__label">Attachments</span>
+            <Attachments owner={"task:" + task.id} draft={files} />
+          </div>
           <div className="field" style={{ margin: 0 }}>
             <label className="field__label" htmlFor="tf-desc">Notes</label>
             <textarea className="input" id="tf-desc" maxLength={5000} placeholder="Optional details" {...bind("description")} />

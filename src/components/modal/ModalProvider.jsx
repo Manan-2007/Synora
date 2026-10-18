@@ -112,7 +112,7 @@ function ModalFrame({ modal, isTop, remove }) {
   return createPortal(
     <div className={"modal-backdrop" + (entered && !modal.closing ? " is-open" : "")}
       onClick={(e) => { if (e.target === e.currentTarget) close(); }}>
-      <div ref={modalRef} className={"modal" + (modal.size === "sm" ? " modal--sm" : "")}
+      <div ref={modalRef} className={"modal" + (modal.size ? " modal--" + modal.size : "")}
         role="dialog" aria-modal="true" aria-labelledby={titleId}>
         <div className="modal__header">
           <h2 className="modal__title" id={titleId}>{modal.title}</h2>

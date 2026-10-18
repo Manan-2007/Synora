@@ -208,3 +208,11 @@ ol {
     scroll-behavior: auto !important;
   }
 }
+
+/* While a page's code is still downloading (App.jsx, AppLayout.jsx). */
+.route-loading { min-height: 100vh; background: var(--color-bg); }
+.page-loading { display: grid; place-items: center; min-height: 40vh; }
+.page-loading span { width: 26px; height: 26px; border-radius: 50%; border: 3px solid color-mix(in srgb, var(--color-brand) 25%, transparent);
+  border-top-color: var(--color-brand); animation: page-spin .8s linear infinite; }
+@keyframes page-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .page-loading span { animation-duration: 2.4s; } }

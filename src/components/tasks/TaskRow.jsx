@@ -49,6 +49,11 @@ export default function TaskRow({ task, onToggle, onEdit, onDelete }) {
               <Icon name="list" size={12} />{stepsDone}/{steps.length}
             </button>
           )}
+          {(task.attachments || []).length > 0 && (
+            <span className="titem__repeat" title={task.attachments.length + " attached"}>
+              <Icon name="paperclip" size={12} />{task.attachments.length}
+            </span>
+          )}
           {done && task.completedAt && <span>Done</span>}
         </span>
         {open && steps.length > 0 && (

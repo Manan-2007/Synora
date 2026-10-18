@@ -7,8 +7,9 @@
      • once a day from 8 am: what's due today
    The focus timer uses notify() when a session ends.
 
-   There's no push server, so nothing arrives while Synora is
-   closed — the Settings card says so. The switch is per device
+   With Synora closed, the server sends the same reminders as Web
+   Push (server/push.js) to every browser that subscribed below —
+   on iPhone that needs the installed app. The switch is per device
    (this browser's localStorage), like the permission itself.
    ========================================================= */
 
@@ -16,6 +17,7 @@ import { store } from "./storage.js";
 import { allClasses, todayName } from "./timetable.js";
 import { allTasks } from "./tasks.js";
 import { todayISO } from "./util.js";
+import { api } from "./api.js";
 
 const KEY = "synora-reminders";      // { enabled }
 const SHOWN = "synora-reminded";     // { date, keys: ["class:<id>", "due:<date>"] } — today's only
@@ -55,13 +57,85 @@ export async function enableReminders() {
   if (permission === "default") permission = await Notification.requestPermission();
   write(KEY, { enabled: permission === "granted" });
   emit();
-  if (permission === "granted") checkReminders();
+  if (permission === "granted") { checkReminders(); await enablePush(); }
   return reminderState();
 }
 
 export function disableReminders() {
   write(KEY, { enabled: false });
   emit();
+  disablePush();
+}
+
+/* ---- Push: reminders with Synora closed ----
+   "on" | "off" | "unsupported" | "install" (iPhone/iPad: only the
+   home-screen app can receive pushes) | "not-set-up" (no keys on the
+   server) | "signed-out" (not connected to the database). */
+let pushStatus = "off";
+export const getPushStatus = () => pushStatus;
+function setPush(s) { pushStatus = s; emit(); }
+
+const ios = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const standalone = () => window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+
+async function registration() {
+  if (!("serviceWorker" in navigator)) return null;
+  const reg = await navigator.serviceWorker.getRegistration();
+  return reg || null;
+}
+
+function keyBytes(base64) {
+  const pad = "=".repeat((4 - (base64.length % 4)) % 4);
+  const raw = atob((base64 + pad).replace(/-/g, "+").replace(/_/g, "/"));
+  return Uint8Array.from(raw, (c) => c.charCodeAt(0));
+}
+
+/* One at a time: two overlapping subscribe() calls (Settings opening while
+   reminders are switched on) would leave the server with a stale copy. */
+let pushing = null;
+export function enablePush() {
+  if (!pushing) pushing = subscribePush().finally(() => { pushing = null; });
+  return pushing;
+}
+
+async function subscribePush() {
+  if (!("PushManager" in window) || !("serviceWorker" in navigator)) return setPush(ios() && !standalone() ? "install" : "unsupported");
+  if (ios() && !standalone()) return setPush("install");
+  const token = api.token();
+  if (!token) return setPush("signed-out");
+  try {
+    const keyRes = await api.pushKey();
+    if (!keyRes.ok) return setPush("not-set-up");
+    const reg = await registration();
+    if (!reg) return setPush("unsupported");          // no service worker (the dev server)
+    const sub = (await reg.pushManager.getSubscription()) ||
+      (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: keyBytes(keyRes.body.key) }));
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const saved = await api.pushSubscribe(sub.toJSON(), tz, token);
+    setPush(saved.ok ? "on" : "off");
+  } catch {
+    setPush("off");
+  }
+}
+
+export async function disablePush() {
+  try {
+    const reg = await registration();
+    const sub = reg && (await reg.pushManager.getSubscription());
+    if (sub) {
+      const token = api.token();
+      if (token) await api.pushUnsubscribe(sub.endpoint, token);
+      await sub.unsubscribe();
+    }
+  } catch { /* already gone */ }
+  setPush("off");
+}
+
+export async function sendTestPush() {
+  const token = api.token();
+  if (!token) return false;
+  const r = await api.pushTest(token);
+  return r.ok && r.body && r.body.sent > 0;
 }
 
 /* Shows one notification. The installed app (and Android Chrome) need the
@@ -126,6 +200,9 @@ export function checkReminders(now = new Date()) {
 /* Runs the checks while the app is open; returns a stop function. */
 export function startReminders() {
   checkReminders();
+  /* Re-send this browser's subscription quietly (a new sign-in, a renewed
+     subscription), so the server keeps pushing to it. */
+  if (reminderState() === "on") enablePush();
   const timer = setInterval(() => checkReminders(), 30000);
   return () => clearInterval(timer);
 }

@@ -90,6 +90,13 @@ function subtasksJSON(list) {
     .map((s) => ({ id: str(s.id, 40), text: str(s.text, 200), done: !!s.done }));
   return clean.length ? JSON.stringify(clean) : null;
 }
+/* Files attached to a task or note: just their details here (the bytes are
+   in the attachments table). At most 20. */
+function attachmentsJSON(list) {
+  const clean = asList(list).filter((f) => f && /^fil-[0-9a-f]{18}$/.test(f.id)).slice(0, 20)
+    .map((f) => ({ id: f.id, name: str(f.name, 200), mime: str(f.mime, 100), size: int(f.size) }));
+  return clean.length ? JSON.stringify(clean) : null;
+}
 const pos = (r, i) => int(r && r._pos !== undefined ? r._pos : i);
 
 /* Subject ids that exist for this user right now. Rows that point at a
@@ -115,18 +122,18 @@ const LISTS = {
   tasks: {
     table: "tasks", key: "id",
     columns: ["id", "title", "subject", "description", "deadline", "priority", "status", "repeat_rule", "subtasks",
-      "created_at", "completed_at", "position"],
+      "attachments", "created_at", "completed_at", "position"],
     row: (t, i) => [
       str(t.id, 40), str(t.title, 255), str(t.subject, 100), text(t.description),
       toDate(t.deadline), oneOf(t.priority, PRIORITIES, "medium"), oneOf(t.status, STATUSES, "not-started"),
-      oneOf(t.repeat, REPEATS, "none"), subtasksJSON(t.subtasks),
+      oneOf(t.repeat, REPEATS, "none"), subtasksJSON(t.subtasks), attachmentsJSON(t.attachments),
       toDateTime(t.createdAt), toDateTime(t.completedAt), pos(t, i),
     ],
   },
   notes: {
     table: "notes", key: "id",
-    columns: ["id", "title", "body", "category", "created_at", "updated_at", "position"],
-    row: (n, i) => [str(n.id, 40), str(n.title, 255), text(n.body), str(n.category, 100),
+    columns: ["id", "title", "body", "category", "attachments", "created_at", "updated_at", "position"],
+    row: (n, i) => [str(n.id, 40), str(n.title, 255), text(n.body), str(n.category, 100), attachmentsJSON(n.attachments),
       toDateTime(n.createdAt), toDateTime(n.updatedAt), pos(n, i)],
   },
   timetable: {
@@ -279,6 +286,11 @@ export async function applyChanges(conn, userId, changes) {
     if (name === "semesters") { await saveSemesters(conn, userId, change); continue; }
     await upsertRows(conn, userId, LISTS[name], change.upsert, known);
     await deleteRows(conn, userId, LISTS[name], change.delete);
+    /* A deleted task or note takes its attached files with it. */
+    if ((name === "tasks" || name === "notes") && asList(change.delete).length) {
+      await conn.query("DELETE FROM attachments WHERE user_id = ? AND owner_type = ? AND owner_id IN (?)",
+        [userId, name === "tasks" ? "task" : "note", asList(change.delete).map((id) => str(id, 40))]);
+    }
   }
 }
 
@@ -340,12 +352,12 @@ export async function loadCollections(conn, userId) {
   const tasks = (await ordered("tasks")).map((t) => ({
     id: t.id, title: t.title, subject: t.subject, description: t.description || "",
     deadline: t.deadline || "", priority: t.priority, status: t.status,
-    repeat: t.repeat_rule || "none", subtasks: parseJSON(t.subtasks) || [],
+    repeat: t.repeat_rule || "none", subtasks: parseJSON(t.subtasks) || [], attachments: parseJSON(t.attachments) || [],
     createdAt: fromDateTime(t.created_at), completedAt: fromDateTime(t.completed_at),
   }));
 
   const notes = (await ordered("notes")).map((n) => ({
-    id: n.id, title: n.title, body: n.body || "", category: n.category,
+    id: n.id, title: n.title, body: n.body || "", category: n.category, attachments: parseJSON(n.attachments) || [],
     createdAt: fromDateTime(n.created_at), updatedAt: fromDateTime(n.updated_at),
   }));
 

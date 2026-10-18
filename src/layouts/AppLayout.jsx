@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
+import { Suspense, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Navigate, Outlet, useLocation } from "react-router";
 import Sidebar from "./Sidebar.jsx";
 import Topbar from "./Topbar.jsx";
@@ -79,7 +79,9 @@ function AppShell({ title }) {
         <div className="app-content">
           <Topbar title={title} onMenuToggle={() => setNavOpen((open) => !open)} />
           <main className="page">
-            <Outlet />
+            <Suspense fallback={<div className="page-loading" role="status" aria-label="Loading"><span></span></div>}>
+              <Outlet />
+            </Suspense>
           </main>
         </div>
       </div>

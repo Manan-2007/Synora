@@ -653,3 +653,39 @@
   .avatar-option:hover,
   .avatar-swatch:hover { transform: none; }
 }
+
+/* =========================================================
+   GLASS — the iOS-style look (onboarding)
+   ========================================================= */
+.ob { background: var(--app-ambient); }
+.ob-card, .ob-steps {
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-highlight), 0 0 0 1px var(--glass-edge), var(--glass-shadow-lg);
+}
+.ob-card { border-radius: 30px; }
+.ob-steps { padding: 10px 14px; border-radius: var(--radius-pill); justify-content: center; }
+.ob-step__dot { background-color: var(--glass-tint); border-color: var(--glass-border); }
+.ob-step.is-current .ob-step__dot {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-brand) 82%, #fff), var(--color-brand));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), 0 4px 12px -4px color-mix(in srgb, var(--color-brand) 80%, transparent);
+}
+.ob .btn { border-radius: var(--radius-pill); }
+.ob .btn--primary {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-brand) 82%, #fff) 0%, var(--color-brand) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28), 0 10px 24px -10px color-mix(in srgb, var(--color-brand) 85%, transparent);
+}
+.ob .btn--ghost, .ob .icon-btn, .ob-subject, .ob-track__option, .ob-theme, .ob-preview {
+  background-color: var(--glass-tint);
+  border-color: var(--glass-border);
+  box-shadow: var(--glass-highlight), 0 0 0 1px var(--glass-edge);
+}
+.ob .icon-btn { border-radius: 50%; }
+.ob .input, .ob .select { background-color: color-mix(in srgb, var(--color-surface) 62%, transparent); border-radius: 14px; }
+.ob .input:focus, .ob .select:focus { background-color: var(--color-surface); }
+.ob-subject, .ob-preview, .ob-theme { border-radius: 20px; }
+.ob-track__option { border-radius: var(--radius-pill); }
+.ob-track__option.is-selected, .ob-theme.is-selected { border-color: var(--color-brand); background-color: color-mix(in srgb, var(--color-brand) 12%, transparent); }
+.ob-steps { border-radius: 24px; gap: 6px 12px; padding: 10px 16px; width: fit-content; max-width: 100%; margin-inline: auto; margin-bottom: var(--space-24); }

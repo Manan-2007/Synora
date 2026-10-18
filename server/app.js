@@ -18,6 +18,15 @@
      POST /api/password/forgot   email a one-time reset link (Brevo)
      POST /api/password/reset    set a new password with that link
      PUT  /api/data     save changes: { username, changes: { tasks: { upsert: [...], delete: [ids] }, ... } }
+     POST   /api/files?owner=task:<id>&name=…&type=…   attach a file (raw bytes) → { id, name, mime, size }
+     GET    /api/files/<id>                             the file's bytes
+     DELETE /api/files/<id>                             remove it
+     POST   /api/timetable/scan?type=…&subjects=…       read a timetable photo / PDF → { classes: [...] }
+     GET  /api/push/key            the VAPID public key (503 until push is set up)
+     POST /api/push/subscribe      { subscription, tz } — this browser wants pushes
+     POST /api/push/unsubscribe    { endpoint }
+     POST /api/push/test           send a test push to this account's devices
+     GET  /api/push/tick           the scheduler's call (Authorization: Bearer CRON_SECRET)
 
    Signed-in requests send "Authorization: Bearer <token>".
 
@@ -34,6 +43,7 @@ import express from "express";
 import bcrypt from "bcryptjs";
 import { pool, transaction, configured } from "./db.js";
 import { ensureSchema } from "./migrate.js";
+import { pushReady, subscribe, unsubscribe, sendToUser, tick } from "./push.js";
 import { COLLECTIONS, applyChanges, changesFromCollections, loadCollections } from "./collections.js";
 
 const app = express();
@@ -345,6 +355,174 @@ app.put("/api/data", requireAuth, handle(async (req, res) => {
   for (const name of COLLECTIONS) if (name in incoming) changes[name] = incoming[name] || {};
   await transaction((conn) => applyChanges(conn, req.userId, changes));
   res.status(204).end();
+}));
+
+/* ---- Attachments: photos, PDFs and documents on tasks and notes ----
+   The bytes live in MySQL (MEDIUMBLOB); the task or note keeps only
+   { id, name, mime, size }. Uploads are raw bytes (not base64) to stay
+   under Vercel's 4.5 MB request limit. The shared demo account can't
+   upload: anyone can sign in to it. */
+const FILE_MAX = 3.5 * 1024 * 1024;
+const USER_QUOTA = 50 * 1024 * 1024;
+const FILE_TYPES = /^(image\/(png|jpeg|gif|webp|heic|heif)|application\/pdf|text\/plain|application\/msword|application\/vnd\.ms-(excel|powerpoint)|application\/vnd\.openxmlformats-officedocument\.(wordprocessingml\.document|spreadsheetml\.sheet|presentationml\.presentation))$/;
+const FILE_ID = /^fil-[0-9a-f]{18}$/;
+const isDemo = (username) => String(username).toLowerCase() === "arsh2309";
+
+app.post("/api/files", requireAuth, express.raw({ type: () => true, limit: FILE_MAX + 1024 }), handle(async (req, res) => {
+  if (isDemo(req.username)) return res.status(403).json({ error: "demo-read-only" });
+  const owner = /^(task|note):([\w-]{1,40})$/.exec(String(req.query.owner || ""));
+  const mime = String(req.query.type || "").toLowerCase();
+  const name = String(req.query.name || "file").replace(/[\\/]/g, "").replace(/\p{Cc}/gu, "").slice(0, 200) || "file";
+  const data = req.body;
+  if (!owner || !Buffer.isBuffer(data) || !data.length) return res.status(400).json({ error: "invalid" });
+  if (!FILE_TYPES.test(mime)) return res.status(415).json({ error: "file-type" });
+  if (data.length > FILE_MAX) return res.status(413).json({ error: "too-large" });
+  const [[{ used }]] = await pool.query("SELECT COALESCE(SUM(size), 0) AS used FROM attachments WHERE user_id = ?", [req.userId]);
+  if (Number(used) + data.length > USER_QUOTA) return res.status(507).json({ error: "quota" });
+  const id = "fil-" + crypto.randomBytes(9).toString("hex");
+  await pool.query(
+    "INSERT INTO attachments (user_id, id, owner_type, owner_id, name, mime, size, data) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+    [req.userId, id, owner[1], owner[2], name, mime, data.length, data],
+  );
+  res.status(201).json({ id, name, mime, size: data.length });
+}));
+
+app.get("/api/files/:id", requireAuth, handle(async (req, res) => {
+  if (!FILE_ID.test(req.params.id)) return res.status(404).json({ error: "not-found" });
+  const [rows] = await pool.query("SELECT name, mime, data FROM attachments WHERE user_id = ? AND id = ?", [req.userId, req.params.id]);
+  if (!rows.length) return res.status(404).json({ error: "not-found" });
+  const f = rows[0];
+  res.set({
+    "Content-Type": f.mime,
+    "Content-Disposition": "attachment; filename*=UTF-8''" + encodeURIComponent(f.name),
+    "Cache-Control": "private, max-age=31536000, immutable",
+    "X-Content-Type-Options": "nosniff",
+  });
+  res.send(f.data);
+}));
+
+app.delete("/api/files/:id", requireAuth, handle(async (req, res) => {
+  if (!FILE_ID.test(req.params.id)) return res.status(404).json({ error: "not-found" });
+  await pool.query("DELETE FROM attachments WHERE user_id = ? AND id = ?", [req.userId, req.params.id]);
+  res.status(204).end();
+}));
+
+/* ---- Timetable from a photo or PDF ----
+   The image goes to Claude (Anthropic's API) with instructions to list
+   every class as JSON; the app then shows the result for checking before
+   anything is saved. Needs ANTHROPIC_API_KEY in the server's environment
+   (SCAN_MODEL picks the model). Each user gets 15 scans a day, per
+   server instance. */
+const SCAN_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+const SCAN_TYPES = /^(image\/(png|jpeg|gif|webp)|application\/pdf)$/;
+const scans = new Map();
+
+const SCAN_PROMPT = (subjects) => `This is a student's weekly class timetable (a photo, screenshot or PDF).
+List every class in it.
+
+Rules:
+- One entry per class. If the same subject runs across consecutive periods (a lab, a double lecture), make ONE entry from the first start to the last end.
+- Skip breaks, lunch, free periods and blank cells.
+- Times in 24-hour HH:MM. If the timetable shows period numbers, use the period times printed on it.
+- "day" is the full English day name (Monday … Sunday).
+- "subject": the student already has these subjects: ${subjects.length ? subjects.map((s) => JSON.stringify(s)).join(", ") : "(none yet)"}. If a class clearly is one of them (same subject, abbreviated or written differently), use that exact name. Otherwise use the subject's name as printed, expanded if it's obvious.
+- "room" and "teacher" if shown, else "".
+- If the picture isn't a timetable, return no classes and say why in "note".
+
+Answer with JSON only, no other text:
+{"classes":[{"day":"Monday","start":"09:00","end":"10:00","subject":"DBMS","room":"LT-2","teacher":"Dr. Rao"}],"note":""}`;
+
+function cleanClasses(list) {
+  const hhmm = (t) => {
+    const m = /^(\d{1,2})[:.](\d{2})/.exec(String(t || ""));
+    if (!m || Number(m[1]) > 23 || Number(m[2]) > 59) return null;
+    return m[1].padStart(2, "0") + ":" + m[2];
+  };
+  return (Array.isArray(list) ? list : []).map((c) => {
+    const day = SCAN_DAYS.find((d) => d.toLowerCase().startsWith(String(c.day || "").toLowerCase().slice(0, 3)));
+    const start = hhmm(c.start), end = hhmm(c.end);
+    const subject = String(c.subject || "").trim().slice(0, 100);
+    if (!day || !start || !subject) return null;
+    return { day, start, end: end && end > start ? end : "", subject,
+      room: String(c.room || "").trim().slice(0, 100), teacher: String(c.teacher || "").trim().slice(0, 100) };
+  }).filter(Boolean).slice(0, 120);
+}
+
+app.post("/api/timetable/scan", requireAuth, express.raw({ type: () => true, limit: FILE_MAX + 1024 }), handle(async (req, res) => {
+  if (!process.env.ANTHROPIC_API_KEY) return res.status(503).json({ error: "scan-not-set-up" });
+  const mime = String(req.query.type || "").toLowerCase();
+  if (!SCAN_TYPES.test(mime)) return res.status(415).json({ error: "file-type" });
+  if (!Buffer.isBuffer(req.body) || !req.body.length) return res.status(400).json({ error: "invalid" });
+  const day = new Date().toISOString().slice(0, 10);
+  const used = scans.get(req.userId);
+  const count = used && used.day === day ? used.count : 0;
+  if (count >= 15) return res.status(429).json({ error: "too-many" });
+  scans.set(req.userId, { day, count: count + 1 });
+
+  const subjects = String(req.query.subjects || "").split("\n").map((x) => x.trim()).filter(Boolean).slice(0, 40);
+  const media = { type: "base64", media_type: mime, data: req.body.toString("base64") };
+  const part = mime === "application/pdf" ? { type: "document", source: media } : { type: "image", source: media };
+  let answer;
+  try {
+    const r = await fetch((process.env.ANTHROPIC_BASE_URL || "https://api.anthropic.com") + "/v1/messages", {
+      method: "POST",
+      headers: { "x-api-key": process.env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+      body: JSON.stringify({
+        model: process.env.SCAN_MODEL || "claude-sonnet-5-5",
+        max_tokens: 6000,
+        messages: [{ role: "user", content: [part, { type: "text", text: SCAN_PROMPT(subjects) }] }],
+      }),
+      signal: AbortSignal.timeout(55000),
+    });
+    if (!r.ok) {
+      console.error("Scan failed:", r.status, (await r.text()).slice(0, 300));
+      return res.status(502).json({ error: "scan-failed" });
+    }
+    const body = await r.json();
+    answer = (body.content || []).filter((c) => c.type === "text").map((c) => c.text).join("");
+  } catch (err) {
+    console.error("Scan failed:", err.name, err.message);
+    return res.status(502).json({ error: "scan-failed" });
+  }
+  let parsed = {};
+  try { parsed = JSON.parse(answer.slice(answer.indexOf("{"), answer.lastIndexOf("}") + 1)); } catch { /* unreadable answer */ }
+  res.json({ classes: cleanClasses(parsed.classes), note: String(parsed.note || "").slice(0, 300) });
+}));
+
+/* ---- Push reminders (server/push.js) ---- */
+app.get("/api/push/key", (req, res) => {
+  if (!pushReady()) return res.status(503).json({ error: "push-not-set-up" });
+  res.json({ key: process.env.VAPID_PUBLIC_KEY });
+});
+
+app.post("/api/push/subscribe", requireAuth, handle(async (req, res) => {
+  if (!pushReady()) return res.status(503).json({ error: "push-not-set-up" });
+  const { subscription, tz } = req.body || {};
+  if (!(await subscribe(req.userId, subscription, tz))) return res.status(400).json({ error: "invalid" });
+  res.status(204).end();
+}));
+
+app.post("/api/push/unsubscribe", requireAuth, handle(async (req, res) => {
+  await unsubscribe(req.userId, (req.body || {}).endpoint);
+  res.status(204).end();
+}));
+
+app.post("/api/push/test", requireAuth, handle(async (req, res) => {
+  if (!pushReady()) return res.status(503).json({ error: "push-not-set-up" });
+  const sent = await sendToUser(req.userId, {
+    title: "Reminders are on", body: "This one came from the server: it works even with Synora closed.", tag: "test", url: "/settings",
+  });
+  res.json({ sent });
+}));
+
+/* Called by the schedulers only. Vercel cron sends "Authorization: Bearer
+   <CRON_SECRET>" by itself; the GitHub Action sends the same header. */
+app.get("/api/push/tick", handle(async (req, res) => {
+  const secret = process.env.CRON_SECRET || "";
+  const given = Buffer.from(String(req.get("authorization") || ""));
+  const want = Buffer.from("Bearer " + secret);
+  if (!secret || given.length !== want.length || !crypto.timingSafeEqual(given, want)) return res.status(401).json({ error: "unauthorised" });
+  res.json(await tick());
 }));
 
 /* Four parameters, even though the last is unused: that is how Express

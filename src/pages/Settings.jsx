@@ -1,4 +1,4 @@
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { useNavigate } from "react-router";
 import Icon from "../components/Icon.jsx";
 import AvatarPicker from "../components/AvatarPicker.jsx";
@@ -14,7 +14,8 @@ import { clamp, EMAIL_RE } from "../lib/util.js";
 import { toast } from "../lib/toast.js";
 import { install } from "../lib/install.js";
 import { useInstall } from "../components/InstallGuide.jsx";
-import { reminderState, subscribeReminders, enableReminders, disableReminders, sendTestReminder } from "../lib/reminders.js";
+import { resetTour } from "../components/Tour.jsx";
+import { reminderState, subscribeReminders, enableReminders, disableReminders, sendTestReminder, getPushStatus, enablePush, sendTestPush } from "../lib/reminders.js";
 import { changePassword, deleteAccount, passwordProblem } from "../lib/auth.js";
 import { demo } from "../lib/demo.js";
 import ColorPicker from "../components/ColorPicker.jsx";
@@ -288,9 +289,20 @@ function InstallCard() {
   );
 }
 
+const PUSH_TEXT = {
+  on: "Also when Synora is closed, on this device.",
+  off: "Not yet when Synora is closed on this device.",
+  install: "To get them with Synora closed on iPhone or iPad, add Synora to your Home Screen and turn reminders on there.",
+  "not-set-up": "Reminders with Synora closed aren't set up on this server yet, so they only arrive while it's open.",
+  "signed-out": "Connect your account (see the status pill at the top) to get them with Synora closed.",
+  unsupported: "This browser can only show them while Synora is open.",
+};
+
 function RemindersCard() {
   const state = useSyncExternalStore(subscribeReminders, reminderState);
+  const push = useSyncExternalStore(subscribeReminders, getPushStatus);
   const [busy, setBusy] = useState(false);
+  useEffect(() => { if (state === "on") enablePush(); }, [state]);
 
   async function turnOn() {
     setBusy(true);
@@ -301,6 +313,11 @@ function RemindersCard() {
   }
 
   async function test() {
+    if (push === "on") {
+      if (await sendTestPush()) toast.success("Test sent", "It should arrive in a few seconds, even if you close Synora now.");
+      else toast.error("Couldn't send a test", "Check your connection and try again.");
+      return;
+    }
     if (!(await sendTestReminder())) toast.error("Couldn't show a notification", "Check your browser's notification settings.");
   }
 
@@ -312,8 +329,7 @@ function RemindersCard() {
       </div>
       <div className="card__body stack" style={{ gap: 12 }}>
         <p className="text-small muted" style={{ margin: 0 }}>
-          A notification 10 minutes before each class, and each morning for what's due that day. They arrive while
-          Synora is open — in a tab, even in the background, or as the installed app.
+          A notification before each class, and each morning for what's due that day.
         </p>
         {state === "unsupported" && (
           <p className="text-small" style={{ margin: 0 }}>This browser can't show notifications.</p>
@@ -330,6 +346,11 @@ function RemindersCard() {
               <Icon name="bell" size={16} /> Turn on reminders
             </button>
           </div>
+        )}
+        {state === "on" && (
+          <p className={"text-small reminders-push reminders-push--" + push} style={{ margin: 0 }}>
+            <Icon name={push === "on" ? "checkCircle" : "info"} size={15} />{PUSH_TEXT[push] || PUSH_TEXT.off}
+          </p>
         )}
         {state === "on" && (
           <div className="row row--wrap" style={{ gap: 12 }}>
@@ -569,6 +590,11 @@ export default function Settings() {
                     </button>
                   );
                 })}
+              </div>
+              <div className="row row--wrap" style={{ gap: 12, marginTop: 16 }}>
+                <button type="button" className="btn btn--ghost" onClick={() => { resetTour(); navigate("/dashboard"); }}>
+                  <Icon name="sparkle" size={16} />Take the tour again
+                </button>
               </div>
             </div>
           </div>

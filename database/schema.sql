@@ -110,6 +110,7 @@ CREATE TABLE IF NOT EXISTS tasks (
   status       ENUM('not-started', 'in-progress', 'completed') NOT NULL DEFAULT 'not-started',
   repeat_rule  ENUM('none', 'daily', 'weekly', 'monthly') NOT NULL DEFAULT 'none',
   subtasks     JSON         NULL,                        -- [{ id, text, done }]
+  attachments  JSON         NULL,                        -- [{ id, name, mime, size }] (files in `attachments`)
   created_at   DATETIME(3)  NULL,
   completed_at DATETIME(3)  NULL,
   position     INT UNSIGNED NOT NULL DEFAULT 0,
@@ -124,6 +125,7 @@ CREATE TABLE IF NOT EXISTS notes (
   title      VARCHAR(255) NOT NULL DEFAULT '',
   body       TEXT         NULL,
   category   VARCHAR(100) NOT NULL DEFAULT '',
+  attachments JSON        NULL,                          -- [{ id, name, mime, size }]
   created_at DATETIME(3)  NULL,
   updated_at DATETIME(3)  NULL,
   position   INT UNSIGNED NOT NULL DEFAULT 0,
@@ -253,6 +255,45 @@ CREATE TABLE IF NOT EXISTS focus_sessions (
   PRIMARY KEY (user_id, id),
   KEY ix_focus_ended (user_id, ended_at),
   CONSTRAINT fk_focus_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+-- Files attached to tasks and notes (photos, PDFs…), up to 3.5 MB each.
+CREATE TABLE IF NOT EXISTS attachments (
+  user_id    INT UNSIGNED  NOT NULL,
+  id         VARCHAR(40)   NOT NULL,
+  owner_type ENUM('task', 'note') NOT NULL,
+  owner_id   VARCHAR(40)   NOT NULL,
+  name       VARCHAR(200)  NOT NULL,
+  mime       VARCHAR(100)  NOT NULL,
+  size       INT UNSIGNED  NOT NULL,
+  data       MEDIUMBLOB    NOT NULL,
+  created_at DATETIME(3)   NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (user_id, id),
+  KEY ix_attachments_owner (user_id, owner_type, owner_id),
+  CONSTRAINT fk_attachments_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+-- Web Push: each browser that turned reminders on (server/push.js).
+CREATE TABLE IF NOT EXISTS push_subscriptions (
+  id         CHAR(64)      NOT NULL,                 -- SHA-256 of the endpoint
+  user_id    INT UNSIGNED  NOT NULL,
+  endpoint   TEXT          NOT NULL,
+  p256dh     VARCHAR(200)  NOT NULL,
+  auth       VARCHAR(100)  NOT NULL,
+  tz         VARCHAR(60)   NOT NULL DEFAULT 'Asia/Kolkata',
+  created_at DATETIME(3)   NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (id),
+  KEY ix_push_user (user_id),
+  CONSTRAINT fk_push_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+-- Reminders already pushed (so each goes out once); kept 3 days.
+CREATE TABLE IF NOT EXISTS push_sent (
+  user_id INT UNSIGNED NOT NULL,
+  `key`   VARCHAR(120) NOT NULL,                     -- 'class:<id>:<date>' or 'due:<date>'
+  sent_at DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (user_id, `key`),
+  CONSTRAINT fk_pushsent_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
 -- One-time password-reset links (only a SHA-256 of the token is stored).

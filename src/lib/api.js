@@ -91,6 +91,10 @@ export const api = {
   deleteAccount: (key, legacyKey, token) => request("POST", "/account/delete", { key, legacyKey }, token),
   forgotPassword: (who) => request("POST", "/password/forgot", { who }),
   resetPassword: (token, username, newKey) => request("POST", "/password/reset", { token, username, newKey }),
+  pushKey: () => request("GET", "/push/key"),
+  pushSubscribe: (subscription, tz, token) => request("POST", "/push/subscribe", { subscription, tz }, token),
+  pushUnsubscribe: (endpoint, token) => request("POST", "/push/unsubscribe", { endpoint }, token),
+  pushTest: (token) => request("POST", "/push/test", {}, token),
 
   /* Last-chance save while the page is closing: keepalive lets the request
      finish after the tab is gone. */

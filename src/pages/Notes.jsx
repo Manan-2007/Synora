@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 import Icon from "../components/Icon.jsx";
 import Markdown from "../components/Markdown.jsx";
+import Attachments, { useAttachmentDraft } from "../components/Attachments.jsx";
 import { useModal, useModalClose } from "../components/modal/ModalProvider.jsx";
 import useStore from "../hooks/useStore.js";
 import { allNotes, getNote, saveNote, removeNote, toggleNoteTask } from "../lib/notes.js";
@@ -21,6 +22,7 @@ function NoteForm({ note, isEdit }) {
   const [body, setBody] = useState(note.body || "");
   const [titleError, setTitleError] = useState("");
   const [preview, setPreview] = useState(false);
+  const files = useAttachmentDraft(note.attachments);
 
   function submit() {
     const t = title.trim();
@@ -29,7 +31,7 @@ function NoteForm({ note, isEdit }) {
       titleRef.current.focus();
       return;
     }
-    const saved = { ...note, title: t, category: category.trim(), body, updatedAt: new Date().toISOString() };
+    const saved = { ...note, title: t, category: category.trim(), body, attachments: files.commit(), updatedAt: new Date().toISOString() };
     saveNote(saved);
     close();
     toast.success(isEdit ? "Note updated" : "Note added", saved.title);
@@ -72,6 +74,10 @@ function NoteForm({ note, isEdit }) {
               <code>- [ ] checklist</code> <code>`code`</code> <code>[link](https://…)</code>
             </p>
           </div>
+          <div className="field" style={{ margin: 0 }}>
+            <span className="field__label">Attachments</span>
+            <Attachments owner={"note:" + note.id} draft={files} />
+          </div>
         </form>
       </div>
       <div className="modal__footer">
@@ -99,6 +105,9 @@ function NoteView({ id, onEdit }) {
         {note.body.trim()
           ? <Markdown text={note.body} onToggle={(line) => toggleNoteTask(note.id, line)} className="note-view__body" />
           : <p className="muted">This note has no text yet.</p>}
+        {(note.attachments || []).length > 0 && (
+          <div style={{ marginTop: 16 }}><Attachments owner={"note:" + note.id} files={note.attachments} /></div>
+        )}
       </div>
       <div className="modal__footer">
         <button type="button" className="btn btn--ghost" onClick={close}>Close</button>
@@ -196,9 +205,16 @@ export default function Notes() {
                     ? <Markdown text={n.body} onToggle={(line) => toggleNoteTask(n.id, line)} className="note-card__body" />
                     : <p className="note-card__body"></p>}
                   <div className="note-card__foot">
-                    {n.category
-                      ? <span className="badge badge--neutral">{n.category}</span>
-                      : <span className="text-small muted">{formatDate(toISODate(new Date(n.updatedAt)))}</span>}
+                    <span className="note-card__info">
+                      {n.category
+                        ? <span className="badge badge--neutral">{n.category}</span>
+                        : <span className="text-small muted">{formatDate(toISODate(new Date(n.updatedAt)))}</span>}
+                      {(n.attachments || []).length > 0 && (
+                        <span className="note-card__files" title={n.attachments.length + " attached"}>
+                          <Icon name="paperclip" size={13} />{n.attachments.length}
+                        </span>
+                      )}
+                    </span>
                     <span className="note-card__actions">
                       <button type="button" className="icon-btn" aria-label="Edit note" onClick={() => openForm(n)}>
                         <Icon name="edit" size={15} />

@@ -6,7 +6,8 @@
      /assets/*          cache first: build files have content
                         hashes in their names, so they never change
      other files here   cached copy at once, refreshed behind it
-     notification tap   focuses Synora, or opens it
+     push message       shows the server's reminder (Synora closed)
+     notification tap   focuses Synora, or opens it, on the right page
      /api/*, analytics, other sites
                         not touched (always live; other sites stay
                         under the page's Content Security Policy)
@@ -14,7 +15,7 @@
    Bump VERSION to drop the cached page and small files.
    ========================================================= */
 
-const VERSION = "v1";
+const VERSION = "v2";
 const PAGE = "synora-page-" + VERSION;
 const FILES = "synora-files-" + VERSION;
 const ASSETS = "synora-assets";          // kept across versions; trimmed below
@@ -33,14 +34,26 @@ self.addEventListener("activate", (event) => {
   })());
 });
 
-/* Tapping a reminder brings Synora forward (or opens it). */
+/* A reminder pushed by the server (server/push.js) while Synora may be
+   closed: { title, body, tag, url }. */
+self.addEventListener("push", (event) => {
+  let msg;
+  try { msg = event.data ? event.data.json() : {}; } catch { msg = { title: "Synora", body: event.data && event.data.text() }; }
+  event.waitUntil(self.registration.showNotification(msg.title || "Synora", {
+    body: msg.body || "", tag: msg.tag, icon: "/icons/icon-192.png", badge: "/icons/icon-192.png",
+    data: { url: msg.url || "/dashboard" },
+  }));
+});
+
+/* Tapping a reminder brings Synora forward (or opens it) on the right page. */
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
+  const url = (event.notification.data && event.notification.data.url) || (event.notification.tag === "focus" ? "/focus" : "/dashboard");
   event.waitUntil((async () => {
     const open = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
     const client = open.find((c) => new URL(c.url).origin === self.location.origin);
-    if (client) return client.focus();
-    return self.clients.openWindow(event.notification.tag === "focus" ? "/focus" : "/dashboard");
+    if (client) { await client.focus(); return client.navigate ? client.navigate(url).catch(() => {}) : undefined; }
+    return self.clients.openWindow(url);
   })());
 });
 

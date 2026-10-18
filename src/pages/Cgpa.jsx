@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router";
 import { useModal, useModalClose } from "../components/modal/ModalProvider.jsx";
 import { toast } from "../lib/toast.js";
-import { history, overall, saveSemester, removeSemester, archiveCurrent, gradeNeeded, currentName, tally } from "../lib/semesters.js";
+import { history, overall, saveSemester, removeSemester, archiveCurrent, gradeNeeded, currentName, tally, allSemesters, currentRows } from "../lib/semesters.js";
 import Icon from "../components/Icon.jsx";
 import ProgressRing from "../components/ProgressRing.jsx";
 import useStore from "../hooks/useStore.js";
@@ -185,6 +185,68 @@ function GradeNeeded() {
         </label>
       </div>
       {answer && <p className="needed__answer" role="status">{answer}</p>}
+    </div>
+  );
+}
+
+/* ---- What if? ----
+   Try grades for this semester's subjects and watch the SGPA and the
+   overall CGPA move. Nothing is saved unless "Use these grades" is
+   pressed. Starts from the grades already entered. */
+function WhatIf() {
+  const rows = currentRows();
+  const [trial, setTrial] = useState(() => Object.fromEntries(rows.map((r) => [r.id, r.grade || ""])));
+  if (!rows.length) return null;
+  const tried = rows.map((r) => ({ ...r, grade: trial[r.id] ?? r.grade }));
+  const nowSem = tally(rows), trySem = tally(tried);
+  const past = allSemesters().flatMap((x) => x.subjects || []);
+  const nowAll = tally([...past, ...rows]), tryAll = tally([...past, ...tried]);
+  const changed = rows.some((r) => (trial[r.id] ?? "") !== (r.grade || ""));
+
+  function Delta({ from, to }) {
+    if (to === null) return <span className="whatif__val">—</span>;
+    const d = from === null ? null : to - from;
+    return (
+      <span className="whatif__val">
+        {to.toFixed(2)}
+        {d !== null && Math.abs(d) >= 0.005 && <span className={"whatif__delta" + (d > 0 ? " is-up" : " is-down")}>{(d > 0 ? "+" : "") + d.toFixed(2)}</span>}
+      </span>
+    );
+  }
+
+  function apply() {
+    tried.forEach((r) => setGrade(r.id, r.grade));
+    toast.success("Grades saved", "Your CGPA now uses the grades you tried.");
+  }
+
+  return (
+    <div className="card">
+      <div className="card__header">
+        <span className="card__title">What if?</span>
+        <span className="text-small muted">Try grades without saving them</span>
+      </div>
+      <div className="card__body whatif">
+        <div className="whatif__rows">
+          {rows.map((r) => (
+            <label key={r.id} className="whatif__row">
+              <span className="whatif__name">{r.name}<small>{r.credits} cr</small></span>
+              <select className="select select--sm" value={trial[r.id] ?? ""}
+                onChange={(e) => setTrial((t) => ({ ...t, [r.id]: e.target.value }))}>
+                <GradeOptions />
+              </select>
+            </label>
+          ))}
+        </div>
+        <div className="whatif__result" role="status">
+          <div><span className="whatif__label">{currentName()} SGPA</span><Delta from={nowSem.value} to={trySem.value} /></div>
+          <div><span className="whatif__label">Overall CGPA</span><Delta from={nowAll.value} to={tryAll.value} /></div>
+          <div className="whatif__actions">
+            <button type="button" className="btn btn--ghost btn--sm" disabled={!changed}
+              onClick={() => setTrial(Object.fromEntries(rows.map((r) => [r.id, r.grade || ""])))}>Reset</button>
+            <button type="button" className="btn btn--primary btn--sm" disabled={!changed} onClick={apply}>Use these grades</button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -440,6 +502,7 @@ export default function Cgpa() {
           </div>
 
           <GradeNeeded />
+          <WhatIf key={currentRows().map((r) => r.id + ":" + r.grade).join("|")} />
 
           <div className="card">
             <div className="card__header"><span className="card__title">Grades by subject</span></div>
