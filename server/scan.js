@@ -3,7 +3,7 @@
 
    Two providers, picked by which key the server has:
      GEMINI_API_KEY     Google Gemini (free tier from Google AI Studio)
-                        model: GEMINI_MODEL, default gemini-flash-latest
+                        model: GEMINI_MODEL, default gemini-flash-lite-latest
      ANTHROPIC_API_KEY  Anthropic Claude
                         model: SCAN_MODEL, default claude-sonnet-5-5
    Gemini wins when both are set. Either way the model gets the
@@ -27,10 +27,11 @@ function reasonFor(status, text) {
   return "failed";
 }
 
-/* The chosen model first, thinking turned down to "low" (a dense timetable
-   otherwise kept it thinking past the 60 s the server has); if that fails or
-   runs long, Flash-Lite, which answers fastest. Both fit inside 60 s. A
-   model that rejects the thinking setting is asked again without it. */
+/* Flash-Lite first: fast, and it read a dense 37-class test timetable
+   perfectly. If it fails or runs long, Flash. Thinking is turned down to
+   "low" (by default Flash thought past the 60 s the server has on a full
+   week); a model that rejects that setting is asked again without it.
+   Both attempts fit inside 60 s. */
 async function geminiCall(model, mime, base64, prompt, ms, thinking) {
   const base = process.env.GEMINI_BASE_URL || "https://generativelanguage.googleapis.com";
   const generationConfig = { responseMimeType: "application/json", temperature: 0.1 };
@@ -52,7 +53,7 @@ async function geminiCall(model, mime, base64, prompt, ms, thinking) {
 }
 
 async function gemini(mime, base64, prompt) {
-  const attempts = [[process.env.GEMINI_MODEL || "gemini-flash-latest", 34000], ["gemini-flash-lite-latest", 22000]];
+  const attempts = [[process.env.GEMINI_MODEL || "gemini-flash-lite-latest", 30000], ["gemini-flash-latest", 26000]];
   let last;
   for (const [model, ms] of attempts) {
     try {

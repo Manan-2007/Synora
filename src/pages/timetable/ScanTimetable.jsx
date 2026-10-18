@@ -181,7 +181,7 @@ function ScanDialog() {
             : file ? <span className="scan__file"><Icon name="file" size={28} />{file.name}</span>
             : <><Icon name="camera" size={28} /><strong>Take or choose a photo</strong><span>JPG, PNG, WebP or PDF, up to 3.5 MB</span></>}
         </button>
-        {stage === "reading" && <p className="scan__reading" role="status"><span className="scan__spin" />Reading your timetable… this takes about 10–20 seconds.</p>}
+        {stage === "reading" && <p className="scan__reading" role="status"><span className="scan__spin" />Reading your timetable… this can take up to half a minute.</p>}
         {error && <p className="att__error" role="alert">{error}</p>}
       </div>
       <div className="modal__footer">

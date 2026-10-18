@@ -225,8 +225,8 @@ Google's Gemini has a free tier, so that's the easy choice:
 1. Go to [aistudio.google.com/apikey](https://aistudio.google.com/apikey), sign in with a Google
    account, and click **Create API key** (pick or create any project). Copy the key.
 2. In Vercel add `GEMINI_API_KEY` (*Sensitive*), then **Redeploy**.
-3. Optional: `GEMINI_MODEL` picks the model (default `gemini-flash-latest`, which follows Google's
-   newest Flash model).
+3. Optional: `GEMINI_MODEL` picks the model (default `gemini-flash-lite-latest`, Google's newest
+   Flash-Lite; if it fails, Synora tries `gemini-flash-latest`).
 
 Each account can scan 15 times a day. On Gemini's free tier Google may use what's sent to improve its
 products, so scan only the timetable itself. To use Claude instead, set `ANTHROPIC_API_KEY` (and
