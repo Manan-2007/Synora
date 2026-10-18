@@ -2,7 +2,7 @@
 
 Every Synora account, and everything in it, is stored in a **MySQL** database that you can
 open and query in **MySQL Workbench**. That covers the profile, subjects, tasks, notes,
-timetable, attendance, grades, achievements and notifications.
+timetable, attendance, grades, past semesters, focus sessions, achievements and notifications.
 
 * **The live site** ([synora-v1.vercel.app](https://synora-v1.vercel.app/)) uses a free
   **cloud MySQL** database on [Aiven](https://aiven.io/free-mysql-database). Anything anyone
@@ -16,7 +16,7 @@ timetable, attendance, grades, achievements and notifications.
  Browser (React app)            Vercel                                Aiven (cloud)
 ┌──────────────────────┐ /api/* ┌──────────────────────────────┐ SQL  ┌──────────────────┐
 │ localStorage         │ ─────► │ API: serverless function     │ ───► │ MySQL: `synora`  │
-│ (the working copy)   │ ◄───── │ api/index.js → server/app.js │ ◄─── │ 13 tables        │
+│ (the working copy)   │ ◄───── │ api/index.js → server/app.js │ ◄─── │ 17 tables        │
 └──────────────────────┘  JSON  └──────────────────────────────┘ TLS  └──────────────────┘
                                                                               ▲
                                                            MySQL Workbench connects here too
@@ -76,9 +76,13 @@ the database, open the Aiven console and click **Power on**.
 2. Open the connection, then **File → Open SQL Script…** → `database/schema.sql`.
 3. Click the **⚡ lightning bolt**, or press **⌘ ⇧ ↵** (Mac) / **Ctrl + Shift + Enter**
    (Windows). The *Output* panel should show only green ticks.
-4. In the **Navigator → Schemas** tab, click **↻ refresh**. **`synora`** appears with 13 tables.
+4. In the **Navigator → Schemas** tab, click **↻ refresh**. **`synora`** appears with 17 tables.
 
 `schema.sql` is safe to run again later. It never deletes data.
+
+**Created the tables with an older `schema.sql`?** Nothing to do. When a new version of the
+app adds tables or columns, the API adds whatever is missing to the database by itself, on
+its first request after the deploy (`server/migrate.js`). Refresh Workbench to see them.
 
 ## 3. Connect the live site (Vercel)
 
@@ -147,9 +151,37 @@ live data.
    `synora_app` user, which can only connect from this computer.
 2. `cp server/.env.example server/.env`. The defaults already match `local-user.sql`.
 
+Set up a local MySQL before October 2026? Run `local-user.sql` **once more**: it now also lets
+`synora_app` add tables and columns (`CREATE`, `ALTER`), which the self-upgrading schema needs.
+
 **Copying the cloud data to your local MySQL:** in Workbench open the cloud connection, go to
 **Server → Data Export**, tick `synora`, and choose *Export to Self-Contained File*. Then open
 the local connection and use **Server → Data Import** with that file.
+
+## 6. Password-reset emails (Brevo)
+
+*Forgot password?* emails a one-time link. Until this is set up, the page simply says email
+isn't available yet; everything else works.
+
+1. Create a free account at [brevo.com](https://www.brevo.com/) (300 emails a day free).
+2. **Senders, domains & dedicated IPs → Senders → Add a sender**: name `Synora`, and an email
+   address you can open. Brevo emails it a code; enter it to verify the sender.
+3. **SMTP & API → API keys → Generate a new API key**. Copy it (it is shown only once).
+4. In **Vercel → the project → Settings → Environment Variables**, add (all environments):
+
+   | Name | Value |
+   | :--- | :--- |
+   | `BREVO_API_KEY` | the key from step 3 (mark it *Sensitive*) |
+   | `MAIL_FROM` | the sender address verified in step 2 |
+   | `APP_URL` | optional: `https://synora-v1.vercel.app` (where the link points) |
+
+5. **Deployments → ⋯ → Redeploy.** Test it: sign in to an account that has your email, sign
+   out, choose *Forgot password?* and enter the username.
+
+The link expires after 30 minutes and works once; only a SHA-256 hash of it is stored (table
+`password_resets`). Setting a new password signs that account out everywhere. If the email
+doesn't arrive, check the spam folder: mail sent from a free address (such as Gmail) through
+Brevo can't be fully authenticated, and a sender on your own domain is delivered more reliably.
 
 ---
 
@@ -160,15 +192,19 @@ the local connection and use **Server → Data Import** with that file.
 | `users` | account | `username` is unique (case-insensitive); `password_hash` is bcrypt of the browser-derived key |
 | `sessions` | signed-in browser | random 64-character token, valid 30 days; deleted on sign-out |
 | `profiles` | account | avatar, program, semester, attendance target, theme, onboarding done |
-| `user_meta` | account | completion streak |
-| `subjects` | subject | the list the timetable, attendance and grades point at |
-| `tasks` | task | priority / status are `ENUM`s; `subject` is the free-text name |
-| `notes` | quick note | |
-| `timetable_classes` | class slot | foreign key → `subjects` |
+| `user_meta` | account | completion streak, demo version, *Get started* checklist dismissed |
+| `subjects` | subject | the list the timetable, attendance and grades point at; `color` for the UI |
+| `tasks` | task | priority / status / `repeat_rule` are `ENUM`s; `subtasks` is the checklist as JSON; `subject` is the free-text name |
+| `notes` | quick note | `body` is Markdown text |
+| `timetable_classes` | class slot | foreign key → `subjects`; `last_marked` = the day attendance was last asked for it |
 | `attendance` | tracked subject | `attended ≤ total` is enforced with a `CHECK` |
 | `grades` | graded subject | `O`, `A+`, `A`, `B+`, `B` pass; `E1`, `E2`, `E3` fail |
 | `achievements` | unlocked badge | badge definitions live in the app |
 | `notifications` | alert | read / seen flags |
+| `semesters` | completed semester | the CGPA page's semester history |
+| `semester_grades` | subject in a past semester | name, credits and grade; foreign key → `semesters` (`ON DELETE CASCADE`) |
+| `focus_sessions` | finished focus-timer session | subject, task, minutes, when it ended |
+| `password_resets` | emailed reset link | only the SHA-256 hash of the token; expires after 30 minutes |
 | `contact_messages` | message from the landing page's contact form | not tied to an account; nothing is emailed |
 
 * Every table except `users` has a `user_id` foreign key to `users` with **`ON DELETE
@@ -190,6 +226,9 @@ the local connection and use **Server → Data Import** with that file.
 * Every query uses **placeholders** (`?`), so input can't change the SQL (no SQL injection).
 * The live database connection is encrypted (**TLS**) and the server's certificate is checked
   against Aiven's CA.
+* Password-reset links are single-use, expire after 30 minutes and are stored only as a hash.
+  The *Forgot password?* answer is the same whether or not the account exists. Changing or
+  resetting a password signs out the account's other sessions.
 * Sign-in and sign-up are rate-limited: 20 attempts per IP address every 10 minutes per server
   instance, and at most 60 new accounts per hour for the whole site.
 * Text longer than a column allows is trimmed to fit instead of failing the save. The forms
@@ -218,3 +257,5 @@ DROP DATABASE synora;
 | Local API: `ECONNREFUSED 127.0.0.1:3306` | Local MySQL isn't running (macOS: *System Settings → MySQL → Start*). |
 | `Unknown database 'synora'` | `schema.sql` hasn't been run on that server yet. |
 | `Port 4000 is already in use` | Change `API_PORT` in `server/.env`; the app follows it automatically. |
+| *Forgot password?* says email isn't set up | Add `BREVO_API_KEY` and `MAIL_FROM` in Vercel (part 6), then **Redeploy**. |
+| Local API: `ALTER command denied` / `CREATE command denied` | Run `local-user.sql` again (it grants `CREATE` and `ALTER`). |

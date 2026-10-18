@@ -9,7 +9,7 @@
 
 ### One calm home for everything you're studying.
 
-Tasks, timetable, quick notes, CGPA, attendance and achievements, in a single quiet workspace.
+Tasks, timetable, notes, a focus timer, CGPA, attendance and achievements, in a single quiet workspace.
 
 <br>
 
@@ -93,33 +93,34 @@ flowchart LR
 <td width="50%" valign="top">
 
 ### 📋 Tasks & assignments
-- Add, edit, complete and delete tasks with a subject, deadline, **4 priorities** (critical → low) and **3 statuses**.
-- Grouped live into *Today*, *Upcoming*, *Overdue* and *Completed* from the real date, never a manual flag.
-- Search as you type; sort by deadline, priority or newest.
+- Subject, deadline, **4 priorities** (critical → low) and **3 statuses**, grouped live into *Today*, *Upcoming*, *Overdue* and *Completed*.
+- **Repeating tasks** (daily, weekly, monthly): finish one and the next is queued for you.
+- A **checklist** inside any task, tickable straight from the list.
 
 </td>
 <td width="50%" valign="top">
 
 ### 🗓️ Timetable & calendar
-- A Monday–Sunday class grid with times, rooms and teachers. On phones it becomes stacked day cards.
-- A monthly calendar with every deadline on its date. Tap a day to see it, or add a task straight to it.
+- A real week board: classes sized by their times, a line for *now*, and a colour for every subject. Day cards on phones.
+- A **month or week** calendar with every deadline and class on its day.
+- **Export to your calendar** as an `.ics` file (Google, Apple, Outlook): deadlines plus weekly classes.
 
 </td>
 </tr>
 <tr>
 <td valign="top">
 
-### 🎓 CGPA estimator
-- Credit-weighted on the 10-point scale: **CGPA = Σ(credits × grade point) ÷ Σ(credits)**.
-- `O` 10 · `A+` 9 · `A` 8 · `B+` 7 · `B` 6, and three separate failure states, `E1` / `E2` / `E3` (0 points, credits still count).
-- A split bar chart: passes rise above the line, failures drop below it.
+### 🎓 CGPA across semesters
+- Credit-weighted on the 10-point scale: **Σ(credits × grade point) ÷ Σ(credits)**, with `E1` / `E2` / `E3` failures at 0 points.
+- **Semester history:** SGPA for every semester, a trend chart, and the **overall CGPA** across all of them.
+- **"What grade do I need?"**: type a target CGPA and see the average you need in the subjects still ungraded.
 
 </td>
 <td valign="top">
 
 ### 📊 Attendance calculator
-- One-tap **+ / −** for classes held and attended, per subject.
-- Tells you exactly how many classes you can **safely miss**, or how many in a row you **must attend** to get back to your target (75% by default).
+- One-tap **+ / −** per subject, and exactly how many classes you can **safely miss** or **must attend** to reach your target.
+- **"Did you attend?"**: after each class in your timetable, the dashboard asks, and one tap updates the count.
 - Subjects can opt out of attendance and still count towards the CGPA.
 
 </td>
@@ -127,16 +128,33 @@ flowchart LR
 <tr>
 <td valign="top">
 
-### 📝 Quick notes
-- Fast capture for formulas, checklists and lecture takeaways.
-- Tagged by subject, filtered by a live search.
+### 📝 Notes in Markdown
+- `**bold**`, *italics*, headings, lists, code and links, rendered safely (no HTML is ever injected).
+- `- [ ]` checklists that tick right from the note card. Write / Preview while editing.
 
 </td>
 <td valign="top">
 
-### 🏆 Achievements & 🔔 notifications
-- **7 badges** that unlock as you work: *First Step*, *Getting Started*, *Productive*, *Consistent* (3-day streak), *Deadline Master*, *Academic Planner*, *Organized*.
-- One notification centre for overdue and due-today tasks, attendance warnings and new badges.
+### ⏱️ Focus timer
+- Pomodoro blocks (15–60 min) with short and long breaks, for a subject and a task.
+- Keeps running across pages and reloads, with a countdown in the top bar.
+- Finished sessions are saved: today, this week, minutes per subject.
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+### ⌘ Search everything
+- **⌘K / Ctrl+K** (or the search box) finds tasks, notes, subjects and pages, and runs actions like *New task*.
+- Fully keyboard-driven: ↑ ↓ to move, Enter to open.
+
+</td>
+<td valign="top">
+
+### 🔔 Reminders, badges & notifications
+- Optional **browser reminders**: 10 minutes before each class, and a morning note of what's due.
+- **7 badges** that unlock as you work, and one notification centre for deadlines, attendance and badges.
 
 </td>
 </tr>
@@ -144,15 +162,17 @@ flowchart LR
 <td valign="top">
 
 ### 🔐 Accounts that follow you
-- Sign up once. Your workspace is saved in **MySQL** and loads on any browser or device.
+- Your workspace is saved in **MySQL** and loads on any device. Open the site again and you're straight back in your dashboard.
+- Change your password, **reset it by email**, or delete the account and everything in it.
 - A **demo account** with a full semester of sample data, one click from the sign-in page.
 
 </td>
 <td valign="top">
 
-### 🌓 Light & dark, phone to desktop
-- Two hand-tuned themes from one set of design tokens, with no flash of the wrong theme on load.
-- Fully responsive: the sidebar becomes a drawer at 900 px, with phone layouts below 560 px.
+### 📱 Installable, light & dark
+- **Install it** like an app (home screen or dock). It opens instantly and works offline.
+- Two hand-tuned themes from one set of design tokens; layouts for phone, tablet and desktop.
+- A *Get started* checklist and friendly illustrations whenever a page is empty.
 
 </td>
 </tr>
@@ -178,7 +198,7 @@ The screens below come from the live app, signed in to the demo account.
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dark/tasks.webp">
   <img alt="Tasks" src="docs/screenshots/light/tasks.webp">
 </picture>
-<p align="center"><b>Tasks</b>: grouped by date, searchable, sorted by what matters</p>
+<p align="center"><b>Tasks</b>: grouped by date, with repeats and checklists</p>
 </td>
 </tr>
 <tr>
@@ -187,14 +207,14 @@ The screens below come from the live app, signed in to the demo account.
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dark/timetable.webp">
   <img alt="Timetable" src="docs/screenshots/light/timetable.webp">
 </picture>
-<p align="center"><b>Timetable</b>: the week's classes with rooms and teachers</p>
+<p align="center"><b>Timetable</b>: the week board, coloured by subject</p>
 </td>
 <td>
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dark/calendar.webp">
   <img alt="Calendar" src="docs/screenshots/light/calendar.webp">
 </picture>
-<p align="center"><b>Calendar</b>: every deadline on its day</p>
+<p align="center"><b>Calendar</b>: month or week, exportable as <code>.ics</code></p>
 </td>
 </tr>
 <tr>
@@ -219,8 +239,33 @@ The screens below come from the live app, signed in to the demo account.
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dark/notes.webp">
   <img alt="Quick notes" src="docs/screenshots/light/notes.webp">
 </picture>
-<p align="center"><b>Quick notes</b>: per subject, searchable</p>
+<p align="center"><b>Notes</b>: Markdown, with checklists that tick</p>
 </td>
+<td>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dark/focus.webp">
+  <img alt="Focus timer" src="docs/screenshots/light/focus.webp">
+</picture>
+<p align="center"><b>Focus</b>: Pomodoro timer and where the week's time went</p>
+</td>
+</tr>
+<tr>
+<td>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dark/search.webp">
+  <img alt="Search with Command K" src="docs/screenshots/light/search.webp">
+</picture>
+<p align="center"><b>⌘K search</b>: tasks, notes, subjects, pages and actions</p>
+</td>
+<td>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dark/semesters.webp">
+  <img alt="Semester history" src="docs/screenshots/light/semesters.webp">
+</picture>
+<p align="center"><b>Semester history</b>: SGPA trend and overall CGPA</p>
+</td>
+</tr>
+<tr>
 <td>
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dark/achievements.webp">
@@ -228,8 +273,6 @@ The screens below come from the live app, signed in to the demo account.
 </picture>
 <p align="center"><b>Achievements</b>: badges earned by actually studying</p>
 </td>
-</tr>
-<tr>
 <td>
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dark/onboarding.webp">
@@ -237,18 +280,11 @@ The screens below come from the live app, signed in to the demo account.
 </picture>
 <p align="center"><b>Onboarding</b>: six short steps to make it yours</p>
 </td>
-<td>
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dark/settings.webp">
-  <img alt="Settings" src="docs/screenshots/light/settings.webp">
-</picture>
-<p align="center"><b>Settings</b>: profile, avatar, subjects and preferences</p>
-</td>
 </tr>
 </table>
 
 <details>
-<summary><b>More screens</b>: sign-in and notifications</summary>
+<summary><b>More screens</b>: sign-in, notifications and settings</summary>
 <br>
 <table>
 <tr>
@@ -267,6 +303,16 @@ The screens below come from the live app, signed in to the demo account.
 <p align="center"><b>Notifications</b>: deadlines, attendance and badges in one place</p>
 </td>
 </tr>
+<tr>
+<td>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dark/settings.webp">
+  <img alt="Settings" src="docs/screenshots/light/settings.webp">
+</picture>
+<p align="center"><b>Settings</b>: profile, subjects and colours, reminders, password</p>
+</td>
+<td></td>
+</tr>
 </table>
 </details>
 
@@ -274,28 +320,34 @@ The screens below come from the live app, signed in to the demo account.
 
 <table>
 <tr>
-<td width="25%">
+<td width="20%">
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dark/phone-dashboard.webp">
   <img alt="Dashboard on a phone" src="docs/screenshots/light/phone-dashboard.webp">
 </picture>
 </td>
-<td width="25%">
+<td width="20%">
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dark/phone-tasks.webp">
   <img alt="Tasks on a phone" src="docs/screenshots/light/phone-tasks.webp">
 </picture>
 </td>
-<td width="25%">
+<td width="20%">
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dark/phone-timetable.webp">
   <img alt="Timetable on a phone" src="docs/screenshots/light/phone-timetable.webp">
 </picture>
 </td>
-<td width="25%">
+<td width="20%">
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dark/phone-cgpa.webp">
   <img alt="CGPA on a phone" src="docs/screenshots/light/phone-cgpa.webp">
+</picture>
+</td>
+<td width="20%">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dark/phone-focus.webp">
+  <img alt="Focus timer on a phone" src="docs/screenshots/light/phone-focus.webp">
 </picture>
 </td>
 </tr>
@@ -304,6 +356,7 @@ The screens below come from the live app, signed in to the demo account.
 <td align="center"><sub>Tasks</sub></td>
 <td align="center"><sub>Timetable as day cards</sub></td>
 <td align="center"><sub>CGPA with compact grades</sub></td>
+<td align="center"><sub>Focus timer</sub></td>
 </tr>
 </table>
 
@@ -331,10 +384,11 @@ flowchart TB
     L["/ · Landing"] --> SU["/signup"] & LI["/login<br/>+ demo account"]
     SU --> OB["/onboarding<br/>6 steps"] --> D
     LI --> D["/dashboard"]
+    LI -.-> FG["/forgot → email →<br/>/reset"]
     D --> PLAN & ACAD & ACC
     subgraph PLAN["Planning"]
         direction TB
-        T["/tasks"] ~~~ C["/calendar"] ~~~ TT["/timetable"] ~~~ N["/notes"]
+        T["/tasks"] ~~~ C["/calendar"] ~~~ TT["/timetable"] ~~~ N["/notes"] ~~~ F["/focus"]
     end
     subgraph ACAD["Academics"]
         direction TB
@@ -350,8 +404,9 @@ flowchart TB
     class D hub
 ```
 
-Any unknown URL redirects to `/`. Old links from the first, vanilla version (`/app/dashboard.html`
-and so on) permanently redirect to their new routes.
+Opening the site while signed in skips the landing and sign-in pages and goes straight to
+`/dashboard`. Any unknown URL redirects to `/`. Old links from the first, vanilla version
+(`/app/dashboard.html` and so on) permanently redirect to their new routes.
 
 ---
 
@@ -379,7 +434,7 @@ flowchart LR
     end
     subgraph AIVEN["Aiven cloud"]
         direction TB
-        DB[("MySQL · synora<br/>13 tables")]
+        DB[("MySQL · synora<br/>17 tables")]
         WB["MySQL Workbench"]
     end
     UI -->|"loaded from"| CDN
@@ -399,9 +454,11 @@ flowchart LR
 | **Framework-free logic** | Tasks, grades, attendance maths, notifications & achievements engine, auth | `src/lib/` |
 | **Store** | `localStorage` is the working copy. `useStore()` re-renders pages on every write (`useSyncExternalStore`) | `src/lib/storage.js` |
 | **Sync** | Sends only what changed (items added, edited, deleted) and re-loads changes from other devices | `src/lib/sync.js` |
-| **API** | Express routes for sign-up, sign-in, sign-out and saving / loading data | `server/app.js` |
+| **API** | Express routes for sign-up, sign-in, sign-out, password change / reset, account deletion, saving / loading data | `server/app.js` |
+| **Self-upgrading schema** | Adds new tables and columns to an existing database on the first request after a deploy | `server/migrate.js` |
 | **Serverless entry** | Runs the same Express app as a Vercel function | `api/index.js` |
-| **Database** | 13 MySQL tables (12 per-account + contact messages) | `database/schema.sql` |
+| **Database** | 17 MySQL tables (16 per-account + contact messages) | `database/schema.sql` |
+| **Offline & install** | Web app manifest and a service worker that caches the app shell | `public/sw.js` |
 
 ### Every change, saved twice
 
@@ -484,6 +541,9 @@ sequenceDiagram
   sign-in uploads them.
 - Each browser session token is tied to its account, and the API refuses (`409`) a save addressed to a
   different account.
+- **Forgot your password?** `/forgot` emails a one-time link (via Brevo) that expires after 30
+  minutes. Only a SHA-256 hash of the link's token is stored, and using it signs out every device.
+  The page never says whether an account exists.
 - **Auto-connect:** while someone is signed in without a database session (a cold start, the
   database powered off, an expired token), the app retries on load, every 30 seconds, and when the tab
   comes back into view. It links the account the moment it can.
@@ -492,10 +552,11 @@ sequenceDiagram
 
 ## ✦ The database
 
-Thirteen tables in a database called `synora`. Twelve hold the accounts and their workspaces: every
+Seventeen tables in a database called `synora`. Sixteen hold the accounts and their workspaces: every
 row belongs to a user (`user_id`), and deleting an account deletes everything it owns (`ON DELETE
-CASCADE`). The thirteenth, `contact_messages`, stores what people send through the landing page's
-*Get in Touch* form. Full setup guide (Aiven →
+CASCADE`). The seventeenth, `contact_messages`, stores what people send through the landing page's
+*Get in Touch* form. New tables and columns reach an existing database by themselves: the API adds
+whatever is missing on its first request after a deploy (`server/migrate.js`). Full setup guide (Aiven →
 MySQL Workbench → Vercel): **[`database/README.md`](database/README.md)**.
 
 ```mermaid
@@ -509,6 +570,10 @@ erDiagram
     users ||--o{ notes : writes
     users ||--o{ achievements : unlocks
     users ||--o{ notifications : receives
+    users ||--o{ semesters : completed
+    semesters ||--o{ semester_grades : contains
+    users ||--o{ focus_sessions : focuses
+    users ||--o{ password_resets : "may request"
     subjects ||--o{ timetable_classes : "scheduled as"
     subjects ||--o{ attendance : "tracked in"
     subjects ||--o{ grades : "graded in"
@@ -540,6 +605,7 @@ erDiagram
         int user_id PK, FK
         int streak
         date last_completion_date
+        boolean checklist_dismissed
     }
     subjects {
         int user_id PK, FK
@@ -547,6 +613,7 @@ erDiagram
         varchar name
         tinyint credits
         boolean track_attendance
+        varchar color
     }
     tasks {
         int user_id PK, FK
@@ -556,6 +623,8 @@ erDiagram
         date deadline
         enum priority "critical … low"
         enum status
+        enum repeat_rule "none / daily / weekly / monthly"
+        json subtasks "the checklist"
         datetime completed_at
     }
     notes {
@@ -573,6 +642,7 @@ erDiagram
         time start_time
         time end_time
         varchar room
+        date last_marked "attendance asked"
     }
     attendance {
         int user_id PK, FK
@@ -598,6 +668,31 @@ erDiagram
         varchar type
         varchar title
         boolean is_read
+    }
+    semesters {
+        int user_id PK, FK
+        varchar id PK
+        varchar name
+    }
+    semester_grades {
+        int user_id PK, FK
+        varchar id PK
+        varchar semester_id FK
+        varchar name
+        tinyint credits
+        enum grade
+    }
+    focus_sessions {
+        int user_id PK, FK
+        varchar id PK
+        varchar subject_id
+        smallint minutes
+        datetime ended_at
+    }
+    password_resets {
+        char token_hash PK "SHA-256"
+        int user_id FK
+        datetime expires_at "30 minutes"
     }
     contact_messages {
         int id PK
@@ -677,7 +772,9 @@ flash of the wrong one.
 | **Styling** | Hand-written CSS with design tokens: no framework, no UI kit |
 | **API** | Node.js + Express 5, `mysql2` (connection pool, TLS), `bcryptjs` |
 | **Database** | MySQL on Aiven (cloud), or any local MySQL 8+ |
-| **Hosting** | Vercel: static build, serverless API, Web Analytics |
+| **Hosting** | Vercel (Mumbai region, next to the database): static build, serverless API, Web Analytics |
+| **Email** | Brevo's transactional API, for password-reset links (one `fetch`, no SDK) |
+| **Quality** | ESLint (React hooks rules) and a GitHub Actions check (lint + build) on every push |
 | **Runtime dependencies** | `react`, `react-dom`, `react-router` in the app, and `express`, `mysql2`, `bcryptjs` in the API. Nothing else. |
 
 ---
@@ -688,23 +785,26 @@ flash of the wrong one.
 Synora/
 ├── index.html              # HTML shell: fonts, pre-paint theme script, analytics
 ├── vite.config.js          # Vite build; proxies /api to the local API
-├── vercel.json             # SPA rewrite, /api routing, redirects, asset caching
+├── vercel.json             # SPA rewrite, /api routing, redirects, headers, region
+├── eslint.config.js        # Lint rules (npm run lint)
+├── .github/workflows/      # CI: lint + build on every push
 ├── start.sh / start.bat    # One-click launchers (app + API)
 │
 ├── api/
 │   └── index.js            # Vercel serverless function → server/app.js
 ├── server/                 # The API
-│   ├── app.js              # Routes: health, signup, login, logout, data
+│   ├── app.js              # Routes: health, signup, login, logout, password, account, data
 │   ├── collections.js      # The app's collections ⇄ table rows
+│   ├── migrate.js          # Adds new tables / columns to an existing database
 │   ├── db.js               # MySQL pool (TLS for the cloud), transactions
 │   └── index.js            # Runs the API locally (npm run server)
 ├── database/
-│   ├── schema.sql          # Creates the `synora` database and its 13 tables
+│   ├── schema.sql          # Creates the `synora` database and its 17 tables
 │   ├── local-user.sql      # The API's login on a local MySQL
 │   ├── queries.sql         # Ready-made queries for MySQL Workbench
 │   └── README.md           # Setup guide: Aiven, Workbench, Vercel
 │
-├── public/                 # Favicons, copied as-is
+├── public/                 # Icons, web app manifest, service worker (sw.js)
 ├── docs/                   # README screenshots and brand images
 └── src/
     ├── main.jsx            # Entry: router, sync, auto-connect
@@ -748,6 +848,7 @@ developing, create `server/.env` (pointing at the cloud database, or a local MyS
 | `npm run dev` | the app with hot reload |
 | `npm run server` | the API on `127.0.0.1:4000` (reads `server/.env`) |
 | `npm run build` | production build into `dist/` |
+| `npm run lint` | ESLint over the app, the API and the service worker |
 | `npm run preview` | serve the production build |
 
 ---
@@ -760,6 +861,9 @@ The live site deploys automatically from `main` on **Vercel**.
 - [`vercel.json`](vercel.json) sends `/api/*` to that function and every other path to `index.html`, so deep links like `/dashboard` work on refresh.
 - It also permanently redirects old `/app/*.html` links, and caches hashed assets for a year.
 - The database connection comes only from Vercel's environment variables (`DB_HOST`, `DB_PASSWORD`, `DB_SSL_CA`, …), never from the repository.
+- The API runs in Vercel's Mumbai region (`bom1`), a ~20 ms round trip from the Aiven database.
+- New tables and columns are added to the live database automatically after a deploy.
+- Password-reset emails need `BREVO_API_KEY` and `MAIL_FROM` (a sender verified in Brevo). Without them, *Forgot password?* says email isn't set up yet. See [`database/README.md`](database/README.md#6-password-reset-emails-brevo).
 - Until those variables are set, `/api/health` answers *no database* and the site runs on browser storage.
 - Security headers on every response:
   - a strict **Content-Security-Policy** (scripts only from the site itself);
@@ -796,6 +900,25 @@ itself to fresh sample data once a day, so its deadlines always look current.
 </details>
 
 <details>
+<summary><b>Can I install it like an app?</b></summary>
+<br>Yes. In Chrome or Edge use <b>Install Synora</b> (or Settings → <i>Install the app</i>); on an iPhone,
+Safari's <b>Share → Add to Home Screen</b>. It opens full screen, straight into your workspace, and loads
+offline from its own copy.
+</details>
+
+<details>
+<summary><b>I forgot my password.</b></summary>
+<br>Use <b>Forgot password?</b> on the sign-in page. If the account has an email address, a link to set a
+new password arrives within a minute and works for 30 minutes.
+</details>
+
+<details>
+<summary><b>Do reminders work when Synora is closed?</b></summary>
+<br>Not yet. Reminders come from the open app (a background tab or the installed app is enough). Push
+notifications that arrive with everything closed are on the roadmap.
+</details>
+
+<details>
 <summary><b>What happens if the database is down?</b></summary>
 <br>Nothing visible. The app keeps working from the browser copy and uploads everything as soon as the
 database is back, without asking you to sign in again.
@@ -805,11 +928,14 @@ database is back, without asking you to sign in again.
 
 ## ✦ Roadmap
 
-- [ ] **Calendar export:** timetable and deadlines as an `.ics` file
+- [x] **Calendar export:** timetable and deadlines as an `.ics` file
+- [x] **Reminders** while the app is open: classes and what's due today
+- [x] **Demo reset:** the shared demo account restores its sample data every day
+- [x] **Semesters, focus timer, ⌘K search, Markdown notes, installable app**
+- [ ] **Push reminders** that arrive with the app closed (Web Push)
 - [ ] **Syllabus tracker:** topic-by-topic progress inside each subject
-- [ ] **Reminders:** browser push notifications for high-priority deadlines
 - [ ] **Contact form delivery:** send *Get in touch* messages by email
-- [ ] **Demo reset:** restore the shared demo account to its sample data automatically
+- [ ] **Data export:** download your whole workspace as a file
 
 ---
 

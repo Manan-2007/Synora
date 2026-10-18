@@ -29,7 +29,7 @@ const USERNAME = "arsh2309";
 const PASSWORD = "arsh2309";       // public demo credential — not a real secret
 
 /* Bump whenever the shipped demo data below changes. */
-const SEED_VERSION = 2;
+const SEED_VERSION = 3;
 
 /* The demo is one shared account in the database, and its deadlines are
    relative to the day it was seeded. So it re-seeds once a day: meta keeps
@@ -63,12 +63,12 @@ const PROFILE = {
 
 /* The canonical six. Fixed ids so every other record can point here. */
 const SUBJECTS = [
-  { id: "fee",     name: "FEE",                  credits: 3, trackAttendance: true },
-  { id: "dbms",    name: "DBMS",                 credits: 3, trackAttendance: true },
-  { id: "sde",     name: "SDE",                  credits: 3, trackAttendance: true },
-  { id: "oops",    name: "OOPS",                 credits: 4, trackAttendance: true },
-  { id: "cyber",   name: "Cyber Security",       credits: 3, trackAttendance: false },
-  { id: "finance", name: "Finance for Everyone", credits: 1, trackAttendance: false },
+  { id: "fee",     name: "FEE",                  credits: 3, trackAttendance: true,  color: "amber" },
+  { id: "dbms",    name: "DBMS",                 credits: 3, trackAttendance: true,  color: "teal" },
+  { id: "sde",     name: "SDE",                  credits: 3, trackAttendance: true,  color: "indigo" },
+  { id: "oops",    name: "OOPS",                 credits: 4, trackAttendance: true,  color: "plum" },
+  { id: "cyber",   name: "Cyber Security",       credits: 3, trackAttendance: false, color: "rose" },
+  { id: "finance", name: "Finance for Everyone", credits: 1, trackAttendance: false, color: "olive" },
 ];
 
 /* Counts for the four tracked subjects only — deliberately uneven, so the
@@ -95,6 +95,26 @@ const CGPA = {
     { id: "grd-finance", subjectId: "finance", grade: "B"  },
   ],
 };
+
+/* The two semesters before this one, for the SGPA trend and the overall
+   CGPA:  Sem 1  138 / 16 = 8.63   ·   Sem 2  130 / 17 = 7.65
+   Overall with Semester 3 (118 / 17):  386 / 50 credits = 7.72        */
+const SEMESTERS = [
+  { id: "sem-1", name: "Semester 1", subjects: [
+    { id: "s1-maths",    name: "Engineering Maths I", credits: 4, grade: "A"  },
+    { id: "s1-physics",  name: "Physics",             credits: 4, grade: "A+" },
+    { id: "s1-c",        name: "C Programming",       credits: 4, grade: "O"  },
+    { id: "s1-english",  name: "Communication Skills", credits: 2, grade: "B+" },
+    { id: "s1-workshop", name: "Engineering Workshop", credits: 2, grade: "A"  },
+  ] },
+  { id: "sem-2", name: "Semester 2", subjects: [
+    { id: "s2-maths",   name: "Engineering Maths II", credits: 4, grade: "B+" },
+    { id: "s2-chem",    name: "Chemistry",            credits: 4, grade: "A"  },
+    { id: "s2-ds",      name: "Data Structures",      credits: 4, grade: "A+" },
+    { id: "s2-digital", name: "Digital Electronics",  credits: 3, grade: "B"  },
+    { id: "s2-evs",     name: "Environmental Studies", credits: 2, grade: "A" },
+  ] },
+];
 
 /* Three two-hour blocks a day, Monday to Friday. */
 const TIMETABLE = [
@@ -130,7 +150,7 @@ function whenCompleted(days) {
 
 function tasks() {
   const made = new Date(Date.now() - 20 * 86400000).toISOString();
-  const task = (fields) => ({ description: "", createdAt: made, completedAt: null, ...fields });
+  const task = (fields) => ({ description: "", repeat: "none", subtasks: [], createdAt: made, completedAt: null, ...fields });
   return [
     /* ---- Overdue (3) ---- */
     task({ id: "tsk-1", title: "Submit SDE assignment 2", subject: "SDE",
@@ -157,7 +177,13 @@ function tasks() {
       deadline: dateOffset(2), priority: "high", status: "not-started" }),
     task({ id: "tsk-7", title: "SDE project — module 3", subject: "SDE",
       description: "Finish the reporting module and write its test cases.",
-      deadline: dateOffset(4), priority: "critical", status: "not-started" }),
+      deadline: dateOffset(4), priority: "critical", status: "in-progress",
+      subtasks: [
+        { id: "st-7-1", text: "Report screen layout", done: true },
+        { id: "st-7-2", text: "Export to PDF", done: true },
+        { id: "st-7-3", text: "Unit tests for the report service", done: false },
+        { id: "st-7-4", text: "Demo to Dr. Rao", done: false },
+      ] }),
     task({ id: "tsk-8", title: "FEE unit test revision", subject: "FEE",
       description: "AC fundamentals and RLC circuits.",
       deadline: dateOffset(6), priority: "medium", status: "not-started" }),
@@ -166,6 +192,16 @@ function tasks() {
       deadline: dateOffset(8), priority: "low", status: "not-started" }),
     task({ id: "tsk-10", title: "Read SDE chapter on agile estimation", subject: "SDE",
       deadline: dateOffset(11), priority: "low", status: "not-started" }),
+
+    /* ---- Repeats every week: finishing it queues next week's ---- */
+    task({ id: "tsk-21", title: "DBMS weekly quiz", subject: "DBMS",
+      description: "Online quiz on the week's unit, open till Friday night.",
+      deadline: dateOffset(3), priority: "medium", status: "not-started", repeat: "weekly",
+      subtasks: [
+        { id: "st-21-1", text: "Re-read this week's slides", done: true },
+        { id: "st-21-2", text: "Practise 10 SQL queries", done: false },
+        { id: "st-21-3", text: "Attempt the quiz", done: false },
+      ] }),
 
     /* ---- Completed — two before their deadline, the rest late, which
        keeps "Deadline Master" (3 on time) still to earn. ---- */
@@ -198,30 +234,52 @@ function daysAgo(days) {
   return new Date(Date.now() - days * 86400000).toISOString();
 }
 
+/* Note bodies are Markdown: headings, lists, **bold**, `code` and
+   checklists that tick straight from the card. */
 function notes() {
   return [
     { id: "nte-1", title: "DBMS — SQL revision", category: "DBMS",
-      body: "JOIN types: INNER keeps matches only, LEFT keeps every row on the left, " +
-            "FULL keeps both sides.\nNormalization: 1NF atomic values → 2NF no partial " +
-            "dependency → 3NF no transitive dependency → BCNF every determinant is a key.",
+      body: "## Joins\n- **INNER** keeps matches only\n- **LEFT** keeps every row on the left\n" +
+            "- **FULL** keeps both sides\n\n## Normalization\n1. 1NF: atomic values\n" +
+            "2. 2NF: no partial dependency\n3. 3NF: no transitive dependency\n" +
+            "4. BCNF: every determinant is a candidate key\n\n" +
+            "`SELECT name FROM student NATURAL JOIN marks WHERE score > 80;`",
       createdAt: daysAgo(9), updatedAt: daysAgo(3) },
     { id: "nte-2", title: "OOPS — the four pillars", category: "OOPS",
-      body: "Encapsulation: data + methods behind one interface.\nInheritance: reuse, " +
-            "not copy.\nPolymorphism: overloading is compile-time, overriding is run-time.\n" +
-            "Abstraction: expose what it does, hide how.",
+      body: "- **Encapsulation**: data + methods behind one interface\n" +
+            "- **Inheritance**: reuse, not copy\n" +
+            "- **Polymorphism**: overloading is compile-time, overriding is run-time\n" +
+            "- **Abstraction**: expose *what* it does, hide *how*",
       createdAt: daysAgo(7), updatedAt: daysAgo(2) },
     { id: "nte-3", title: "SDE — assignment checklist", category: "SDE",
-      body: "Still to do: reporting module, unit tests, and the README.\n" +
-            "Ask Dr. Rao whether the estimation section needs story points or hours.",
+      body: "- [x] Reporting module\n- [ ] Unit tests\n- [ ] README\n\n" +
+            "> Ask Dr. Rao whether the estimation section needs story points or hours.",
       createdAt: daysAgo(5), updatedAt: daysAgo(1) },
     { id: "nte-4", title: "FEE — formulas to remember", category: "FEE",
-      body: "Thevenin: find Vth open-circuit, Rth with sources killed.\n" +
-            "For AC: Z = R + j(XL − XC), and resonance is at XL = XC.",
+      body: "**Thevenin**: find `Vth` open-circuit, `Rth` with sources killed.\n\n" +
+            "**AC**: `Z = R + j(XL − XC)`, and resonance is at `XL = XC`.",
       createdAt: daysAgo(4), updatedAt: daysAgo(4) },
     { id: "nte-5", title: "Week plan", category: "Personal",
-      body: "Mon–Tue: clear the overdue SDE assignment.\nWed: DBMS viva prep.\n" +
-            "Thu: OOPS practical.\nFri: catch up on SDE attendance.",
+      body: "- [x] Mon–Tue: clear the overdue SDE assignment\n- [ ] Wed: DBMS viva prep\n" +
+            "- [ ] Thu: OOPS practical\n- [ ] Fri: catch up on SDE attendance",
       createdAt: daysAgo(2), updatedAt: daysAgo(0) },
+  ];
+}
+
+/* Focus-timer history: a few sessions over the last days. */
+function focusSessions() {
+  const at = (days, hour, minute) => {
+    const d = new Date(Date.now() - days * 86400000);
+    d.setHours(hour, minute, 0, 0);
+    return d.toISOString();
+  };
+  return [
+    { id: "fcs-demo-1", subjectId: "dbms", taskId: "tsk-5", minutes: 25, endedAt: at(0, 8, 40) },
+    { id: "fcs-demo-2", subjectId: "oops", taskId: "tsk-6", minutes: 45, endedAt: at(1, 18, 30) },
+    { id: "fcs-demo-3", subjectId: "oops", taskId: "tsk-6", minutes: 25, endedAt: at(1, 19, 5) },
+    { id: "fcs-demo-4", subjectId: "sde",  taskId: "tsk-7", minutes: 50, endedAt: at(2, 17, 0) },
+    { id: "fcs-demo-5", subjectId: "fee",  taskId: "",      minutes: 25, endedAt: at(3, 20, 15) },
+    { id: "fcs-demo-6", subjectId: "dbms", taskId: "",      minutes: 25, endedAt: at(4, 16, 45) },
   ];
 }
 
@@ -234,6 +292,8 @@ function seed() {
   store.set("timetable", TIMETABLE.map((c) => ({ ...c })));
   store.set("tasks", tasks());
   store.set("notes", notes());
+  store.set("semesters", SEMESTERS.map((sem) => ({ ...sem, subjects: sem.subjects.map((x) => ({ ...x })) })));
+  store.set("focus", focusSessions());
 
   profile.save({ ...PROFILE });
 
