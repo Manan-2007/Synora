@@ -79,7 +79,7 @@ export default function ContactSection() {
       return;
     }
     setBusy(true);
-    let ok = false;
+    let ok;
     try {
       ok = (await api.contact(trimmed)).status === 201;
     } catch {

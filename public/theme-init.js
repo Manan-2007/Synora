@@ -4,7 +4,7 @@
    Policy (vercel.json) can allow scripts from this site only. */
 (function () {
   var saved = null;
-  try { saved = localStorage.getItem("synora-theme"); } catch (e) { /* storage blocked */ }
+  try { saved = localStorage.getItem("synora-theme"); } catch { /* storage blocked */ }
   var systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
   document.documentElement.setAttribute("data-theme", saved || (systemPrefersDark ? "dark" : "light"));
 })();

@@ -97,6 +97,7 @@ const requireAuth = handle(async (req, res, next) => {
    storage. */
 app.get("/api/health", handle(async (req, res) => {
   if (!configured) return res.status(503).json({ error: "no-database" });
+  const started = Date.now();
   try {
     await pool.query("SELECT 1");
   } catch (err) {
@@ -105,7 +106,9 @@ app.get("/api/health", handle(async (req, res) => {
     console.error("Health check failed:", err.code || err.name, err.sqlMessage || err.message);
     return res.status(500).json({ error: "database-unreachable", code: err.code || "unknown" });
   }
-  res.json({ ok: true });
+  /* Where the API ran and how long one database round trip took: used to
+     keep the serverless function close to the database (vercel.json). */
+  res.json({ ok: true, region: process.env.VERCEL_REGION || "local", dbMs: Date.now() - started });
 }));
 
 /* The same rules the signup form checks, enforced again here. (Password
@@ -227,7 +230,9 @@ app.put("/api/data", requireAuth, handle(async (req, res) => {
   res.status(204).end();
 }));
 
-app.use((err, req, res, next) => {
+/* Four parameters, even though the last is unused: that is how Express
+   recognises an error handler. */
+app.use((err, req, res, _next) => {
   /* Bad requests (unreadable JSON, too large) say so instead of a 500. */
   if (err.status && err.status >= 400 && err.status < 500) {
     return res.status(err.status).json({ error: err.type || "bad-request" });
