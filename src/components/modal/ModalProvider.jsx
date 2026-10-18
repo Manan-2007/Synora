@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Icon from "../Icon.jsx";
 
@@ -78,6 +78,7 @@ function ModalFrame({ modal, isTop, remove }) {
   const [entered, setEntered] = useState(false);
   const modalRef = useRef(null);
   const closedRef = useRef(false);
+  const titleId = useId();
   const { id, onClose } = modal;
 
   const close = useCallback(() => {
@@ -112,9 +113,9 @@ function ModalFrame({ modal, isTop, remove }) {
     <div className={"modal-backdrop" + (entered && !modal.closing ? " is-open" : "")}
       onClick={(e) => { if (e.target === e.currentTarget) close(); }}>
       <div ref={modalRef} className={"modal" + (modal.size === "sm" ? " modal--sm" : "")}
-        role="dialog" aria-modal="true">
+        role="dialog" aria-modal="true" aria-labelledby={titleId}>
         <div className="modal__header">
-          <h2 className="modal__title">{modal.title}</h2>
+          <h2 className="modal__title" id={titleId}>{modal.title}</h2>
           <button type="button" className="icon-btn" aria-label="Close" onClick={close}>
             <Icon name="x" size={18} />
           </button>

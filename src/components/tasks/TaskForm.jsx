@@ -1,9 +1,13 @@
 import { useCallback, useRef, useState } from "react";
 import { useModal, useModalClose } from "../modal/ModalProvider.jsx";
-import { PRIORITY, STATUS, newTask, saveTask, removeTask } from "../../lib/tasks.js";
+import Icon from "../Icon.jsx";
+import { PRIORITY, STATUS, REPEAT, newTask, saveTask, removeTask, repeatOf, nextMessage } from "../../lib/tasks.js";
 import { streak } from "../../lib/engine.js";
 import { store } from "../../lib/storage.js";
 import { toast } from "../../lib/toast.js";
+import { uid, todayISO } from "../../lib/util.js";
+
+const MAX_STEPS = 50;
 
 /* The shared task dialog (create / edit), used by the Tasks page, the
    dashboard's quick-add and the calendar. Passing a task makes it an
@@ -47,7 +51,11 @@ function TaskForm({ task, isEdit }) {
     priority: task.priority || "medium",
     status: task.status || "not-started",
     description: task.description || "",
+    repeat: repeatOf(task),
   });
+  const [steps, setSteps] = useState(() => (task.subtasks || []).map((st) => ({ ...st })));
+  const [newStep, setNewStep] = useState("");
+  const stepRef = useRef(null);
   /* A datalist, not a select: it offers the user's own subjects without
      ruling out a task that belongs to none of them. */
   const [subjects] = useState(() => store.subjects.all());
@@ -56,6 +64,15 @@ function TaskForm({ task, isEdit }) {
     value: values[name],
     onChange: (e) => setValues((v) => ({ ...v, [name]: e.target.value })),
   });
+
+  function addStep() {
+    const text = newStep.trim();
+    if (!text || steps.length >= MAX_STEPS) return;
+    setSteps((list) => [...list, { id: uid("st"), text: text.slice(0, 200), done: false }]);
+    setNewStep("");
+    stepRef.current.focus();
+  }
+  const editStep = (id, patch) => setSteps((list) => list.map((st) => (st.id === id ? { ...st, ...patch } : st)));
 
   function submit() {
     const title = values.title.trim();
@@ -68,9 +85,11 @@ function TaskForm({ task, isEdit }) {
       ...task,
       title,
       subject: values.subject.trim(),
-      deadline: values.deadline || "",
+      deadline: values.deadline || (values.repeat !== "none" ? todayISO() : ""),
       priority: values.priority,
       description: values.description.trim(),
+      repeat: values.repeat,
+      subtasks: steps.map((st) => ({ ...st, text: st.text.trim() })).filter((st) => st.text),
     };
     // Keep completedAt consistent with status.
     if (values.status === "completed" && task.status !== "completed") {
@@ -81,9 +100,9 @@ function TaskForm({ task, isEdit }) {
     }
     t.status = values.status;
 
-    saveTask(t);
+    const next = saveTask(t);
     close();
-    toast.success(isEdit ? "Task updated" : "Task added", t.title);
+    toast.success(isEdit ? "Task updated" : "Task added", next ? t.title + " · " + nextMessage(next) : t.title);
   }
 
   return (
@@ -124,6 +143,49 @@ function TaskForm({ task, isEdit }) {
               </select>
             </div>
           </div>
+          <div className="form-grid">
+            <div className="field" style={{ margin: 0 }}>
+              <label className="field__label" htmlFor="tf-repeat">Repeats</label>
+              <select className="select" id="tf-repeat" {...bind("repeat")}>
+                {Object.keys(REPEAT).map((k) => <option key={k} value={k}>{REPEAT[k].label}</option>)}
+              </select>
+            </div>
+            {values.repeat !== "none" && (
+              <p className="text-small muted tf-repeat-hint">
+                Finish it and the next one is added for you{values.deadline ? "" : ", starting today"}.
+              </p>
+            )}
+          </div>
+          <fieldset className="field tf-steps" style={{ margin: 0 }}>
+            <legend className="field__label">Checklist</legend>
+            {steps.length > 0 && (
+              <ul className="tf-steps__list">
+                {steps.map((st, i) => (
+                  <li key={st.id} className="tf-steps__row">
+                    <input type="checkbox" checked={st.done} aria-label={"Step " + (i + 1) + " done"}
+                      onChange={(e) => editStep(st.id, { done: e.target.checked })} />
+                    <input className="input input--sm" value={st.text} maxLength={200} aria-label={"Step " + (i + 1)}
+                      onChange={(e) => editStep(st.id, { text: e.target.value })} />
+                    <button type="button" className="icon-btn" aria-label={"Remove step " + (i + 1)}
+                      onClick={() => setSteps((list) => list.filter((x) => x.id !== st.id))}>
+                      <Icon name="x" size={14} />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {steps.length < MAX_STEPS && (
+              <div className="tf-steps__add">
+                <input className="input input--sm" ref={stepRef} value={newStep} maxLength={200}
+                  placeholder={steps.length ? "Add another step" : "Break it into steps (optional)"} aria-label="New step"
+                  onChange={(e) => setNewStep(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addStep(); } }} />
+                <button type="button" className="btn btn--ghost btn--sm" onClick={addStep} disabled={!newStep.trim()}>
+                  <Icon name="plus" size={14} />Add
+                </button>
+              </div>
+            )}
+          </fieldset>
           <div className="field" style={{ margin: 0 }}>
             <label className="field__label" htmlFor="tf-desc">Notes</label>
             <textarea className="input" id="tf-desc" maxLength={5000} placeholder="Optional details" {...bind("description")} />

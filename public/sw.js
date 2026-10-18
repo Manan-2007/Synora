@@ -6,6 +6,7 @@
      /assets/*          cache first: build files have content
                         hashes in their names, so they never change
      other files here   cached copy at once, refreshed behind it
+     notification tap   focuses Synora, or opens it
      /api/*, analytics, other sites
                         not touched (always live; other sites stay
                         under the page's Content Security Policy)
@@ -29,6 +30,17 @@ self.addEventListener("activate", (event) => {
       if (key.startsWith("synora-") && ![PAGE, FILES, ASSETS].includes(key)) await caches.delete(key);
     }
     await self.clients.claim();
+  })());
+});
+
+/* Tapping a reminder brings Synora forward (or opens it). */
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  event.waitUntil((async () => {
+    const open = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    const client = open.find((c) => new URL(c.url).origin === self.location.origin);
+    if (client) return client.focus();
+    return self.clients.openWindow(event.notification.tag === "focus" ? "/focus" : "/dashboard");
   })());
 });
 

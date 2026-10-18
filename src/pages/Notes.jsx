@@ -1,14 +1,17 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router";
 import Icon from "../components/Icon.jsx";
+import Markdown from "../components/Markdown.jsx";
 import { useModal, useModalClose } from "../components/modal/ModalProvider.jsx";
 import useStore from "../hooks/useStore.js";
-import { allNotes, saveNote, removeNote } from "../lib/notes.js";
+import { allNotes, getNote, saveNote, removeNote, toggleNoteTask } from "../lib/notes.js";
 import { uid, formatDate, toISODate } from "../lib/util.js";
 import { toast } from "../lib/toast.js";
 import EmptyArt from "../components/EmptyArt.jsx";
 
 /* Quick notes: create, edit, delete, search — "quick notes", not a
-   full document editor. */
+   full document editor. Bodies are Markdown (components/Markdown.jsx);
+   checklist boxes tick straight from the card. */
 
 function NoteForm({ note, isEdit }) {
   const close = useModalClose();
@@ -17,6 +20,7 @@ function NoteForm({ note, isEdit }) {
   const [category, setCategory] = useState(note.category || "");
   const [body, setBody] = useState(note.body || "");
   const [titleError, setTitleError] = useState("");
+  const [preview, setPreview] = useState(false);
 
   function submit() {
     const t = title.trim();
@@ -47,15 +51,60 @@ function NoteForm({ note, isEdit }) {
               onChange={(e) => setCategory(e.target.value)} />
           </div>
           <div className="field" style={{ margin: 0 }}>
-            <label className="field__label" htmlFor="nf-body">Note</label>
-            <textarea className="input" id="nf-body" maxLength={20000} style={{ minHeight: 140 }} placeholder="Capture a thought…"
-              value={body} onChange={(e) => setBody(e.target.value)} />
+            <div className="nf-body__head">
+              <label className="field__label" htmlFor="nf-body" style={{ margin: 0 }}>Note</label>
+              <div className="segmented segmented--sm" role="group" aria-label="Editor view">
+                <button type="button" className={preview ? "" : "is-active"} aria-pressed={!preview} onClick={() => setPreview(false)}>Write</button>
+                <button type="button" className={preview ? "is-active" : ""} aria-pressed={preview} onClick={() => setPreview(true)}>Preview</button>
+              </div>
+            </div>
+            {preview ? (
+              <div className="nf-preview">
+                {body.trim() ? <Markdown text={body} /> : <p className="muted text-small" style={{ margin: 0 }}>Nothing to preview yet.</p>}
+              </div>
+            ) : (
+              <textarea className="input" id="nf-body" maxLength={20000} style={{ minHeight: 160 }}
+                placeholder={"Capture a thought…\n\n- [ ] a checklist item\n**bold**, *italic*, # heading"}
+                value={body} onChange={(e) => setBody(e.target.value)} />
+            )}
+            <p className="nf-hint">
+              Markdown works: <code>**bold**</code> <code>*italic*</code> <code># heading</code> <code>- list</code>{" "}
+              <code>- [ ] checklist</code> <code>`code`</code> <code>[link](https://…)</code>
+            </p>
           </div>
         </form>
       </div>
       <div className="modal__footer">
         <button type="button" className="btn btn--ghost" onClick={close}>Cancel</button>
         <button type="button" className="btn btn--primary" onClick={submit}>{isEdit ? "Save" : "Add note"}</button>
+      </div>
+    </>
+  );
+}
+
+/* The whole note, rendered; its checklist ticks right here. */
+function NoteView({ id, onEdit }) {
+  useStore();
+  const close = useModalClose();
+  const note = getNote(id);
+  useEffect(() => { if (!note) close(); }, [note, close]);
+  if (!note) return null;
+  return (
+    <>
+      <div className="modal__body">
+        <div className="note-view__meta">
+          {note.category && <span className="badge badge--neutral">{note.category}</span>}
+          <span className="text-small muted">Updated {formatDate(toISODate(new Date(note.updatedAt)))}</span>
+        </div>
+        {note.body.trim()
+          ? <Markdown text={note.body} onToggle={(line) => toggleNoteTask(note.id, line)} className="note-view__body" />
+          : <p className="muted">This note has no text yet.</p>}
+      </div>
+      <div className="modal__footer">
+        <button type="button" className="btn btn--ghost" onClick={close}>Close</button>
+        <button type="button" className="btn btn--primary" onClick={() => { close(); onEdit(note); }}>
+          <Icon name="edit" size={16} />Edit
+        </button>
       </div>
     </>
   );
@@ -74,6 +123,24 @@ export default function Notes() {
         note={existing || { id: uid("nte"), title: "", body: "", category: "", createdAt: now, updatedAt: now }} />,
     });
   }, [modal]);
+
+  const openView = useCallback((note) => {
+    modal.open({ title: note.title, content: <NoteView id={note.id} onEdit={openForm} /> });
+  }, [modal, openForm]);
+
+  /* Links from the ⌘K search: /notes?open=<id> or /notes?new=1 */
+  const [params, setParams] = useSearchParams();
+  const handledLink = useRef("");
+  useEffect(() => {
+    const open = params.get("open");
+    const isNew = params.get("new");
+    if (!open && !isNew) return;
+    if (handledLink.current === params.toString()) return;   // once per link, even when effects run twice
+    handledLink.current = params.toString();
+    setParams({}, { replace: true });
+    if (isNew) openForm(null);
+    else if (getNote(open)) openView(getNote(open));
+  }, [params, setParams, openForm, openView]);
 
   async function confirmDelete(note) {
     const ok = await modal.confirm({
@@ -120,9 +187,14 @@ export default function Notes() {
           {items.length ? (
             <div className="notes-grid">
               {items.map((n) => (
-                <article className="note-card" key={n.id}>
-                  <h2 className="note-card__title">{n.title}</h2>
-                  <p className="note-card__body">{n.body || ""}</p>
+                <article className="note-card" key={n.id}
+                  onClick={(e) => { if (!e.target.closest("button, a, input, label")) openView(n); }}>
+                  <h2 className="note-card__title">
+                    <button type="button" className="note-card__open" onClick={() => openView(n)}>{n.title}</button>
+                  </h2>
+                  {n.body
+                    ? <Markdown text={n.body} onToggle={(line) => toggleNoteTask(n.id, line)} className="note-card__body" />
+                    : <p className="note-card__body"></p>}
                   <div className="note-card__foot">
                     {n.category
                       ? <span className="badge badge--neutral">{n.category}</span>

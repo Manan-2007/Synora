@@ -6,6 +6,7 @@ export const NAV = [
     { id: "calendar", label: "Calendar", path: "/calendar", icon: "calendar" },
     { id: "timetable", label: "Timetable", path: "/timetable", icon: "clock" },
     { id: "notes", label: "Quick Notes", path: "/notes", icon: "note" },
+    { id: "focus", label: "Focus", path: "/focus", icon: "timer" },
   ] },
   { group: "Academics", items: [
     { id: "cgpa", label: "CGPA", path: "/cgpa", icon: "chart" },

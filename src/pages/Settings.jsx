@@ -13,6 +13,7 @@ import { setTheme } from "../lib/theme.js";
 import { clamp, EMAIL_RE } from "../lib/util.js";
 import { toast } from "../lib/toast.js";
 import { install } from "../lib/install.js";
+import { reminderState, subscribeReminders, enableReminders, disableReminders, sendTestReminder } from "../lib/reminders.js";
 import { changePassword, deleteAccount, passwordProblem } from "../lib/auth.js";
 import { demo } from "../lib/demo.js";
 import ColorPicker from "../components/ColorPicker.jsx";
@@ -290,6 +291,60 @@ function InstallCard() {
   );
 }
 
+function RemindersCard() {
+  const state = useSyncExternalStore(subscribeReminders, reminderState);
+  const [busy, setBusy] = useState(false);
+
+  async function turnOn() {
+    setBusy(true);
+    const result = await enableReminders();
+    setBusy(false);
+    if (result === "on") toast.success("Reminders are on", "For this device.");
+    else if (result === "blocked") toast.error("Notifications are blocked", "Allow them for this site in your browser's settings.");
+  }
+
+  async function test() {
+    if (!(await sendTestReminder())) toast.error("Couldn't show a notification", "Check your browser's notification settings.");
+  }
+
+  return (
+    <div className="card">
+      <div className="card__header">
+        <span className="card__title">Reminders</span>
+        {state === "on" && <span className="badge badge--done">On</span>}
+      </div>
+      <div className="card__body stack" style={{ gap: 12 }}>
+        <p className="text-small muted" style={{ margin: 0 }}>
+          A notification 10 minutes before each class, and each morning for what's due that day. They arrive while
+          Synora is open — in a tab, even in the background, or as the installed app.
+        </p>
+        {state === "unsupported" && (
+          <p className="text-small" style={{ margin: 0 }}>This browser can't show notifications.</p>
+        )}
+        {state === "blocked" && (
+          <p className="text-small" style={{ margin: 0 }}>
+            Notifications are blocked for this site. Allow them in your browser's site settings (the icon left of
+            the address), then come back here.
+          </p>
+        )}
+        {state === "off" && (
+          <div className="row row--wrap" style={{ gap: 12 }}>
+            <button type="button" className="btn btn--primary" onClick={turnOn} disabled={busy}>
+              <Icon name="bell" size={16} /> Turn on reminders
+            </button>
+          </div>
+        )}
+        {state === "on" && (
+          <div className="row row--wrap" style={{ gap: 12 }}>
+            <button type="button" className="btn btn--ghost" onClick={test}>Send a test</button>
+            <button type="button" className="btn btn--ghost" onClick={disableReminders}>Turn off</button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function TextField({ label, id, value, onChange, placeholder = "", type = "text", maxLength = 120 }) {
   return (
     <label className="field" style={{ margin: 0 }}>
@@ -551,6 +606,7 @@ export default function Settings() {
           </div>
 
           {/* ---- Account ---- */}
+          <RemindersCard />
           <InstallCard />
 
           <div className="card">

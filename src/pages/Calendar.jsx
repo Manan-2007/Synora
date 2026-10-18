@@ -8,6 +8,7 @@ import { store } from "../lib/storage.js";
 import { PRIORITY, allTasks, toggleComplete } from "../lib/tasks.js";
 import { allClasses, DAYS, timeLabel } from "../lib/timetable.js";
 import { subjectVar } from "../lib/colors.js";
+import { exportCalendar } from "../lib/ics.js";
 import { todayISO, formatDate, toISODate } from "../lib/util.js";
 
 /* Every task with a deadline, on its day — as a month grid, or as a week
@@ -198,6 +199,12 @@ export default function Calendar() {
     <>
       <div className="page__header">
         <p className="page__subtitle">Your deadlines on one timeline — click a day to see what's due.</p>
+        <div className="page__actions">
+          <button type="button" className="btn btn--ghost" onClick={() => exportCalendar({ tasks: true, classes: true })}
+            title="Deadlines and weekly classes as an .ics file">
+            <Icon name="download" size={16} />Export to calendar
+          </button>
+        </div>
       </div>
 
       <div>

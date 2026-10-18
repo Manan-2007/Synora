@@ -9,6 +9,7 @@ import { toast } from "../../lib/toast.js";
 import { DAYS, todayName, allClasses, getClass, removeClass, timeLabel } from "../../lib/timetable.js";
 import { subjectVar } from "../../lib/colors.js";
 import EmptyArt from "../../components/EmptyArt.jsx";
+import { exportCalendar } from "../../lib/ics.js";
 
 /* A weekly class schedule. Desktop shows a 7-day grid; on small screens
    the CSS stacks each day into its own card. */
@@ -152,7 +153,7 @@ function WeekBoard({ list, today, onOpen }) {
       {days.map((day) => {
         const items = layLanes(timed.filter((x) => x.c.day === day).sort((a, b) => a.start - b.start));
         return (
-          <div key={day} className={"tt-board__col" + (day === today ? " is-today" : "")} aria-label={day}>
+          <div key={day} className={"tt-board__col" + (day === today ? " is-today" : "")} role="group" aria-label={day}>
             {items.map(({ c, start, end, lane, lanes }) => (
               <button key={c.id} type="button" className="tt-block" onClick={() => onOpen(getClass(c.id))}
                 style={{
@@ -170,7 +171,7 @@ function WeekBoard({ list, today, onOpen }) {
               </button>
             ))}
             {day === today && nowTop !== null && (
-              <span className="tt-now" style={{ top: nowTop }} aria-label={"Now, " + now.toTimeString().slice(0, 5)}></span>
+              <span className="tt-now" style={{ top: nowTop }} role="img" aria-label={"Now, " + now.toTimeString().slice(0, 5)}></span>
             )}
           </div>
         );
@@ -254,6 +255,12 @@ export default function Timetable() {
       <div className="page__header">
         <p className="page__subtitle">Your week of classes at a glance. Tap any class to edit it.</p>
         <div className="page__actions">
+          {allClasses().length > 0 && (
+            <button type="button" className="btn btn--ghost" title="Your classes as weekly events in an .ics file"
+              onClick={() => exportCalendar({ tasks: false, classes: true }, "synora-timetable.ics")}>
+              <Icon name="download" size={16} />Export
+            </button>
+          )}
           <button type="button" className="btn btn--ghost" onClick={() => openClassForm(null)}>
             <PlusIcon />
             Add class

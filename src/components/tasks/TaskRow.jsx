@@ -1,5 +1,6 @@
+import { useState } from "react";
 import Icon from "../Icon.jsx";
-import { PRIORITY } from "../../lib/tasks.js";
+import { PRIORITY, REPEAT, repeatOf, toggleSubtask } from "../../lib/tasks.js";
 import { daysUntil, relativeDay } from "../../lib/util.js";
 import { store } from "../../lib/storage.js";
 import { subjectVar } from "../../lib/colors.js";
@@ -9,6 +10,10 @@ import { subjectVar } from "../../lib/colors.js";
 export default function TaskRow({ task, onToggle, onEdit, onDelete }) {
   const done = task.status === "completed";
   const p = PRIORITY[task.priority] || PRIORITY.medium;
+  const [open, setOpen] = useState(false);
+  const steps = task.subtasks || [];
+  const stepsDone = steps.filter((st) => st.done).length;
+  const repeat = repeatOf(task);
 
   let due = null;
   if (task.deadline && !done) {
@@ -23,7 +28,7 @@ export default function TaskRow({ task, onToggle, onEdit, onDelete }) {
         onClick={() => onToggle(task.id)}>
         <Icon name="check" size={12} />
       </button>
-      <span className="titem__main">
+      <div className="titem__main">
         <span className="titem__title">{task.title}</span>
         <span className="titem__meta">
           {task.subject && (() => {
@@ -34,9 +39,31 @@ export default function TaskRow({ task, onToggle, onEdit, onDelete }) {
           })()}
           <span className={"badge " + p.badge}><span className="badge__dot"></span>{p.label}</span>
           {due}
+          {repeat !== "none" && (
+            <span className="titem__repeat" title={REPEAT[repeat].label}><Icon name="repeat" size={12} />{REPEAT[repeat].short}</span>
+          )}
+          {steps.length > 0 && (
+            <button type="button" className={"titem__steps" + (stepsDone === steps.length ? " is-complete" : "")}
+              aria-expanded={open} onClick={() => setOpen((o) => !o)}
+              aria-label={stepsDone + " of " + steps.length + " steps done. " + (open ? "Hide" : "Show") + " checklist"}>
+              <Icon name="list" size={12} />{stepsDone}/{steps.length}
+            </button>
+          )}
           {done && task.completedAt && <span>Done</span>}
         </span>
-      </span>
+        {open && steps.length > 0 && (
+          <ul className="titem__checklist">
+            {steps.map((st) => (
+              <li key={st.id}>
+                <label className={st.done ? "is-done" : ""}>
+                  <input type="checkbox" checked={st.done} onChange={() => toggleSubtask(task.id, st.id)} />
+                  <span>{st.text}</span>
+                </label>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
       {onEdit && (
         <span className="titem__actions">
           <button type="button" className="icon-btn" aria-label="Edit task" onClick={() => onEdit(task)}>

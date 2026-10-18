@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { Link, useLocation, useNavigate } from "react-router";
 import Icon from "../components/Icon.jsx";
 import NotificationIcon from "../components/NotificationIcon.jsx";
 import SyncStatus from "../components/SyncStatus.jsx";
@@ -7,6 +7,28 @@ import { UserAvatar } from "../components/AvatarArt.jsx";
 import { profile, session } from "../lib/storage.js";
 import { notifications, refresh } from "../lib/engine.js";
 import { toggleTheme } from "../lib/theme.js";
+import { openPalette, isMac } from "../components/CommandPalette.jsx";
+import { timer, subscribeTimer, remainingMs, inProgress, clock, MODES } from "../lib/focus.js";
+
+/* The focus timer, while it runs (or waits paused), on every other page. */
+function FocusPill() {
+  const s = useSyncExternalStore(subscribeTimer, timer);
+  const { pathname } = useLocation();
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!s.running) return undefined;
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [s.running]);
+  if (pathname === "/focus" || !inProgress(s)) return null;
+  const left = clock(remainingMs(s, s.running ? now : undefined));
+  return (
+    <Link to="/focus" className={"focus-pill" + (s.running ? "" : " is-paused")}
+      aria-label={MODES[s.mode].label + (s.running ? ": " + left + " left" : ": paused at " + left) + ". Open the focus timer"}>
+      <Icon name="timer" size={15} />{s.running ? left : "Paused"}
+    </Link>
+  );
+}
 
 export default function Topbar({ title, onMenuToggle }) {
   const [openPop, setOpenPop] = useState(null);   // "bell" | "profile" | null
@@ -62,8 +84,15 @@ export default function Topbar({ title, onMenuToggle }) {
       <h1 className="topbar__title">{title}</h1>
 
       <div className="topbar__actions">
+        <button type="button" className="topbar-search" onClick={openPalette} aria-label="Search (shortcut: Control K or Command K)"
+          aria-keyshortcuts={isMac() ? "Meta+K" : "Control+K"}>
+          <Icon name="search" size={16} />
+          <span className="topbar-search__text">Search…</span>
+          <kbd>{isMac() ? "⌘K" : "Ctrl K"}</kbd>
+        </button>
+        <FocusPill />
         <SyncStatus />
-        <button type="button" className="icon-btn" aria-label="Toggle dark mode" onClick={toggleTheme}>
+        <button type="button" className="icon-btn topbar__theme" aria-label="Toggle dark mode" onClick={toggleTheme}>
           <span className="only-light"><Icon name="moon" size={18} /></span>
           <span className="only-dark"><Icon name="sun" size={18} /></span>
         </button>
@@ -115,6 +144,13 @@ export default function Topbar({ title, onMenuToggle }) {
               </span>
             </div>
             <Link className="menu-link" to="/settings"><Icon name="settings" size={16} />Settings</Link>
+            {/* Phones hide the topbar's theme button to make room; it lives here too. */}
+            <button type="button" className="menu-link menu-link--theme" onClick={toggleTheme}>
+              <span className="only-light"><Icon name="moon" size={16} /></span>
+              <span className="only-dark"><Icon name="sun" size={16} /></span>
+              <span className="only-light">Dark theme</span>
+              <span className="only-dark">Light theme</span>
+            </button>
             <button type="button" className="menu-link menu-link--danger" onClick={signOut}>
               <Icon name="logout" size={16} />Sign out
             </button>
