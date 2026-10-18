@@ -862,6 +862,52 @@ textarea.input { min-height: 96px; resize: vertical; line-height: var(--leading-
 }
 .empty__icon svg { width: 26px; height: 26px; }
 
+/* Dashboard: "Did you attend?" */
+.attend-ask { margin-bottom: var(--space-24); border-color: color-mix(in srgb, var(--color-brand) 35%, var(--color-border)); }
+.attend-ask__title { font-family: var(--font-heading); font-size: 1.0625rem; font-weight: var(--weight-semibold); margin: 0 0 var(--space-12); letter-spacing: var(--tracking-normal); }
+.attend-ask__list { display: flex; flex-direction: column; gap: var(--space-8); }
+.attend-ask__row { display: flex; align-items: center; gap: var(--space-12); flex-wrap: wrap; padding: var(--space-8) 0; border-top: 1px solid var(--color-border); }
+.attend-ask__row:first-child { border-top: 0; padding-top: 0; }
+.attend-ask__what { flex: 1 1 160px; min-width: 0; }
+.attend-ask__actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.attend-ask__skip { color: var(--color-text-muted); }
+
+/* CGPA: "What grade do I need?" */
+.needed { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-16); flex-wrap: wrap; }
+.needed__title { font-family: var(--font-heading); font-size: 1.0625rem; font-weight: var(--weight-semibold); margin: 0 0 2px; letter-spacing: var(--tracking-normal); }
+.needed__input { display: flex; flex-direction: column; gap: 4px; width: 160px; }
+.needed__answer {
+  margin: var(--space-16) 0 0; padding: var(--space-12) var(--space-16);
+  border-radius: var(--radius-md); background: var(--color-surface-sage);
+  font-size: var(--text-small);
+}
+
+/* CGPA: semester editor rows */
+.sem-rows { display: flex; flex-direction: column; gap: 6px; }
+.sem-rows__head, .sem-row { display: grid; grid-template-columns: minmax(0, 1fr) 70px 150px 32px; gap: 8px; align-items: center; }
+.sem-rows__head { font-size: 0.6875rem; font-weight: var(--weight-semibold); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--color-text-subtle); }
+@media (max-width: 560px) {
+  .sem-rows__head { display: none; }
+  .sem-row { grid-template-columns: minmax(0, 1fr) 64px 32px; }
+  .sem-row .select { grid-column: 1 / 3; }
+}
+
+/* CGPA: SGPA trend */
+.sgpa-trend { display: flex; align-items: flex-end; gap: var(--space-12); height: 180px; padding: 0 4px; border-bottom: 1px solid var(--color-border); }
+.sgpa-trend__col { flex: 1; max-width: 90px; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 4px; }
+.sgpa-trend__value { font-size: 0.75rem; font-weight: var(--weight-semibold); }
+.sgpa-trend__bar { width: 100%; max-width: 46px; border-radius: var(--radius-sm) var(--radius-sm) 0 0; background: color-mix(in srgb, var(--color-brand) 45%, var(--color-surface)); }
+.sgpa-trend__bar.is-current { background: var(--color-brand); }
+.sgpa-trend__name { font-size: 0.6875rem; color: var(--color-text-muted); text-align: center; margin-bottom: -22px; height: 18px; white-space: nowrap; }
+.sgpa-trend { margin-bottom: 22px; }
+.sem-table__now { margin-left: 8px; }
+@media (max-width: 560px) {
+  /* Phones: no sideways scrolling — credits go, actions stay in view */
+  .sem-table th:nth-child(2), .sem-table td:nth-child(2) { display: none; }
+  .sem-table th, .sem-table td { padding-left: 10px; padding-right: 10px; }
+  .sem-table__now { margin: 4px 0 0; display: table; }
+}
+
 /* Settings: the delete-account row */
 .danger-zone {
   display: flex; align-items: center; justify-content: space-between; gap: var(--space-16); flex-wrap: wrap;

@@ -11,11 +11,56 @@ import { allTasks, toggleComplete } from "../lib/tasks.js";
 import { daysUntil, relativeDay, parseISODate, clamp, plural } from "../lib/util.js";
 import { subjectVar } from "../lib/colors.js";
 import EmptyArt from "../components/EmptyArt.jsx";
+import { overall } from "../lib/semesters.js";
+import { classesToMark, markClass } from "../lib/attendance.js";
+import { toast } from "../lib/toast.js";
 
 /* The command centre: who am I, what's due today, what's overdue,
    what's next, and how am I doing academically. */
 
 /* Late night (midnight–5am) is still "evening", not morning. */
+/* After a class ends: did you go? One tap updates the attendance counts
+   (lib/attendance.js markClass); each class is asked about once a day. */
+function AttendancePrompt() {
+  const [, tick] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => tick((n) => n + 1), 60000);   // classes finish while the page is open
+    return () => clearInterval(t);
+  }, []);
+  const list = classesToMark();
+  if (!list.length) return null;
+
+  function answer(c, outcome) {
+    const r = markClass(c.id, outcome);
+    if (outcome === "cancelled") toast("Not counted", c.subject + " wasn't held, so attendance is unchanged.");
+    else toast.success(outcome === "attended" ? "Marked present" : "Marked absent",
+      c.subject + " is now at " + r.pct.toFixed(0) + "% (" + r.attended + " of " + r.total + ").");
+  }
+
+  return (
+    <section className="card card--pad attend-ask" aria-labelledby="attend-ask-title">
+      <h2 className="attend-ask__title" id="attend-ask-title">Did you attend?</h2>
+      <div className="attend-ask__list">
+        {list.map((c) => (
+          <div className="attend-ask__row" key={c.id}>
+            <span className="subject-dot" style={subjectVar(c.color)} aria-hidden="true"></span>
+            <span className="attend-ask__what">
+              <strong>{c.subject}</strong>
+              <span className="text-small muted">{" " + c.time + (c.room ? " · " + c.room : "")}</span>
+            </span>
+            <span className="attend-ask__actions">
+              <button type="button" className="btn btn--primary btn--sm" onClick={() => answer(c, "attended")}>Attended</button>
+              <button type="button" className="btn btn--ghost btn--sm" onClick={() => answer(c, "missed")}>Missed</button>
+              <button type="button" className="btn btn--ghost btn--sm attend-ask__skip" onClick={() => answer(c, "cancelled")}
+                aria-label={"Class cancelled: " + c.subject}>Cancelled</button>
+            </span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 /* First steps for a new workspace. Each ticks itself off from what's
    actually there; the card goes away once all are done, or when closed
    (remembered in meta, so on every device). */
@@ -201,7 +246,9 @@ export default function Dashboard() {
   const classes = derive.todaysClasses();
   const upcoming = derive.upcomingDeadlines(5);
   const att = derive.attendance();
-  const cgpa = derive.cgpa();
+  /* Overall CGPA: past semesters too, when there are any. */
+  const total = overall();
+  const cgpa = total.value !== null ? { value: total.value, max: total.max } : null;
 
   let todayTasks = allTasks().filter((t) => {
     if (t.status === "completed") return false;
@@ -237,6 +284,7 @@ export default function Dashboard() {
         )}
 
         {p.onboarded && <GettingStarted />}
+        <AttendancePrompt />
 
         <div className="dash-hero">
           <UserAvatar size={52} className="avatar--lg" />

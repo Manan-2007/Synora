@@ -8,7 +8,8 @@
 
 import { store, profile } from "./storage.js";
 import { refresh } from "./engine.js";
-import { uid, clamp, plural } from "./util.js";
+import { uid, clamp, plural, todayISO } from "./util.js";
+import { todayName } from "./timetable.js";
 
 export function attendanceTarget() {
   return Number(profile.get().targetAttendance) || 75;
@@ -106,4 +107,38 @@ export function analyse(row) {
     }
   }
   return res;
+}
+
+/* ---- Asking after each class (dashboard) ----
+   Today's classes that have finished, for subjects that record
+   attendance, and that haven't been answered yet today. The answer is
+   remembered on the timetable entry (lastMarked), so every device stops
+   asking once one has answered. */
+
+const nowHHMM = (d) => String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+
+export function classesToMark(now = new Date()) {
+  const today = todayISO();
+  const time = nowHHMM(now);
+  return store.get("timetable")
+    .filter((c) => c.day === todayName() && c.endTime && c.endTime <= time && c.lastMarked !== today)
+    .map((c) => ({ c, s: store.subjects.byId(c.subjectId) }))
+    .filter(({ s }) => s && s.trackAttendance)
+    .sort((a, b) => (a.c.startTime < b.c.startTime ? -1 : 1))
+    .map(({ c, s }) => ({ id: c.id, subject: s.name, color: s.color, room: c.room || "", time: c.startTime + "–" + c.endTime, subjectId: s.id }));
+}
+
+/* outcome: "attended" (held +1, attended +1), "missed" (held +1) or
+   "cancelled" (not held: no change). Returns the subject's new counts. */
+export function markClass(classId, outcome) {
+  const entry = store.get("timetable").find((c) => c.id === classId);
+  if (!entry) return null;
+  const row = countsFor(entry.subjectId);
+  let total = Number(row.total) || 0;
+  let attended = Number(row.attended) || 0;
+  if (outcome === "attended") { total += 1; attended += 1; }
+  else if (outcome === "missed") total += 1;
+  store.update("timetable", (list) => list.map((c) => (c.id === classId ? { ...c, lastMarked: todayISO() } : c)));
+  const r = outcome === "cancelled" ? { total, attended } : setCounts(entry.subjectId, total, attended);
+  return { ...r, pct: r.total ? (r.attended / r.total) * 100 : 0 };
 }
