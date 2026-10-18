@@ -9,6 +9,8 @@ import { derive, refresh } from "../lib/engine.js";
 import { analyse, attendanceTarget, countsFor, setCounts, stepCount } from "../lib/attendance.js";
 import { clamp } from "../lib/util.js";
 import { toast } from "../lib/toast.js";
+import { subjectVar } from "../lib/colors.js";
+import EmptyArt from "../components/EmptyArt.jsx";
 
 /* =========================================================
    Attendance — the subjects with trackAttendance = true, and
@@ -160,8 +162,8 @@ function AttendanceChart({ subjects, goal }) {
             {subjects.map((s) => (
               <div className="chart__col" key={s.subjectId}>
                 <span className="chart__value">{s.pct.toFixed(0) + "%"}</span>
-                <div className={"chart__bar" + (s.pct < goal ? " chart__bar--danger" : "")}
-                  style={{ height: clamp(s.pct, 0, 100) + "%" }}></div>
+                <div className={"chart__bar" + (s.pct < goal ? " chart__bar--danger" : " chart__bar--subject")}
+                  style={{ height: clamp(s.pct, 0, 100) + "%", ...subjectVar(s.color) }}></div>
               </div>
             ))}
           </div>
@@ -298,7 +300,7 @@ export default function Attendance() {
               </div>
             ) : (
               <div className="empty" style={{ padding: "40px 24px" }}>
-                <span className="empty__icon"><Icon name="users" size={26} /></span>
+                <EmptyArt name="attendance" />
                 <p className="empty__title">No subjects are tracked for attendance</p>
                 <p className="empty__text">
                   Attendance follows your subject list. Turn on "Record attendance" for a subject in Settings and it

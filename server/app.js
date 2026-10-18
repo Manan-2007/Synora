@@ -29,10 +29,18 @@ import crypto from "node:crypto";
 import express from "express";
 import bcrypt from "bcryptjs";
 import { pool, transaction, configured } from "./db.js";
+import { ensureSchema } from "./migrate.js";
 import { COLLECTIONS, applyChanges, changesFromCollections, loadCollections } from "./collections.js";
 
 const app = express();
 app.use(express.json({ limit: "2mb" }));
+
+/* Bring the database schema up to date before the first request that
+   touches data (server/migrate.js). The health check stays instant. */
+app.use("/api", async (req, res, next) => {
+  if (configured && req.path !== "/health") await ensureSchema();
+  next();
+});
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 /* 64 hex characters (PBKDF2-SHA256); short ones are the older, weaker key

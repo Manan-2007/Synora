@@ -13,6 +13,9 @@ import { setTheme } from "../lib/theme.js";
 import { clamp, EMAIL_RE } from "../lib/util.js";
 import { toast } from "../lib/toast.js";
 import { install } from "../lib/install.js";
+import ColorPicker from "../components/ColorPicker.jsx";
+import { nextColor, subjectVar } from "../lib/colors.js";
+import EmptyArt from "../components/EmptyArt.jsx";
 
 /* =========================================================
    Settings — who you are, what you study, how it looks, and
@@ -44,6 +47,7 @@ function SubjectForm({ subject }) {
   const [name, setName] = useState(s.name);
   const [credits, setCredits] = useState(String(s.credits));
   const [track, setTrack] = useState(s.trackAttendance !== false);
+  const [color, setColor] = useState(s.color || nextColor(store.subjects.all()));
   const [errors, setErrors] = useState({});
 
   function submit() {
@@ -56,8 +60,8 @@ function SubjectForm({ subject }) {
     if (clash) { setErrors({ name: "You already have a subject with that name." }); return; }
     if (isNaN(value) || value < 0) { setErrors({ credits: "Enter the subject's credit value." }); return; }
 
-    if (isEdit) store.subjects.save({ id: s.id, name: trimmed, credits: value, trackAttendance: track });
-    else store.subjects.add(trimmed, value, track);
+    if (isEdit) store.subjects.save({ id: s.id, name: trimmed, credits: value, trackAttendance: track, color });
+    else store.subjects.add(trimmed, value, track, color);
 
     close();
     refresh();
@@ -78,6 +82,11 @@ function SubjectForm({ subject }) {
             <input className="input" type="number" min="0" max="20" id="sf-credits" value={credits} placeholder="4"
               onChange={(e) => setCredits(e.target.value)} />
             <p className="field__error">{errors.credits || ""}</p>
+          </div>
+          <div className="field" style={{ margin: 0 }}>
+            <span className="field__label" id="sf-color-label">Colour</span>
+            <ColorPicker value={color} onChange={setColor} name="sf-color" />
+            <p className="field__hint">Used for this subject across the timetable, calendar, tasks and charts.</p>
           </div>
           <label className="check-row" style={{ alignItems: "flex-start" }}>
             <input type="checkbox" id="sf-track" checked={track} onChange={(e) => setTrack(e.target.checked)} />
@@ -341,7 +350,12 @@ export default function Settings() {
                     <tbody>
                       {subjects.map((s) => (
                         <tr key={s.id}>
-                          <td><strong>{s.name}</strong></td>
+                          <td>
+                            <span className="row" style={{ gap: 10 }}>
+                              <span className="subject-dot" style={subjectVar(s.color)} aria-hidden="true"></span>
+                              <strong>{s.name}</strong>
+                            </span>
+                          </td>
                           <td className="muted">{s.credits || "—"}</td>
                           <td>
                             {s.trackAttendance
@@ -367,7 +381,7 @@ export default function Settings() {
                 </div>
               ) : (
                 <div className="empty" style={{ padding: "40px 24px" }}>
-                  <span className="empty__icon"><Icon name="note" size={26} /></span>
+                  <EmptyArt name="subjects" />
                   <p className="empty__title">No subjects yet</p>
                   <p className="empty__text">Add the subjects you're taking this semester, with their credits.</p>
                   <button className="btn btn--primary" onClick={() => openSubjectForm(null)}>

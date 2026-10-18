@@ -5,6 +5,7 @@ import useStore from "../hooks/useStore.js";
 import { allNotes, saveNote, removeNote } from "../lib/notes.js";
 import { uid, formatDate, toISODate } from "../lib/util.js";
 import { toast } from "../lib/toast.js";
+import EmptyArt from "../components/EmptyArt.jsx";
 
 /* Quick notes: create, edit, delete, search — "quick notes", not a
    full document editor. */
@@ -140,7 +141,7 @@ export default function Notes() {
             </div>
           ) : (
             <div className="empty">
-              <span className="empty__icon"><Icon name="note" size={26} /></span>
+              <EmptyArt name="notes" />
               <p className="empty__title">{query ? "No matching notes" : "Nothing here yet"}</p>
               <p className="empty__text">{query ? "Try a different search." : "Capture a thought before it gets lost."}</p>
               {!query && (

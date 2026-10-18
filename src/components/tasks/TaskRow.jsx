@@ -1,6 +1,8 @@
 import Icon from "../Icon.jsx";
 import { PRIORITY } from "../../lib/tasks.js";
 import { daysUntil, relativeDay } from "../../lib/util.js";
+import { store } from "../../lib/storage.js";
+import { subjectVar } from "../../lib/colors.js";
 
 /* One task row — the Tasks page, the dashboard and the calendar's day
    dialog all use it. Without onEdit/onDelete it is view-only. */
@@ -24,7 +26,12 @@ export default function TaskRow({ task, onToggle, onEdit, onDelete }) {
       <span className="titem__main">
         <span className="titem__title">{task.title}</span>
         <span className="titem__meta">
-          {task.subject && <span className="badge badge--neutral">{task.subject}</span>}
+          {task.subject && (() => {
+            const color = store.subjects.colorOfName(task.subject);
+            return color
+              ? <span className="badge badge--subject" style={subjectVar(color)}><span className="subject-dot"></span>{task.subject}</span>
+              : <span className="badge badge--neutral">{task.subject}</span>;
+          })()}
           <span className={"badge " + p.badge}><span className="badge__dot"></span>{p.label}</span>
           {due}
           {done && task.completedAt && <span>Done</span>}

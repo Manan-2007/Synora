@@ -37,7 +37,7 @@ import { demo } from "./demo.js";
    draft is left out: it is a scratch copy that onboarding throws away. */
 export const SYNCED = [
   "profile", "meta", "subjects", "tasks", "notes", "timetable",
-  "attendance", "cgpa", "achievements", "notifications",
+  "attendance", "cgpa", "achievements", "notifications", "semesters", "focus",
 ];
 const WHOLE = new Set(["profile", "meta"]);   // one row each, saved whole
 

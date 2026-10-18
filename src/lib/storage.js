@@ -23,6 +23,7 @@
    ========================================================= */
 
 import { uid, initials, fullName } from "./util.js";
+import { nextColor, isSubjectColor } from "./colors.js";
 
 export const KEYS = {
   users: "synora-users",
@@ -47,6 +48,10 @@ const DEFAULTS = {
   cgpa: { subjects: [] },
   achievements: { unlocked: {} },   // achievementId -> ISO date string
   notifications: [],
+  /* Completed past semesters: [{ id, name, subjects: [{ id, name, credits, grade }] }] */
+  semesters: [],
+  /* Finished focus-timer sessions: [{ id, subjectId, taskId, minutes, endedAt }] */
+  focus: [],
   profile: {
     firstName: "",
     lastName: "",
@@ -64,6 +69,7 @@ const DEFAULTS = {
     streak: 0,               // consecutive days with a completed task
     lastCompletionDate: null,
     demo: false,             // true only for the arsh2309 sample account
+    checklistDismissed: false, // the dashboard's "getting started" card was closed
   },
 };
 
@@ -221,21 +227,31 @@ function update(collection, fn) {
    Attendance, CGPA and the timetable reference a subject by id. */
 
 function normaliseSubject(s) {
-  return {
+  const record = {
     id: s.id,
     name: String(s.name || "").trim(),
     credits: Number(s.credits) || 0,
     /* Records written before the flag existed read as tracked. */
     trackAttendance: s.trackAttendance !== false,
   };
+  if (isSubjectColor(s.color)) record.color = s.color;
+  return record;
+}
+
+/* Subjects saved before colours existed get one by position until
+   ensureSubjectColors() stores it. */
+const PALETTE_ORDER = ["sage", "teal", "sky", "indigo", "plum", "rose", "clay", "amber", "olive", "stone"];
+function autoColor(i) {
+  return PALETTE_ORDER[i % PALETTE_ORDER.length];
 }
 
 const subjects = {
-  all: () => get("subjects").map((s) => ({
+  all: () => get("subjects").map((s, i) => ({
     id: s.id,
     name: s.name,
     credits: Number(s.credits) || 0,
     trackAttendance: s.trackAttendance !== false,
+    color: isSubjectColor(s.color) ? s.color : autoColor(i),
   })),
 
   /* The ONLY question trackAttendance answers — CGPA and the timetable
@@ -244,13 +260,24 @@ const subjects = {
 
   byId: (id) => subjects.all().find((s) => s.id === id) || null,
 
+  /* A task names its subject as free text: the colour of the subject with
+     that name, if there is one. */
+  colorOfName(name) {
+    const n = String(name || "").trim().toLowerCase();
+    const s = n && subjects.all().find((x) => x.name.toLowerCase() === n);
+    return s ? s.color : null;
+  },
+
   nameOf(id) {
     const s = subjects.byId(id);
     return s ? s.name : "";
   },
 
-  add(name, credits, trackAttendance) {
-    const record = normaliseSubject({ id: uid("sub"), name, credits, trackAttendance });
+  add(name, credits, trackAttendance, color) {
+    const record = normaliseSubject({
+      id: uid("sub"), name, credits, trackAttendance,
+      color: isSubjectColor(color) ? color : nextColor(get("subjects")),
+    });
     update("subjects", (list) => { list.push(record); return list; });
     return record;
   },
@@ -280,7 +307,20 @@ const subjects = {
 
   /* Replace the whole list (used by onboarding and the demo seed). */
   setAll(list) {
-    set("subjects", (list || []).map((s) => normaliseSubject({ ...s, id: s.id || uid("sub") })));
+    const out = [];
+    for (const s of list || []) {
+      out.push(normaliseSubject({ ...s, id: s.id || uid("sub"), color: isSubjectColor(s.color) ? s.color : nextColor(out) }));
+    }
+    set("subjects", out);
+  },
+
+  /* Give every subject that has no colour yet a stored one (once). */
+  ensureColors() {
+    const list = get("subjects");
+    if (list.every((s) => isSubjectColor(s.color))) return;
+    const out = [];
+    for (const s of list) out.push({ ...s, color: isSubjectColor(s.color) ? s.color : nextColor(out.concat(list)) });
+    set("subjects", out);
   },
 };
 

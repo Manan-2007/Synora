@@ -301,6 +301,36 @@ body.app {
   letter-spacing: var(--tracking-tight);
 }
 
+/* ---- Subject colours (lib/colors.js) ----
+   An element with style --subject (subjectVar) paints with it. */
+.subject-dot {
+  display: inline-block;
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--subject);
+}
+.badge--subject {
+  gap: 6px;
+  color: var(--color-text);
+  background: color-mix(in srgb, var(--subject) 14%, transparent);
+}
+.swatches { display: flex; flex-wrap: wrap; gap: 10px; }
+.swatch {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--subject);
+  cursor: pointer;
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+.swatch:hover { transform: scale(1.08); }
+.swatch input { position: absolute; inset: 0; opacity: 0; cursor: pointer; margin: 0; }
+.swatch:has(input:checked) { box-shadow: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--subject); }
+.swatch:has(input:focus-visible) { box-shadow: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-brand); }
+
 /* Sync status pill (components/SyncStatus.jsx) */
 .sync-pill {
   display: inline-flex;
@@ -831,6 +861,45 @@ textarea.input { min-height: 96px; resize: vertical; line-height: var(--leading-
   margin-bottom: var(--space-8);
 }
 .empty__icon svg { width: 26px; height: 26px; }
+
+/* Dashboard: getting-started checklist */
+.checklist { margin-bottom: var(--space-24); }
+.checklist__head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-12); }
+.checklist__title { font-family: var(--font-heading); font-size: 1.0625rem; font-weight: var(--weight-semibold); margin: 0 0 2px; letter-spacing: var(--tracking-normal); }
+.checklist__bar { height: 6px; margin: var(--space-12) 0 var(--space-16); border-radius: var(--radius-pill); background: var(--color-surface-sunken); overflow: hidden; }
+.checklist__bar span { display: block; height: 100%; border-radius: inherit; background: var(--color-brand); transition: width var(--duration-slow) var(--ease-out); }
+.checklist__list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-8) var(--space-16); }
+.checklist__list li { display: flex; align-items: center; gap: var(--space-8); font-size: var(--text-small); }
+.checklist__list li.is-done { color: var(--color-text-muted); text-decoration: line-through; }
+.checklist__list a { color: var(--color-text); font-weight: var(--weight-medium); text-decoration: underline; text-decoration-color: var(--color-border-strong); text-underline-offset: 3px; }
+.checklist__list a:hover { text-decoration-color: var(--color-brand); color: var(--color-brand); }
+.checklist__mark {
+  flex: none; width: 20px; height: 20px; border-radius: 50%;
+  display: grid; place-content: center;
+  border: 2px solid var(--color-border-strong); color: var(--color-on-brand);
+}
+.checklist__list li.is-done .checklist__mark { background: var(--color-brand); border-color: var(--color-brand); }
+
+/* Empty-state illustrations (components/EmptyArt.jsx) */
+.empty-art { width: 150px; height: auto; margin-bottom: var(--space-4); overflow: visible; }
+.empty-art .ea-bg { fill: var(--color-brand-soft); }
+.empty-art .ea-bg2 { fill: var(--color-accent-soft); }
+.empty-art .ea-paper { fill: var(--color-surface); stroke: var(--color-border-strong); stroke-width: 2; stroke-linejoin: round; }
+.empty-art .ea-paper--warm { fill: var(--color-accent-soft); }
+.empty-art .ea-line { fill: none; stroke: var(--color-border-strong); stroke-width: 3.5; stroke-linecap: round; }
+.empty-art .ea-ink { fill: none; stroke: var(--color-text-subtle); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.empty-art .ea-brand { fill: var(--color-brand); }
+.empty-art .ea-brand-stroke { fill: none; stroke: var(--color-brand); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.empty-art .ea-box { fill: var(--color-surface); stroke: var(--color-border-strong); stroke-width: 2; }
+.empty-art .ea-check { fill: none; stroke: var(--color-on-brand); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.empty-art .ea-dots circle { fill: var(--color-border-strong); }
+.empty-art .ea-bar--1 { fill: color-mix(in srgb, var(--color-brand) 35%, var(--color-surface)); }
+.empty-art .ea-bar--2 { fill: color-mix(in srgb, var(--color-brand) 65%, var(--color-surface)); }
+.empty-art .ea-star { fill: var(--color-accent-bright); }
+.empty-art .ea-pencil { fill: var(--color-accent-bright); stroke: var(--color-text-subtle); stroke-width: 2; stroke-linejoin: round; }
+.empty-art .ea-book { stroke: color-mix(in srgb, var(--color-text) 25%, transparent); stroke-width: 1.5; }
+.empty-art .ea-pages { fill: none; stroke: color-mix(in srgb, white 70%, transparent); stroke-width: 2; stroke-linecap: round; }
+.empty-art .ea-steam { fill: none; stroke: var(--color-text-subtle); stroke-width: 2.5; stroke-linecap: round; opacity: .7; }
 .empty__title { font-family: var(--font-heading); font-size: 1.0625rem; font-weight: var(--weight-semibold); }
 .empty__text { font-size: var(--text-small); color: var(--color-text-muted); max-width: 34ch; }
 .empty .btn { margin-top: var(--space-16); }
@@ -1050,7 +1119,10 @@ textarea.input { min-height: 96px; resize: vertical; line-height: var(--leading-
 
 .cal__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-16); gap: var(--space-12); }
 .cal__month { font-family: var(--font-heading); font-size: 1.125rem; font-weight: var(--weight-semibold); }
-.cal__nav { display: flex; gap: var(--space-8); }
+.cal__nav { display: flex; align-items: center; gap: var(--space-8); flex-wrap: wrap; }
+.cal__head { flex-wrap: wrap; }
+.cal__views { margin-right: var(--space-8); }
+.cal__views button { padding: 6px var(--space-12); }
 
 /* minmax(0, 1fr), not 1fr: a 1fr track won't shrink below its content's
    minimum width, and a long task title inside a day cell would push the
@@ -1077,20 +1149,63 @@ textarea.input { min-height: 96px; resize: vertical; line-height: var(--leading-
 .cal-cell__num { font-size: 0.8125rem; font-weight: var(--weight-semibold); }
 .cal-cell--today .cal-cell__num { color: var(--color-brand); }
 
+/* A task on the calendar: tinted with its subject's colour (--subject),
+   a red dot for critical/high priority, struck through once done. */
 .cal-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   min-width: 0;
   max-width: 100%;
   font-size: 0.6875rem;
   padding: 2px 6px;
   border-radius: var(--radius-sm);
-  background: var(--color-brand-soft);
-  color: var(--color-brand);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  border-left: 2px solid var(--subject);
+  background: color-mix(in srgb, var(--subject) 14%, var(--color-surface));
+  color: var(--color-text);
+  text-align: left;
 }
-.cal-chip--critical { background: color-mix(in srgb, var(--status-overdue) 16%, transparent); color: var(--status-overdue-text); }
-.cal-chip--high { background: color-mix(in srgb, var(--status-high) 16%, transparent); color: var(--status-high-text); }
+.cal-chip__text { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cal-chip--full .cal-chip__text { white-space: normal; overflow: visible; }
+.cal-chip.is-done { opacity: .6; }
+.cal-chip.is-done .cal-chip__text { text-decoration: line-through; }
+.cal-chip__urgent { flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--status-overdue); display: inline-block; }
+
+/* Week view */
+.cal-week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.cal-week__day {
+  display: flex; flex-direction: column; gap: var(--space-8);
+  min-height: 260px; padding: var(--space-8);
+  border: 1px solid var(--color-border); border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+.cal-week__day.is-today { border-color: var(--color-brand); box-shadow: inset 0 0 0 1px var(--color-brand); }
+.cal-week__head {
+  display: flex; align-items: baseline; gap: 6px;
+  padding: 2px 4px; border-radius: var(--radius-sm); text-align: left;
+}
+.cal-week__head:hover { background: var(--color-surface-sunken); }
+.cal-week__dow { font-size: 0.6875rem; font-weight: var(--weight-semibold); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--color-text-subtle); }
+.cal-week__num { font-family: var(--font-heading); font-size: 1.125rem; font-weight: var(--weight-semibold); }
+.cal-week__day.is-today .cal-week__num, .cal-week__day.is-today .cal-week__dow { color: var(--color-brand); }
+.cal-week__group { display: flex; flex-direction: column; gap: 4px; }
+.cal-week__empty { font-size: 0.75rem; color: var(--color-text-subtle); padding: 0 4px; }
+.cal-class {
+  display: flex; flex-direction: column;
+  padding: 3px 6px; border-radius: var(--radius-sm);
+  border: 1px dashed color-mix(in srgb, var(--subject) 55%, transparent);
+  font-size: 0.6875rem;
+}
+.cal-class__time { color: var(--color-text-muted); font-variant-numeric: tabular-nums; }
+.cal-class__name { font-weight: var(--weight-semibold); }
+
+.cal-legend {
+  display: flex; flex-wrap: wrap; gap: var(--space-8) var(--space-16);
+  margin-top: var(--space-16); padding-top: var(--space-12);
+  border-top: 1px solid var(--color-border);
+  font-size: 0.75rem; color: var(--color-text-muted);
+}
+.cal-legend__item { display: inline-flex; align-items: center; gap: 6px; }
 .cal-chip--exam { background: color-mix(in srgb, var(--color-accent) 20%, transparent); color: var(--color-accent); }
 .cal-cell__more { font-size: 0.625rem; color: var(--color-text-muted); }
 
@@ -1170,8 +1285,75 @@ textarea.input { min-height: 96px; resize: vertical; line-height: var(--leading-
 .note-card__actions .icon-btn { width: 30px; height: 30px; }
 .note-card__actions .icon-btn svg { width: 15px; height: 15px; }
 
-/* Timetable grid (desktop) */
-.tt-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: var(--space-12); }
+/* Timetable: the week board (wider screens). Columns are days, time runs
+   down; blocks are positioned by the component. */
+.tt-board {
+  display: grid;
+  grid-template-columns: 56px repeat(var(--cols), minmax(110px, 1fr));
+  grid-template-rows: auto calc(var(--rows) * var(--hour));
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  overflow: hidden;
+}
+.tt-board__corner { border-bottom: 1px solid var(--color-border); }
+.tt-board__head {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: var(--space-12) var(--space-8);
+  border-bottom: 1px solid var(--color-border);
+  border-left: 1px solid var(--color-border);
+}
+.tt-board__dayname {
+  font-size: 0.75rem; font-weight: var(--weight-semibold); text-transform: uppercase;
+  letter-spacing: var(--tracking-wide); color: var(--color-text-subtle);
+}
+.tt-board__head.is-today .tt-board__dayname { color: var(--color-brand); }
+.tt-board__today {
+  font-size: 0.6875rem; font-weight: var(--weight-semibold);
+  padding: 2px 8px; border-radius: var(--radius-pill);
+  background: var(--color-brand); color: var(--color-on-brand);
+}
+.tt-board__times { position: relative; }
+.tt-board__times span {
+  position: absolute; right: 8px; transform: translateY(-50%);
+  font-size: 0.6875rem; color: var(--color-text-subtle); font-variant-numeric: tabular-nums;
+}
+.tt-board__times span:first-child { transform: none; top: 4px !important; }
+.tt-board__col {
+  position: relative;
+  border-left: 1px solid var(--color-border);
+  background-image: repeating-linear-gradient(to bottom, transparent 0, transparent calc(var(--hour) - 1px),
+    var(--color-border) calc(var(--hour) - 1px), var(--color-border) var(--hour));
+}
+.tt-board__col.is-today { background-color: color-mix(in srgb, var(--color-brand) 5%, transparent); }
+.tt-block {
+  position: absolute;
+  display: flex; flex-direction: column; gap: 1px;
+  padding: 6px 8px;
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--subject);
+  background: color-mix(in srgb, var(--subject) 14%, var(--color-surface));
+  text-align: left;
+  overflow: hidden;
+  cursor: pointer;
+  transition: box-shadow var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out);
+}
+.tt-block:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); z-index: 2; }
+.tt-block:focus-visible { outline: none; box-shadow: var(--focus-ring); z-index: 2; }
+.tt-block__subject { font-size: 0.8125rem; font-weight: var(--weight-semibold); line-height: 1.25; }
+.tt-block__time, .tt-block__room { font-size: 0.6875rem; color: var(--color-text-muted); line-height: 1.3; }
+.tt-now {
+  position: absolute; left: 0; right: 0; height: 2px; z-index: 3;
+  background: var(--status-overdue);
+  pointer-events: none;
+}
+.tt-now::before {
+  content: ""; position: absolute; left: -5px; top: -4px;
+  width: 10px; height: 10px; border-radius: 50%; background: var(--status-overdue);
+}
+
+/* Timetable as day cards (phones) */
+.tt-grid { display: none; grid-template-columns: repeat(7, 1fr); gap: var(--space-12); }
 .tt-day { display: flex; flex-direction: column; gap: var(--space-8); }
 .tt-day__name {
   font-size: 0.75rem; font-weight: var(--weight-semibold); text-transform: uppercase;
@@ -1182,8 +1364,8 @@ textarea.input { min-height: 96px; resize: vertical; line-height: var(--leading-
 .tt-slot {
   padding: var(--space-8) var(--space-12);
   border-radius: var(--radius-md);
-  background-color: var(--color-surface-sage);
-  border-left: 3px solid var(--color-brand);
+  border-left: 3px solid var(--subject, var(--color-brand));
+  background-color: color-mix(in srgb, var(--subject, var(--color-brand)) 14%, var(--color-surface));
   font-size: 0.8125rem;
   cursor: pointer;
 }
@@ -1288,13 +1470,16 @@ textarea.input { min-height: 96px; resize: vertical; line-height: var(--leading-
   .topbar__title { font-size: 1rem; }
 
   /* Timetable: switch from 7-column grid to stacked day cards */
-  .tt-grid { grid-template-columns: 1fr; gap: var(--space-16); }
+  .tt-board { display: none; }
+  .tt-grid { display: grid; grid-template-columns: 1fr; gap: var(--space-16); }
   .tt-day { padding: var(--space-16); border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface); }
   .tt-day__name { text-align: left; }
 
   /* Calendar cells get shorter and hide overflow chips gracefully */
   .cal-cell { min-height: 64px; padding: 4px; }
-  .cal-chip { display: none; }
+  .cal-week { grid-template-columns: 1fr; }
+  .cal-week__day { min-height: 0; }
+  .cal-cell .cal-chip { display: none; }
   .cal-cell--has::after {
     content: ""; width: 5px; height: 5px; border-radius: 50%;
     background: var(--color-accent); margin-top: auto;
@@ -1422,6 +1607,10 @@ textarea.input { min-height: 96px; resize: vertical; line-height: var(--leading-
   border-radius: var(--radius-sm) var(--radius-sm) 0 0;
   background: linear-gradient(180deg, var(--color-brand), var(--color-brand-hover));
   transition: height var(--duration-slow) var(--ease-out);
+}
+
+.chart__bar--subject {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--subject) 82%, white), var(--subject));
 }
 
 .chart__bar--danger {

@@ -27,13 +27,15 @@
 export const COLLECTIONS = [
   "profile", "meta", "subjects",
   "tasks", "notes", "timetable", "attendance", "cgpa",
-  "achievements", "notifications",
+  "achievements", "notifications", "semesters", "focus",
 ];
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const PRIORITIES = ["critical", "high", "medium", "low"];
 const STATUSES = ["not-started", "in-progress", "completed"];
 const GRADES = ["O", "A+", "A", "B+", "B", "E1", "E2", "E3"];
+const REPEATS = ["none", "daily", "weekly", "monthly"];
+const COLORS = /^[a-z]{2,20}$/;
 
 /* ---- Value helpers: app value → column value ---- */
 
@@ -71,9 +73,23 @@ const toTime = (v) => (/^\d{2}:\d{2}$/.test(String(v || "")) ? v + ":00" : null)
 /* ---- Column value → app value ---- */
 
 const fromDateTime = (v) => (v ? v.replace(" ", "T") + "Z" : null);
+
+/* mysql2 may hand a JSON column back parsed or as text. */
+function parseJSON(v) {
+  if (v === null || v === undefined) return null;
+  if (typeof v === "object") return v;
+  try { return JSON.parse(v); } catch { return null; }
+}
 const fromTime = (v) => (v ? v.slice(0, 5) : "");
 
 const asList = (v) => (Array.isArray(v) ? v : []);
+
+/* A task's checklist, stored as a JSON column: at most 50 steps. */
+function subtasksJSON(list) {
+  const clean = asList(list).filter((s) => s && s.id).slice(0, 50)
+    .map((s) => ({ id: str(s.id, 40), text: str(s.text, 200), done: !!s.done }));
+  return clean.length ? JSON.stringify(clean) : null;
+}
 const pos = (r, i) => int(r && r._pos !== undefined ? r._pos : i);
 
 /* Subject ids that exist for this user right now. Rows that point at a
@@ -92,15 +108,18 @@ async function subjectIds(conn, userId) {
 const LISTS = {
   subjects: {
     table: "subjects", key: "id",
-    columns: ["id", "name", "credits", "track_attendance", "position"],
-    row: (s, i) => [str(s.id, 40), str(s.name, 100), Math.min(255, int(s.credits)), s.trackAttendance !== false, pos(s, i)],
+    columns: ["id", "name", "credits", "track_attendance", "color", "position"],
+    row: (s, i) => [str(s.id, 40), str(s.name, 100), Math.min(255, int(s.credits)), s.trackAttendance !== false,
+      COLORS.test(s.color || "") ? s.color : null, pos(s, i)],
   },
   tasks: {
     table: "tasks", key: "id",
-    columns: ["id", "title", "subject", "description", "deadline", "priority", "status", "created_at", "completed_at", "position"],
+    columns: ["id", "title", "subject", "description", "deadline", "priority", "status", "repeat_rule", "subtasks",
+      "created_at", "completed_at", "position"],
     row: (t, i) => [
       str(t.id, 40), str(t.title, 255), str(t.subject, 100), text(t.description),
       toDate(t.deadline), oneOf(t.priority, PRIORITIES, "medium"), oneOf(t.status, STATUSES, "not-started"),
+      oneOf(t.repeat, REPEATS, "none"), subtasksJSON(t.subtasks),
       toDateTime(t.createdAt), toDateTime(t.completedAt), pos(t, i),
     ],
   },
@@ -112,10 +131,10 @@ const LISTS = {
   },
   timetable: {
     table: "timetable_classes", key: "id", needsSubject: true,
-    columns: ["id", "subject_id", "day", "start_time", "end_time", "room", "teacher", "position"],
+    columns: ["id", "subject_id", "day", "start_time", "end_time", "room", "teacher", "last_marked", "position"],
     valid: (c) => DAYS.includes(c.day),
     row: (c, i) => [str(c.id, 40), c.subjectId, c.day, toTime(c.startTime), toTime(c.endTime),
-      str(c.room, 100), str(c.teacher, 100), pos(c, i)],
+      str(c.room, 100), str(c.teacher, 100), toDate(c.lastMarked), pos(c, i)],
   },
   attendance: {
     table: "attendance", key: "id", needsSubject: true,
@@ -145,7 +164,37 @@ const LISTS = {
     row: (n, i) => [str(n.id, 40), n.key ? str(n.key, 160) : null, str(n.type || "info", 20), str(n.title, 255),
       text(n.body), toDateTime(n.createdAt), !!n.read, !!n.seen, pos(n, i)],
   },
+  /* Completed past semesters; their grades are child rows (saveSemesters). */
+  semesters: {
+    table: "semesters", key: "id",
+    columns: ["id", "name", "position"],
+    row: (s, i) => [str(s.id, 40), str(s.name, 60), pos(s, i)],
+  },
+  focus: {
+    table: "focus_sessions", key: "id",
+    columns: ["id", "subject_id", "task_id", "minutes", "ended_at"],
+    valid: (f) => int(f.minutes) > 0 && !!toDateTime(f.endedAt),
+    row: (f) => [str(f.id, 40), f.subjectId ? str(f.subjectId, 40) : null, f.taskId ? str(f.taskId, 40) : null,
+      Math.min(600, int(f.minutes)), toDateTime(f.endedAt)],
+  },
 };
+
+/* A semester row plus its grades: the grades of every semester that changed
+   are replaced as a set. */
+async function saveSemesters(conn, userId, change) {
+  await upsertRows(conn, userId, LISTS.semesters, change.upsert, null);
+  for (const sem of asList(change.upsert).filter((s) => s && s.id)) {
+    const semId = str(sem.id, 40);
+    await conn.query("DELETE FROM semester_grades WHERE user_id = ? AND semester_id = ?", [userId, semId]);
+    const rows = asList(sem.subjects).filter((g) => g && g.id).slice(0, 40).map((g, i) => [
+      userId, str(g.id, 40), semId, str(g.name, 100), Math.min(255, int(g.credits)), oneOf(g.grade, GRADES, null), i,
+    ]);
+    if (rows.length) {
+      await conn.query("INSERT INTO semester_grades (user_id, id, semester_id, name, credits, grade, position) VALUES ?", [rows]);
+    }
+  }
+  await deleteRows(conn, userId, LISTS.semesters, change.delete);
+}
 
 async function upsertRows(conn, userId, spec, items, known) {
   const rows = asList(items)
@@ -203,10 +252,10 @@ async function saveProfile(conn, userId, p) {
 async function saveMeta(conn, userId, m) {
   if (!m || typeof m !== "object") return;
   await conn.query(
-    `REPLACE INTO user_meta (user_id, streak, last_completion_date, demo, demo_version)
-     VALUES (?, ?, ?, ?, ?)`,
+    `REPLACE INTO user_meta (user_id, streak, last_completion_date, demo, demo_version, checklist_dismissed)
+     VALUES (?, ?, ?, ?, ?, ?)`,
     [userId, int(m.streak), toDate(m.lastCompletionDate), !!m.demo,
-      m.demoVersion == null ? null : int(m.demoVersion)],
+      m.demoVersion == null ? null : int(m.demoVersion), !!m.checklistDismissed],
   );
 }
 
@@ -227,6 +276,7 @@ export async function applyChanges(conn, userId, changes) {
   for (const name of COLLECTIONS) {
     if (name === "profile" || name === "meta" || name === "subjects" || !has(name)) continue;
     const change = changes[name] || {};
+    if (name === "semesters") { await saveSemesters(conn, userId, change); continue; }
     await upsertRows(conn, userId, LISTS[name], change.upsert, known);
     await deleteRows(conn, userId, LISTS[name], change.delete);
   }
@@ -276,6 +326,7 @@ export async function loadCollections(conn, userId) {
     streak: m ? m.streak : 0,
     lastCompletionDate: m ? m.last_completion_date : null,
     demo: m ? !!m.demo : false,
+    checklistDismissed: m ? !!m.checklist_dismissed : false,
   };
   if (m && m.demo_version != null) meta.demoVersion = m.demo_version;
 
@@ -283,11 +334,13 @@ export async function loadCollections(conn, userId) {
 
   const subjects = (await ordered("subjects")).map((s) => ({
     id: s.id, name: s.name, credits: s.credits, trackAttendance: !!s.track_attendance,
+    ...(s.color ? { color: s.color } : {}),
   }));
 
   const tasks = (await ordered("tasks")).map((t) => ({
     id: t.id, title: t.title, subject: t.subject, description: t.description || "",
     deadline: t.deadline || "", priority: t.priority, status: t.status,
+    repeat: t.repeat_rule || "none", subtasks: parseJSON(t.subtasks) || [],
     createdAt: fromDateTime(t.created_at), completedAt: fromDateTime(t.completed_at),
   }));
 
@@ -299,6 +352,7 @@ export async function loadCollections(conn, userId) {
   const timetable = (await ordered("timetable_classes")).map((c) => ({
     id: c.id, subjectId: c.subject_id, day: c.day,
     startTime: fromTime(c.start_time), endTime: fromTime(c.end_time), room: c.room, teacher: c.teacher,
+    ...(c.last_marked ? { lastMarked: c.last_marked } : {}),
   }));
 
   const attendance = (await ordered("attendance")).map((a) => ({
@@ -319,5 +373,16 @@ export async function loadCollections(conn, userId) {
     createdAt: fromDateTime(n.created_at), read: !!n.is_read, seen: !!n.is_seen,
   }));
 
-  return { profile, meta, subjects, tasks, notes, timetable, attendance, cgpa, achievements, notifications };
+  const grades = await q("SELECT * FROM semester_grades WHERE user_id = ? ORDER BY position");
+  const semesters = (await ordered("semesters")).map((s) => ({
+    id: s.id, name: s.name,
+    subjects: grades.filter((g) => g.semester_id === s.id)
+      .map((g) => ({ id: g.id, name: g.name, credits: g.credits, grade: g.grade || "" })),
+  }));
+
+  const focus = (await q("SELECT * FROM focus_sessions WHERE user_id = ? ORDER BY ended_at")).map((f) => ({
+    id: f.id, subjectId: f.subject_id || "", taskId: f.task_id || "", minutes: f.minutes, endedAt: fromDateTime(f.ended_at),
+  }));
+
+  return { profile, meta, subjects, tasks, notes, timetable, attendance, cgpa, achievements, notifications, semesters, focus };
 }

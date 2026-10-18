@@ -73,7 +73,9 @@ export const derive = {
         const subject = store.subjects.byId(c.subjectId);
         return {
           id: c.id,
+          subjectId: c.subjectId,
           subject: subject ? subject.name : "",
+          color: subject ? subject.color : null,
           start: c.startTime || "",
           end: c.endTime || "",
           room: c.room || "",
@@ -137,6 +139,7 @@ export const derive = {
         id: a.id || null,
         subjectId: s.id,
         subject: s.name,
+        color: s.color,
         total,
         attended,
         /* held = 0 is "nothing recorded", not 0% and never NaN. */
@@ -356,6 +359,7 @@ export const achievements = {
 
 /* Call after any data change. */
 export function refresh() {
+  store.subjects.ensureColors();
   notifications.refresh();
   achievements.evaluate();
 }

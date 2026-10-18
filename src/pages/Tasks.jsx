@@ -5,6 +5,7 @@ import { useTaskForm, useDeleteTask } from "../components/tasks/TaskForm.jsx";
 import useStore from "../hooks/useStore.js";
 import { PRIORITY, allTasks, toggleComplete } from "../lib/tasks.js";
 import { daysUntil } from "../lib/util.js";
+import EmptyArt from "../components/EmptyArt.jsx";
 
 const VIEWS = ["all", "today", "upcoming", "overdue", "completed"];
 
@@ -99,7 +100,7 @@ export default function Tasks() {
               </div>
             ) : (
               <div className="empty">
-                <span className="empty__icon"><Icon name="check" size={26} /></span>
+                <EmptyArt name="tasks" />
                 <p className="empty__title">{emptyTitle}</p>
                 <p className="empty__text">{emptyText}</p>
                 {view === "all" && (

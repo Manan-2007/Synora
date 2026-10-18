@@ -4,6 +4,7 @@ import { useModal } from "../components/modal/ModalProvider.jsx";
 import useStore from "../hooks/useStore.js";
 import { notifications } from "../lib/engine.js";
 import { formatDate, toISODate } from "../lib/util.js";
+import EmptyArt from "../components/EmptyArt.jsx";
 
 /* The full notification centre. Generation, dedupe and read state live
    in the engine; this page lists them and offers mark-read / clear. */
@@ -74,7 +75,7 @@ export default function Notifications() {
         ) : (
           <div className="card">
             <div className="empty">
-              <span className="empty__icon"><Icon name="bell" size={26} /></span>
+              <EmptyArt name="bell" />
               <p className="empty__title">No notifications</p>
               <p className="empty__text">Deadline reminders, attendance warnings and unlocked achievements will show up here.</p>
             </div>

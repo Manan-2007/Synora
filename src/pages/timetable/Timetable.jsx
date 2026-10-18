@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router";
 import Icon from "../../components/Icon.jsx";
 import { useModal, useModalClose } from "../../components/modal/ModalProvider.jsx";
@@ -7,6 +7,8 @@ import useStore from "../../hooks/useStore.js";
 import { store } from "../../lib/storage.js";
 import { toast } from "../../lib/toast.js";
 import { DAYS, todayName, allClasses, getClass, removeClass, timeLabel } from "../../lib/timetable.js";
+import { subjectVar } from "../../lib/colors.js";
+import EmptyArt from "../../components/EmptyArt.jsx";
 
 /* A weekly class schedule. Desktop shows a 7-day grid; on small screens
    the CSS stacks each day into its own card. */
@@ -83,6 +85,100 @@ function SetupDialog({ openClassForm }) {
   );
 }
 
+/* ---- The week board (wider screens) ----
+   Days are columns and time runs down the page: each class is placed at
+   its start time and is as tall as it lasts. Saturday and Sunday only
+   appear when they have classes. Today's column is tinted and a line
+   marks the current time. */
+
+const HOUR_PX = 64;
+const toMinutes = (t) => {
+  const m = /^(\d{1,2}):(\d{2})/.exec(t || "");
+  return m ? Number(m[1]) * 60 + Number(m[2]) : null;
+};
+const hourLabel = (h) => (h === 0 || h === 24 ? "12 am" : h === 12 ? "12 pm" : h < 12 ? h + " am" : (h - 12) + " pm");
+
+/* Side-by-side lanes for classes that overlap on the same day. */
+function layLanes(items) {
+  const lanes = [];
+  const placed = items.map((it) => {
+    let lane = lanes.findIndex((end) => end <= it.start);
+    if (lane === -1) { lane = lanes.length; lanes.push(it.end); } else lanes[lane] = it.end;
+    return { ...it, lane };
+  });
+  return placed.map((p) => ({
+    ...p,
+    lanes: Math.max(1, ...placed.filter((q) => q.start < p.end && p.start < q.end).map((q) => q.lane + 1)),
+  }));
+}
+
+function useNow() {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 60000);
+    return () => clearInterval(t);
+  }, []);
+  return now;
+}
+
+function WeekBoard({ list, today, onOpen }) {
+  const now = useNow();
+  const timed = list
+    .map((c) => {
+      const start = toMinutes(c.startTime);
+      const end = toMinutes(c.endTime);
+      return { c, start: start ?? 9 * 60, end: end && start !== null && end > start ? end : (start ?? 9 * 60) + 60 };
+    })
+    .filter((x) => store.subjects.nameOf(x.c.subjectId));
+  const days = DAYS.filter((d, i) => i < 5 || timed.some((x) => x.c.day === d));
+  const first = Math.min(8, Math.floor(Math.min(...timed.map((x) => x.start)) / 60));
+  const last = Math.max(17, Math.ceil(Math.max(...timed.map((x) => x.end)) / 60));
+  const hours = Array.from({ length: last - first }, (_, i) => first + i);
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const nowTop = nowMin >= first * 60 && nowMin <= last * 60 ? ((nowMin - first * 60) / 60) * HOUR_PX : null;
+
+  return (
+    <div className="tt-board" style={{ "--cols": days.length, "--hour": HOUR_PX + "px", "--rows": last - first }}>
+      <div className="tt-board__corner" aria-hidden="true"></div>
+      {days.map((day) => (
+        <div key={day} className={"tt-board__head" + (day === today ? " is-today" : "")}>
+          <span className="tt-board__dayname">{day.slice(0, 3)}</span>
+          {day === today && <span className="tt-board__today">Today</span>}
+        </div>
+      ))}
+      <div className="tt-board__times" aria-hidden="true">
+        {hours.map((h) => <span key={h} style={{ top: (h - first) * HOUR_PX }}>{hourLabel(h)}</span>)}
+      </div>
+      {days.map((day) => {
+        const items = layLanes(timed.filter((x) => x.c.day === day).sort((a, b) => a.start - b.start));
+        return (
+          <div key={day} className={"tt-board__col" + (day === today ? " is-today" : "")} aria-label={day}>
+            {items.map(({ c, start, end, lane, lanes }) => (
+              <button key={c.id} type="button" className="tt-block" onClick={() => onOpen(getClass(c.id))}
+                style={{
+                  ...subjectVar(store.subjects.byId(c.subjectId)?.color),
+                  top: ((start - first * 60) / 60) * HOUR_PX + 2,
+                  height: Math.max(28, ((end - start) / 60) * HOUR_PX - 4),
+                  left: "calc(" + (lane / lanes) * 100 + "% + 3px)",
+                  width: "calc(" + 100 / lanes + "% - 6px)",
+                }}>
+                <span className="tt-block__subject">{store.subjects.nameOf(c.subjectId)}</span>
+                <span className="tt-block__time">{timeLabel(c)}</span>
+                {(c.room || c.teacher) && (
+                  <span className="tt-block__room">{[c.room, c.teacher].filter(Boolean).join(" · ")}</span>
+                )}
+              </button>
+            ))}
+            {day === today && nowTop !== null && (
+              <span className="tt-now" style={{ top: nowTop }} aria-label={"Now, " + now.toTimeString().slice(0, 5)}></span>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function PlusIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
@@ -103,7 +199,7 @@ export default function Timetable() {
     content = (
       <div className="card">
         <div className="empty">
-          <span className="empty__icon"><Icon name="clock" size={26} /></span>
+          <EmptyArt name="timetable" />
           <p className="empty__title">Add your subjects first</p>
           <p className="empty__text">Your timetable is built from your subject list, so there is nothing to pick from yet.</p>
           <Link className="btn btn--primary" to="/settings">Add subjects</Link>
@@ -114,7 +210,7 @@ export default function Timetable() {
     content = (
       <div className="card">
         <div className="empty">
-          <span className="empty__icon"><Icon name="clock" size={26} /></span>
+          <EmptyArt name="timetable" />
           <p className="empty__title">No classes yet</p>
           <p className="empty__text">Walk through the week and add your classes — pick a subject, a day and a time.</p>
           <button className="btn btn--primary" onClick={openSetup}>Set Timetable</button>
@@ -123,6 +219,8 @@ export default function Timetable() {
     );
   } else {
     content = (
+      <>
+      <WeekBoard list={list} today={today} onOpen={openClassForm} />
       <div className="tt-grid">
         {DAYS.map((day) => {
           const classes = list.filter((c) => c.day === day).sort(byStart);
@@ -133,7 +231,8 @@ export default function Timetable() {
                 const name = store.subjects.nameOf(c.subjectId);
                 if (!name) return null;   // subject was deleted
                 return (
-                  <button key={c.id} type="button" className="tt-slot" onClick={() => openClassForm(getClass(c.id))}>
+                  <button key={c.id} type="button" className="tt-slot" style={subjectVar(store.subjects.byId(c.subjectId)?.color)}
+                    onClick={() => openClassForm(getClass(c.id))}>
                     <span className="tt-slot__time">{timeLabel(c)}</span>
                     <span className="tt-slot__subject">{name}</span>
                     {(c.room || c.teacher) && (
@@ -146,6 +245,7 @@ export default function Timetable() {
           );
         })}
       </div>
+      </>
     );
   }
 

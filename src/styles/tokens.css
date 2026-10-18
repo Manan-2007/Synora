@@ -67,6 +67,18 @@
   --status-done: #53655C;
   --status-overdue: #A8443C;
 
+  /* Subject colours (lib/colors.js) */
+  --subject-sage: #5E7A6B;
+  --subject-teal: #3D7C7A;
+  --subject-sky: #4A7DA6;
+  --subject-indigo: #5D6AAE;
+  --subject-plum: #8B5B8F;
+  --subject-rose: #B05568;
+  --subject-clay: #B1633E;
+  --subject-amber: #A37728;
+  --subject-olive: #6C7738;
+  --subject-stone: #7D7065;
+
   /* Count badges (sidebar, bell): text on red needs ≥ 4.5:1 */
   --badge-bg: #B04A41;
   --badge-text: #FFFFFF;
@@ -212,6 +224,17 @@
 
   --badge-bg: #D98A83;
   --badge-text: #16181C;
+
+  --subject-sage: #8FB09C;
+  --subject-teal: #6FB3AF;
+  --subject-sky: #80B1D8;
+  --subject-indigo: #9CA6E0;
+  --subject-plum: #C49CC8;
+  --subject-rose: #E0939F;
+  --subject-clay: #E29B78;
+  --subject-amber: #D8B064;
+  --subject-olive: #B0B86F;
+  --subject-stone: #B8AA9D;
 
   --status-overdue-text: #D0877D;
   --status-high-text: #D98A83;

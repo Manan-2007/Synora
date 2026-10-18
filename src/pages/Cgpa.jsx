@@ -6,6 +6,8 @@ import { store } from "../lib/storage.js";
 import { derive } from "../lib/engine.js";
 import { GRADES, GRADE_LADDER, FAIL_LADDER, GRADE_MAX, gradePoint, isFailGrade } from "../lib/grades.js";
 import { uid, clamp } from "../lib/util.js";
+import { subjectVar } from "../lib/colors.js";
+import EmptyArt from "../components/EmptyArt.jsx";
 
 /* =========================================================
    CGPA — give each subject a grade; Synora works out
@@ -101,7 +103,7 @@ function GradeChart({ rows }) {
               return (
                 <div className="chart__col" key={r.key}>
                   <span className="chart__value">{h ? r.grade : ""}</span>
-                  {h ? <div className="chart__bar" style={{ height: h + "%" }}></div> : null}
+                  {h ? <div className="chart__bar chart__bar--subject" style={{ height: h + "%", ...subjectVar(r.color) }}></div> : null}
                 </div>
               );
             })}
@@ -154,7 +156,7 @@ export default function Cgpa() {
 
   const chartRows = subjects.map((s) => {
     const row = rowFor(s.id, data);
-    return { key: s.id, name: s.name, grade: row ? row.grade : "" };
+    return { key: s.id, name: s.name, color: s.color, grade: row ? row.grade : "" };
   }).filter((r) => GRADES[r.grade]);
 
   return (
@@ -226,7 +228,7 @@ export default function Cgpa() {
               ) : (
                 /* You cannot add a subject here — a subject is not a grade. */
                 <div className="empty" style={{ padding: "40px 24px" }}>
-                  <span className="empty__icon"><Icon name="chart" size={26} /></span>
+                  <EmptyArt name="subjects" />
                   <p className="empty__title">No subjects yet</p>
                   <p className="empty__text">Add your subjects and their credits, then come back to grade them.</p>
                   <Link className="btn btn--primary" to="/settings">Add subjects</Link>

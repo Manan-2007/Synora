@@ -7,7 +7,8 @@
 --     • your local MySQL (then also run local-user.sql).
 --   It is safe to run again: nothing is dropped or overwritten.
 --
---   It creates the `synora` database and its 13 tables.
+--   It creates the `synora` database and its tables. (The API also
+--   adds anything newer by itself: server/migrate.js.)
 --
 --   Every table except `users` belongs to one user through
 --   `user_id`. Deleting a user deletes all of their rows
@@ -69,6 +70,7 @@ CREATE TABLE IF NOT EXISTS user_meta (
   last_completion_date DATE         NULL,
   demo                 BOOLEAN      NOT NULL DEFAULT FALSE,
   demo_version         INT UNSIGNED NULL,
+  checklist_dismissed  BOOLEAN      NOT NULL DEFAULT FALSE,
   PRIMARY KEY (user_id),
   CONSTRAINT fk_user_meta_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
@@ -89,6 +91,7 @@ CREATE TABLE IF NOT EXISTS subjects (
   name             VARCHAR(100)     NOT NULL,
   credits          TINYINT UNSIGNED NOT NULL DEFAULT 0,
   track_attendance BOOLEAN          NOT NULL DEFAULT TRUE,
+  color            VARCHAR(20)      NULL,                     -- palette name, e.g. 'sage'
   position         INT UNSIGNED     NOT NULL DEFAULT 0,
   PRIMARY KEY (user_id, id),
   CONSTRAINT fk_subjects_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
@@ -105,6 +108,8 @@ CREATE TABLE IF NOT EXISTS tasks (
   deadline     DATE         NULL,
   priority     ENUM('critical', 'high', 'medium', 'low') NOT NULL DEFAULT 'medium',
   status       ENUM('not-started', 'in-progress', 'completed') NOT NULL DEFAULT 'not-started',
+  repeat_rule  ENUM('none', 'daily', 'weekly', 'monthly') NOT NULL DEFAULT 'none',
+  subtasks     JSON         NULL,                        -- [{ id, text, done }]
   created_at   DATETIME(3)  NULL,
   completed_at DATETIME(3)  NULL,
   position     INT UNSIGNED NOT NULL DEFAULT 0,
@@ -135,6 +140,7 @@ CREATE TABLE IF NOT EXISTS timetable_classes (
   end_time   TIME         NULL,
   room       VARCHAR(100) NOT NULL DEFAULT '',
   teacher    VARCHAR(100) NOT NULL DEFAULT '',
+  last_marked DATE        NULL,                         -- attendance asked about on this day
   position   INT UNSIGNED NOT NULL DEFAULT 0,
   PRIMARY KEY (user_id, id),
   CONSTRAINT fk_timetable_user    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
@@ -205,4 +211,55 @@ CREATE TABLE IF NOT EXISTS contact_messages (
   created_at DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   PRIMARY KEY (id),
   KEY ix_contact_created (created_at)
+);
+
+-- ---------------------------------------------------------
+-- Added later (the API creates these by itself on an existing
+-- database: server/migrate.js)
+-- ---------------------------------------------------------
+
+-- Completed past semesters and their grades (the current semester's grades
+-- are in `grades`). Overall CGPA = all semesters together.
+CREATE TABLE IF NOT EXISTS semesters (
+  user_id  INT UNSIGNED NOT NULL,
+  id       VARCHAR(40)  NOT NULL,
+  name     VARCHAR(60)  NOT NULL,
+  position INT UNSIGNED NOT NULL DEFAULT 0,
+  PRIMARY KEY (user_id, id),
+  CONSTRAINT fk_semesters_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS semester_grades (
+  user_id     INT UNSIGNED     NOT NULL,
+  id          VARCHAR(40)      NOT NULL,
+  semester_id VARCHAR(40)      NOT NULL,
+  name        VARCHAR(100)     NOT NULL,
+  credits     TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  grade       ENUM('O', 'A+', 'A', 'B+', 'B', 'E1', 'E2', 'E3') NULL,
+  position    INT UNSIGNED     NOT NULL DEFAULT 0,
+  PRIMARY KEY (user_id, id),
+  CONSTRAINT fk_semgrades_semester FOREIGN KEY (user_id, semester_id)
+    REFERENCES semesters (user_id, id) ON DELETE CASCADE
+);
+
+-- Finished focus-timer sessions.
+CREATE TABLE IF NOT EXISTS focus_sessions (
+  user_id    INT UNSIGNED     NOT NULL,
+  id         VARCHAR(40)      NOT NULL,
+  subject_id VARCHAR(40)      NULL,
+  task_id    VARCHAR(40)      NULL,
+  minutes    SMALLINT UNSIGNED NOT NULL,
+  ended_at   DATETIME(3)      NOT NULL,
+  PRIMARY KEY (user_id, id),
+  KEY ix_focus_ended (user_id, ended_at),
+  CONSTRAINT fk_focus_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+-- One-time password-reset links (only a SHA-256 of the token is stored).
+CREATE TABLE IF NOT EXISTS password_resets (
+  token_hash CHAR(64)     NOT NULL,
+  user_id    INT UNSIGNED NOT NULL,
+  expires_at DATETIME(3)  NOT NULL,
+  PRIMARY KEY (token_hash),
+  CONSTRAINT fk_resets_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );

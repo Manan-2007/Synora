@@ -5,15 +5,60 @@ import { UserAvatar } from "../components/AvatarArt.jsx";
 import TaskRow from "../components/tasks/TaskRow.jsx";
 import { useTaskForm } from "../components/tasks/TaskForm.jsx";
 import useStore from "../hooks/useStore.js";
-import { profile } from "../lib/storage.js";
+import { profile, store } from "../lib/storage.js";
 import { derive, streak } from "../lib/engine.js";
 import { allTasks, toggleComplete } from "../lib/tasks.js";
 import { daysUntil, relativeDay, parseISODate, clamp, plural } from "../lib/util.js";
+import { subjectVar } from "../lib/colors.js";
+import EmptyArt from "../components/EmptyArt.jsx";
 
 /* The command centre: who am I, what's due today, what's overdue,
    what's next, and how am I doing academically. */
 
 /* Late night (midnight–5am) is still "evening", not morning. */
+/* First steps for a new workspace. Each ticks itself off from what's
+   actually there; the card goes away once all are done, or when closed
+   (remembered in meta, so on every device). */
+function GettingStarted() {
+  const meta = store.get("meta");
+  if (meta.checklistDismissed) return null;
+  const steps = [
+    { done: store.subjects.all().length > 0, label: "Add your subjects and their credits", to: "/settings" },
+    { done: store.get("timetable").length > 0, label: "Set up your weekly timetable", to: "/timetable" },
+    { done: allTasks().length > 0, label: "Add your first task or deadline", to: "/tasks" },
+    { done: store.get("attendance").some((a) => Number(a.total) > 0), label: "Record your attendance so far", to: "/attendance" },
+    { done: (store.get("cgpa").subjects || []).some((g) => g.grade), label: "Enter a grade to see your CGPA", to: "/cgpa" },
+  ];
+  const done = steps.filter((s) => s.done).length;
+  if (done === steps.length) return null;
+  const close = () => store.update("meta", (m) => ({ ...m, checklistDismissed: true }));
+
+  return (
+    <section className="card card--pad checklist" aria-labelledby="checklist-title">
+      <div className="checklist__head">
+        <div>
+          <h2 className="checklist__title" id="checklist-title">Get started with Synora</h2>
+          <p className="text-small muted" style={{ margin: 0 }}>{done + " of " + steps.length + " done"}</p>
+        </div>
+        <button type="button" className="icon-btn" aria-label="Hide this checklist" onClick={close}>
+          <Icon name="x" size={16} />
+        </button>
+      </div>
+      <div className="checklist__bar" aria-hidden="true"><span style={{ width: (done / steps.length) * 100 + "%" }}></span></div>
+      <ol className="checklist__list">
+        {steps.map((s) => (
+          <li key={s.label} className={s.done ? "is-done" : ""}>
+            <span className="checklist__mark" aria-hidden="true">{s.done && <Icon name="check" size={12} />}</span>
+            {s.done
+              ? <span>{s.label}<span className="visually-hidden"> (done)</span></span>
+              : <Link to={s.to}>{s.label}</Link>}
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
 function greeting(now) {
   const h = now.getHours();
   if (h >= 5 && h < 12) return "Good morning";
@@ -191,6 +236,8 @@ export default function Dashboard() {
           </div>
         )}
 
+        {p.onboarded && <GettingStarted />}
+
         <div className="dash-hero">
           <UserAvatar size={52} className="avatar--lg" />
           <div>
@@ -226,7 +273,7 @@ export default function Dashboard() {
                   </div>
                 ) : (
                   <div className="empty" style={{ padding: "32px 0" }}>
-                    <span className="empty__icon"><Icon name="check" size={24} /></span>
+                    <EmptyArt name="calm" />
                     <p className="empty__title">Nothing due</p>
                     <p className="empty__text">Add a task to get your day organized.</p>
                   </div>
@@ -245,6 +292,7 @@ export default function Dashboard() {
                     {classes.map((c) => (
                       <div className="agenda-row" key={c.id}>
                         <time>{c.start}</time>
+                        <span className="subject-dot" style={{ ...subjectVar(c.color), alignSelf: "center" }} aria-hidden="true"></span>
                         <span>
                           <span className="agenda-row__subject">{c.subject}</span>
                           {c.room && <span className="agenda-row__room">{" · " + c.room}</span>}
