@@ -62,7 +62,7 @@ self.addEventListener("fetch", (event) => {
   if (request.method !== "GET") return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
-  if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/_vercel/") || url.pathname.startsWith("/icontest/")) return;
+  if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/_vercel/")) return;
   /* Icons and the manifest always come straight from the network: iOS
      reads them when adding to the Home Screen, and a stale or wrong cached
      copy there shows a plain letter instead of the logo. */
