@@ -16,7 +16,7 @@ timetable, attendance, grades, past semesters, focus sessions, achievements and 
  Browser (React app)            Vercel                                Aiven (cloud)
 ┌──────────────────────┐ /api/* ┌──────────────────────────────┐ SQL  ┌──────────────────┐
 │ localStorage         │ ─────► │ API: serverless function     │ ───► │ MySQL: `synora`  │
-│ (the working copy)   │ ◄───── │ api/index.js → server/app.js │ ◄─── │ 17 tables        │
+│ (the working copy)   │ ◄───── │ api/index.js → server/app.js │ ◄─── │ 20 tables        │
 └──────────────────────┘  JSON  └──────────────────────────────┘ TLS  └──────────────────┘
                                                                               ▲
                                                            MySQL Workbench connects here too
@@ -76,7 +76,7 @@ the database, open the Aiven console and click **Power on**.
 2. Open the connection, then **File → Open SQL Script…** → `database/schema.sql`.
 3. Click the **⚡ lightning bolt**, or press **⌘ ⇧ ↵** (Mac) / **Ctrl + Shift + Enter**
    (Windows). The *Output* panel should show only green ticks.
-4. In the **Navigator → Schemas** tab, click **↻ refresh**. **`synora`** appears with 17 tables.
+4. In the **Navigator → Schemas** tab, click **↻ refresh**. **`synora`** appears with 20 tables.
 
 `schema.sql` is safe to run again later. It never deletes data.
 
@@ -183,6 +183,49 @@ The link expires after 30 minutes and works once; only a SHA-256 hash of it is s
 doesn't arrive, check the spam folder: mail sent from a free address (such as Gmail) through
 Brevo can't be fully authenticated, and a sender on your own domain is delivered more reliably.
 
+## 7. Push reminders with Synora closed
+
+Class and due-today reminders reach a phone or computer even with Synora closed, once these are set:
+
+1. **Keys.** On your computer, in the project folder, run:
+
+   ```bash
+   npx web-push generate-vapid-keys
+   ```
+
+   It prints a *Public Key* and a *Private Key*.
+2. **A secret for the scheduler.** Make up a long random string (for example a password manager's
+   generator, 40+ characters).
+3. **Vercel → Settings → Environment Variables** (all environments):
+
+   | Name | Value |
+   | :--- | :--- |
+   | `VAPID_PUBLIC_KEY` | the public key |
+   | `VAPID_PRIVATE_KEY` | the private key (mark it *Sensitive*) |
+   | `VAPID_SUBJECT` | optional: `mailto:` + your email |
+   | `CRON_SECRET` | the secret from step 2 (*Sensitive*) |
+
+   Then **Redeploy**.
+4. **GitHub → the repository → Settings → Secrets and variables → Actions → New repository secret:**
+   name `CRON_SECRET`, the same value. The *Push reminders* workflow then calls the API every
+   10 minutes (Actions tab → *Push reminders* → *Run workflow* tests it straight away). Vercel's own
+   daily cron (`vercel.json`) also runs it at 8 am IST as a backstop.
+5. In the app: **Settings → Reminders → Turn on reminders**. The card says *Also when Synora is closed*
+   when this device is subscribed; **Send a test** comes from the server. On iPhone/iPad, do this inside
+   the home-screen app.
+
+GitHub can start scheduled runs a few minutes late, so a class reminder arrives somewhere between 20
+and about 5 minutes before the class.
+
+## 8. Timetable from a photo (Anthropic)
+
+*Timetable → Scan a photo* sends the picture to Claude, which lists the classes for you to check.
+
+1. Create an API key at [console.anthropic.com](https://console.anthropic.com/) (it needs a little
+   prepaid credit; a scan costs around a cent).
+2. In Vercel add `ANTHROPIC_API_KEY` (*Sensitive*). Optional: `SCAN_MODEL` (default `claude-sonnet-5-5`).
+3. **Redeploy.** Each account can scan 15 times a day.
+
 ---
 
 ## The tables
@@ -205,6 +248,9 @@ Brevo can't be fully authenticated, and a sender on your own domain is delivered
 | `semester_grades` | subject in a past semester | name, credits and grade; foreign key → `semesters` (`ON DELETE CASCADE`) |
 | `focus_sessions` | finished focus-timer session | subject, task, minutes, when it ended |
 | `password_resets` | emailed reset link | only the SHA-256 hash of the token; expires after 30 minutes |
+| `attachments` | file on a task or note | the bytes (`MEDIUMBLOB`, ≤ 3.5 MB); the task/note keeps `{ id, name, mime, size }` in its `attachments` JSON column; deleted with its task/note |
+| `push_subscriptions` | browser with reminders on | Web Push endpoint and keys, plus the browser's time zone |
+| `push_sent` | reminder already pushed | so each class / morning digest goes out once; kept 3 days |
 | `contact_messages` | message from the landing page's contact form | not tied to an account; nothing is emailed |
 
 * Every table except `users` has a `user_id` foreign key to `users` with **`ON DELETE
@@ -258,4 +304,7 @@ DROP DATABASE synora;
 | `Unknown database 'synora'` | `schema.sql` hasn't been run on that server yet. |
 | `Port 4000 is already in use` | Change `API_PORT` in `server/.env`; the app follows it automatically. |
 | *Forgot password?* says email isn't set up | Add `BREVO_API_KEY` and `MAIL_FROM` in Vercel (part 6), then **Redeploy**. |
+| Settings says reminders with Synora closed "aren't set up" | Add the VAPID keys and `CRON_SECRET` (part 7), then **Redeploy**. |
+| Reminders on, but nothing arrives with Synora closed | Check the GitHub secret `CRON_SECRET` matches Vercel's, and the *Push reminders* workflow runs green. |
+| Scanning says it "isn't set up" | Add `ANTHROPIC_API_KEY` (part 8), then **Redeploy**. |
 | Local API: `ALTER command denied` / `CREATE command denied` | Run `local-user.sql` again (it grants `CREATE` and `ALTER`). |

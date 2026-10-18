@@ -96,11 +96,13 @@ flowchart LR
 - Subject, deadline, **4 priorities** (critical → low) and **3 statuses**, grouped live into *Today*, *Upcoming*, *Overdue* and *Completed*.
 - **Repeating tasks** (daily, weekly, monthly): finish one and the next is queued for you.
 - A **checklist** inside any task, tickable straight from the list.
+- **Attach photos, PDFs and documents**: a photo of the board, the assignment sheet.
 
 </td>
 <td width="50%" valign="top">
 
 ### 🗓️ Timetable & calendar
+- **Scan your timetable:** take a photo (or pick a PDF) and Synora reads every class, for you to check before it's saved. At the end of each week it asks whether next week's is the same.
 - A real week board: classes sized by their times, a line for *now*, and a colour for every subject. Day cards on phones.
 - A **month or week** calendar with every deadline and class on its day.
 - **Export to your calendar** as an `.ics` file (Google, Apple, Outlook): deadlines plus weekly classes.
@@ -114,6 +116,7 @@ flowchart LR
 - Credit-weighted on the 10-point scale: **Σ(credits × grade point) ÷ Σ(credits)**, with `E1` / `E2` / `E3` failures at 0 points.
 - **Semester history:** SGPA for every semester, a trend chart, and the **overall CGPA** across all of them.
 - **"What grade do I need?"**: type a target CGPA and see the average you need in the subjects still ungraded.
+- **What if?**: try grades for this semester and watch the SGPA and overall CGPA move, without saving.
 
 </td>
 <td valign="top">
@@ -131,6 +134,7 @@ flowchart LR
 ### 📝 Notes in Markdown
 - `**bold**`, *italics*, headings, lists, code and links, rendered safely (no HTML is ever injected).
 - `- [ ]` checklists that tick right from the note card. Write / Preview while editing.
+- Photos and files attached to any note.
 
 </td>
 <td valign="top">
@@ -153,7 +157,7 @@ flowchart LR
 <td valign="top">
 
 ### 🔔 Reminders, badges & notifications
-- Optional **browser reminders**: 10 minutes before each class, and a morning note of what's due.
+- **Reminders** before each class and each morning for what's due, **even with Synora closed** (push notifications; on iPhone, from the home-screen app).
 - **33 badges** in bronze, silver and gold, earning XP and levels, with *Up next* showing what's closest. One notification centre for deadlines, attendance and badges.
 
 </td>
@@ -172,7 +176,8 @@ flowchart LR
 ### 📱 Installable, glassy, light & dark
 - **Install it** like an app (home screen or dock, with step-by-step help on iPhone). It opens instantly and works offline.
 - A frosted-glass, iOS-style look in two hand-tuned themes, with a floating tab bar on phones.
-- A *Get started* checklist and friendly illustrations whenever a page is empty.
+- A *Get started* checklist, a short **tour** on first sign-in, and friendly illustrations whenever a page is empty.
+- Loads fast: each page is fetched on demand (the first visit downloads about a quarter of the code).
 
 </td>
 </tr>
@@ -207,7 +212,7 @@ The screens below come from the live app, signed in to the demo account.
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dark/timetable.webp">
   <img alt="Timetable" src="docs/screenshots/light/timetable.webp">
 </picture>
-<p align="center"><b>Timetable</b>: the week board, coloured by subject</p>
+<p align="center"><b>Timetable</b>: the week board, or scan it from a photo</p>
 </td>
 <td>
 <picture>
@@ -434,7 +439,7 @@ flowchart LR
     end
     subgraph AIVEN["Aiven cloud"]
         direction TB
-        DB[("MySQL · synora<br/>17 tables")]
+        DB[("MySQL · synora<br/>20 tables")]
         WB["MySQL Workbench"]
     end
     UI -->|"loaded from"| CDN
@@ -457,7 +462,9 @@ flowchart LR
 | **API** | Express routes for sign-up, sign-in, sign-out, password change / reset, account deletion, saving / loading data | `server/app.js` |
 | **Self-upgrading schema** | Adds new tables and columns to an existing database on the first request after a deploy | `server/migrate.js` |
 | **Serverless entry** | Runs the same Express app as a Vercel function | `api/index.js` |
-| **Database** | 17 MySQL tables (16 per-account + contact messages) | `database/schema.sql` |
+| **Database** | 20 MySQL tables (19 per-account + contact messages) | `database/schema.sql` |
+| **Push** | Stores push subscriptions; a scheduled call sends class and due-today reminders | `server/push.js` |
+| **Timetable scan** | Sends a timetable photo or PDF to Claude (Anthropic API) and returns the classes it lists | `server/app.js` |
 | **Offline & install** | Web app manifest and a service worker that caches the app shell | `public/sw.js` |
 
 ### Every change, saved twice
@@ -552,9 +559,9 @@ sequenceDiagram
 
 ## ✦ The database
 
-Seventeen tables in a database called `synora`. Sixteen hold the accounts and their workspaces: every
+Twenty tables in a database called `synora`. Nineteen hold the accounts and their workspaces: every
 row belongs to a user (`user_id`), and deleting an account deletes everything it owns (`ON DELETE
-CASCADE`). The seventeenth, `contact_messages`, stores what people send through the landing page's
+CASCADE`). The twentieth, `contact_messages`, stores what people send through the landing page's
 *Get in Touch* form. New tables and columns reach an existing database by themselves: the API adds
 whatever is missing on its first request after a deploy (`server/migrate.js`). Full setup guide (Aiven →
 MySQL Workbench → Vercel): **[`database/README.md`](database/README.md)**.
@@ -574,6 +581,9 @@ erDiagram
     semesters ||--o{ semester_grades : contains
     users ||--o{ focus_sessions : focuses
     users ||--o{ password_resets : "may request"
+    users ||--o{ attachments : "attaches files"
+    users ||--o{ push_subscriptions : "gets pushes on"
+    users ||--o{ push_sent : "was reminded"
     subjects ||--o{ timetable_classes : "scheduled as"
     subjects ||--o{ attendance : "tracked in"
     subjects ||--o{ grades : "graded in"
@@ -694,6 +704,26 @@ erDiagram
         int user_id FK
         datetime expires_at "30 minutes"
     }
+    attachments {
+        int user_id PK, FK
+        varchar id PK
+        enum owner_type "task / note"
+        varchar owner_id
+        varchar name
+        varchar mime
+        mediumblob data "up to 3.5 MB"
+    }
+    push_subscriptions {
+        char id PK "SHA-256 of endpoint"
+        int user_id FK
+        text endpoint
+        varchar tz "the browser's time zone"
+    }
+    push_sent {
+        int user_id PK, FK
+        varchar key PK "class:<id>:<date>"
+        datetime sent_at
+    }
     contact_messages {
         int id PK
         varchar name
@@ -761,6 +791,23 @@ flash of the wrong one.
   - dialogs trap focus and close with `Escape`;
   - `prefers-reduced-motion` respected (the splash loader shortens from 2 s to 0.6 s).
 
+### The glass look
+
+Since October 2026 Synora wears an iOS-style **frosted glass** finish, built from a second set of
+tokens (`--glass-*` and `--app-ambient` in `tokens.css`):
+
+- **A colour wash behind everything:** soft sage, taupe, blue and mint glows fixed under the page
+  (and slowly drifting on the landing page), so translucent panels have something to frost.
+- **Glass panels:** cards, the sidebar, top bar, dialogs, menus and toasts are translucent
+  (`--glass-bg`), blur what's behind them (`backdrop-filter: blur(24px) saturate(180%)`), and carry a
+  bright top edge, a hairline and a long soft shadow.
+- **Capsules:** buttons, segmented controls, chips and the phone tab bar are pill-shaped; primary
+  buttons have a gentle top-to-bottom gradient.
+- **Floating chrome:** on wide screens the sidebar and top bar float inside the page; on phones a glass
+  tab bar floats above the content and toasts drop in from the top like iOS banners.
+- **Readable first:** the same contrast rules apply (axe scans stay at 0 violations), and a blur never
+  sits inside another blur (menus inside the frosted top bar are nearly solid instead).
+
 ---
 
 ## ✦ Tech stack
@@ -775,7 +822,9 @@ flash of the wrong one.
 | **Hosting** | Vercel (Mumbai region, next to the database): static build, serverless API, Web Analytics |
 | **Email** | Brevo's transactional API, for password-reset links (one `fetch`, no SDK) |
 | **Quality** | ESLint (React hooks rules) and a GitHub Actions check (lint + build) on every push |
-| **Runtime dependencies** | `react`, `react-dom`, `react-router` in the app, and `express`, `mysql2`, `bcryptjs` in the API. Nothing else. |
+| **AI** | Claude (Anthropic API) reads timetable photos and PDFs, server-side |
+| **Push** | Web Push with VAPID (`web-push`), scheduled by GitHub Actions and Vercel cron |
+| **Runtime dependencies** | `react`, `react-dom`, `react-router` in the app, and `express`, `mysql2`, `bcryptjs`, `web-push` in the API. Nothing else. |
 
 ---
 
@@ -799,7 +848,7 @@ Synora/
 │   ├── db.js               # MySQL pool (TLS for the cloud), transactions
 │   └── index.js            # Runs the API locally (npm run server)
 ├── database/
-│   ├── schema.sql          # Creates the `synora` database and its 17 tables
+│   ├── schema.sql          # Creates the `synora` database and its 20 tables
 │   ├── local-user.sql      # The API's login on a local MySQL
 │   ├── queries.sql         # Ready-made queries for MySQL Workbench
 │   └── README.md           # Setup guide: Aiven, Workbench, Vercel
@@ -864,6 +913,9 @@ The live site deploys automatically from `main` on **Vercel**.
 - The API runs in Vercel's Mumbai region (`bom1`), a ~20 ms round trip from the Aiven database.
 - New tables and columns are added to the live database automatically after a deploy.
 - Password-reset emails need `BREVO_API_KEY` and `MAIL_FROM` (a sender verified in Brevo). Without them, *Forgot password?* says email isn't set up yet. See [`database/README.md`](database/README.md#6-password-reset-emails-brevo).
+- Push reminders need `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` and `CRON_SECRET` in Vercel, and the same `CRON_SECRET` as a GitHub repository secret (for the 10-minute schedule in `.github/workflows/push-tick.yml`). See [part 7](database/README.md#7-push-reminders-with-synora-closed).
+- Timetable scanning needs `ANTHROPIC_API_KEY` (and optionally `SCAN_MODEL`). See [part 8](database/README.md#8-timetable-from-a-photo-anthropic).
+- Every one of these is optional: without its keys a feature says it isn't set up, and everything else works.
 - Until those variables are set, `/api/health` answers *no database* and the site runs on browser storage.
 - Security headers on every response:
   - a strict **Content-Security-Policy** (scripts only from the site itself);
@@ -914,8 +966,9 @@ new password arrives within a minute and works for 30 minutes.
 
 <details>
 <summary><b>Do reminders work when Synora is closed?</b></summary>
-<br>Not yet. Reminders come from the open app (a background tab or the installed app is enough). Push
-notifications that arrive with everything closed are on the roadmap.
+<br>Yes, once you turn reminders on in Settings: the server pushes them to your device. On an iPhone or
+iPad that works from the home-screen app (Safari's Share → Add to Home Screen), then turn reminders on
+inside it.
 </details>
 
 <details>
@@ -932,7 +985,8 @@ database is back, without asking you to sign in again.
 - [x] **Reminders** while the app is open: classes and what's due today
 - [x] **Demo reset:** the shared demo account restores its sample data every day
 - [x] **Semesters, focus timer, ⌘K search, Markdown notes, installable app**
-- [ ] **Push reminders** that arrive with the app closed (Web Push)
+- [x] **Push reminders** that arrive with the app closed (Web Push)
+- [x] **Attachments, timetable from a photo, what-if grades, first-run tour, glass design**
 - [ ] **Syllabus tracker:** topic-by-topic progress inside each subject
 - [ ] **Contact form delivery:** send *Get in touch* messages by email
 - [ ] **Data export:** download your whole workspace as a file

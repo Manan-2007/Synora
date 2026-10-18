@@ -497,7 +497,7 @@ body.app {
 .notif-item__icon svg { width: 16px; height: 16px; }
 .notif-item__title { display: block; font-size: var(--text-small); font-weight: var(--weight-semibold); }
 .notif-item__body { display: block; font-size: 0.8125rem; color: var(--color-text-muted); line-height: 1.4; margin-top: 1px; }
-.notif-item__time { font-size: 0.6875rem; color: var(--color-text-subtle); margin-top: 2px; }
+.notif-item__time { font-size: 0.6875rem; color: var(--color-text-muted); margin-top: 2px; }
 
 /* Semantic tints for notification icons */
 .tint-danger  { background-color: color-mix(in srgb, var(--status-high) 16%, transparent);   color: var(--status-high); }
@@ -2818,3 +2818,11 @@ body.app::before {
 .reminders-push { display: flex; align-items: flex-start; gap: 8px; color: var(--color-text-muted); }
 .reminders-push svg { flex: none; margin-top: 2px; }
 .reminders-push--on { color: var(--status-low-text); }
+
+/* Calendar on phones: title on its own line, then view switch and arrows in one row */
+@media (max-width: 560px) {
+  .cal__head { flex-direction: column; align-items: stretch; }
+  .cal__nav { flex-wrap: nowrap; justify-content: space-between; }
+  .cal__views { margin-right: auto; }
+  .cal__nav .icon-btn { width: 36px; height: 36px; }
+}

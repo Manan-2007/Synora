@@ -469,3 +469,11 @@ a.logo:focus-visible {
   border-radius: var(--radius-pill);
 }
 
+
+/* Unavailable for now (nothing to save, nothing changed): visibly so. */
+.btn:disabled, .btn[aria-disabled="true"] {
+  opacity: .45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
