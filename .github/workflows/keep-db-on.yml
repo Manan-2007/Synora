@@ -1,0 +1,35 @@
+# Keep the database on: Aiven powers free services off when they've been
+# idle for a while. Every hour (GitHub may run scheduled jobs later than
+# asked), check the service and power it back on if it is off.
+# Needs the repository secret AIVEN_TOKEN (an Aiven personal token:
+# Aiven Console → user menu → Tokens → Generate token).
+name: Keep database on
+
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+env:
+  AIVEN_PROJECT: kochharmanan20-aec2
+  AIVEN_SERVICE: synora-db
+
+jobs:
+  power-on:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Power the database on if Aiven switched it off
+        env:
+          AIVEN_TOKEN: ${{ secrets.AIVEN_TOKEN }}
+        run: |
+          if [ -z "$AIVEN_TOKEN" ]; then echo "AIVEN_TOKEN is not set; skipping."; exit 0; fi
+          pip install --quiet aiven-client
+          state=$(avn --auth-token "$AIVEN_TOKEN" service get "$AIVEN_SERVICE" --project "$AIVEN_PROJECT" --format '{state}')
+          echo "Service state: $state"
+          if [ "$state" = "POWEROFF" ]; then
+            avn --auth-token "$AIVEN_TOKEN" service update "$AIVEN_SERVICE" --project "$AIVEN_PROJECT" --power-on
+            echo "Power-on requested; it takes a few minutes to start."
+          fi
