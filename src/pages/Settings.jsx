@@ -329,7 +329,7 @@ function RemindersCard() {
       </div>
       <div className="card__body stack" style={{ gap: 12 }}>
         <p className="text-small muted" style={{ margin: 0 }}>
-          A notification before each class, and each morning for what's due that day.
+          A notification before each class, a “Did you attend?” after it, and each morning for what's due that day.
         </p>
         {state === "unsupported" && (
           <p className="text-small" style={{ margin: 0 }}>This browser can't show notifications.</p>

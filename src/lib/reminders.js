@@ -4,6 +4,8 @@
    While Synora is open (a tab, even in the background, or the
    installed app) it checks every 30 seconds and notifies:
      • 10 minutes before each class in today's timetable
+     • when a class ends: did you attend? (Attended / Missed buttons;
+       the answer counts the class's hours — lib/attendance.js)
      • once a day from 8 am: what's due today
    The focus timer uses notify() when a session ends.
 
@@ -19,6 +21,7 @@ import { allTasks } from "./tasks.js";
 import { todayISO } from "./util.js";
 import { api } from "./api.js";
 import { formatTime } from "./time.js";
+import { classesToMark } from "./attendance.js";
 
 const KEY = "synora-reminders";      // { enabled }
 const SHOWN = "synora-reminded";     // { date, keys: ["class:<id>", "due:<date>"] } — today's only
@@ -141,14 +144,18 @@ export async function sendTestPush() {
 
 /* Shows one notification. The installed app (and Android Chrome) need the
    service worker to show it; a plain tab can do it directly. `tag` makes a
-   repeat replace the earlier one instead of stacking. */
-export async function notify(title, body, tag) {
+   repeat replace the earlier one instead of stacking. `extra` adds
+   notification options such as buttons (`actions`, service worker only)
+   and `data` for the tap handler in public/sw.js. */
+export async function notify(title, body, tag, extra = {}) {
   if (reminderState() !== "on") return false;
-  const options = { body, tag, icon: "/icons/icon-192.png", badge: "/icons/icon-192.png" };
+  const options = { body, tag, icon: "/icons/icon-192.png", badge: "/icons/icon-192.png", ...extra };
   try {
     const reg = navigator.serviceWorker && (await navigator.serviceWorker.getRegistration());
     if (reg) { await reg.showNotification(title, options); return true; }
-    const n = new Notification(title, options);
+    const plain = { ...options };
+    delete plain.actions;                                     // a page notification can't have buttons
+    const n = new Notification(title, plain);
     n.onclick = () => { window.focus(); n.close(); };
     return true;
   } catch {
@@ -172,6 +179,12 @@ const minutesOf = (hhmm) => {
   return Number.isFinite(h) && Number.isFinite(m) ? h * 60 + m : null;
 };
 
+/* Most browsers show at most two buttons; "Cancelled" is on the dashboard,
+   one tap away (tapping the notification opens it). */
+const ATTEND_ACTIONS = [{ action: "attended", title: "Attended" }, { action: "missed", title: "Missed" }];
+const attendBody = (c) => c.time + (c.hours > 1 ? " · counts as " + c.hours + " classes" : "") +
+  ". Cancelled? Tap to open Synora.";
+
 export function checkReminders(now = new Date()) {
   if (reminderState() !== "on") return;
   const today = todayISO();
@@ -187,6 +200,17 @@ export function checkReminders(now = new Date()) {
       notify(name + " at " + formatTime(c.startTime),
         "Starts in " + inMin + (inMin === 1 ? " minute" : " minutes") + (c.room ? " · " + c.room : ""), "class-" + c.id);
     }
+  }
+
+  /* The same "Did you attend?" the dashboard asks, once per class. The
+     server sends it too when Synora is closed, with the same tag, so a
+     device that gets both shows one. */
+  for (const c of classesToMark(now)) {
+    if (!once("attend:" + c.id)) continue;
+    notify("Did you attend " + c.subject + "?", attendBody(c), "attend-" + c.id, {
+      actions: ATTEND_ACTIONS, requireInteraction: true,
+      data: { url: "/dashboard", attend: { classId: c.id, date: today } },
+    });
   }
 
   if (now.getHours() >= DIGEST_HOUR) {
@@ -209,5 +233,5 @@ export function startReminders() {
 }
 
 export function sendTestReminder() {
-  return notify("Reminders are on", "You'll hear from Synora 10 minutes before each class and when work is due.", "test");
+  return notify("Reminders are on", "You'll hear from Synora 10 minutes before each class, after it for attendance, and when work is due.", "test");
 }

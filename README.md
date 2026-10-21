@@ -123,7 +123,7 @@ flowchart LR
 
 ### 📊 Attendance calculator
 - One-tap **+ / −** per subject, and exactly how many classes you can **safely miss** or **must attend** to reach your target.
-- **"Did you attend?"**: after each class in your timetable, the dashboard asks, and one tap updates the count.
+- **"Did you attend?"**: after each class in your timetable, the dashboard asks, and so does a notification (Attended / Missed buttons). One tap updates the count, **by the hour**: a 2-hour lab counts as 2 classes, the way colleges count attendance.
 - Subjects can opt out of attendance and still count towards the CGPA.
 
 </td>
@@ -157,7 +157,7 @@ flowchart LR
 <td valign="top">
 
 ### 🔔 Reminders, badges & notifications
-- **Reminders** before each class and each morning for what's due, **even with Synora closed** (push notifications; on iPhone, from the home-screen app).
+- **Reminders** before each class, a "Did you attend?" after it, and each morning for what's due, **even with Synora closed** (push notifications; on iPhone, from the home-screen app).
 - **33 badges** in bronze, silver and gold, earning XP and levels, with *Up next* showing what's closest. One notification centre for deadlines, attendance and badges.
 
 </td>

@@ -7,6 +7,9 @@
    daily Vercel cron as a backstop); each tick, for every
    subscribed account:
      • classes starting in the next 20 minutes → one push each
+     • classes that have ended today and weren't answered yet → "Did
+       you attend?" with Attended / Missed buttons (public/sw.js); the
+       answer counts the class's length in hours
      • from 7 am, once a day → what's due today
    push_sent remembers what went out, so a class is announced once
    however many ticks see it.
@@ -97,7 +100,8 @@ export async function tick(now = new Date()) {
     const t = localNow(tz, now);
 
     const [classes] = await pool.query(
-      `SELECT c.id, TIME_FORMAT(c.start_time, '%H:%i') AS start, c.room, s.name
+      `SELECT c.id, TIME_FORMAT(c.start_time, '%H:%i') AS start, TIME_FORMAT(c.end_time, '%H:%i') AS end,
+              DATE_FORMAT(c.last_marked, '%Y-%m-%d') AS marked, c.room, s.name, s.track_attendance AS tracked
        FROM timetable_classes c JOIN subjects s ON s.user_id = c.user_id AND s.id = c.subject_id
        WHERE c.user_id = ? AND c.day = ? AND c.start_time IS NOT NULL`, [userId, t.day]);
     for (const c of classes) {
@@ -110,6 +114,24 @@ export async function tick(now = new Date()) {
           tag: "class-" + c.id, url: "/timetable",
         });
       }
+    }
+
+    /* After the class: did you go? Asked once, only for subjects that
+       track attendance and only while nobody has answered it today. */
+    for (const c of classes) {
+      if (!c.tracked || !c.end || c.marked === t.date) continue;
+      const [sh, sm] = c.start.split(":").map(Number);
+      const [eh, em] = c.end.split(":").map(Number);
+      const endMin = eh * 60 + em;
+      if (endMin > t.minutes || !(await once(userId, `attend:${c.id}:${t.date}`))) continue;
+      const hours = Math.max(1, Math.round((endMin - (sh * 60 + sm)) / 60));
+      sent += await sendToUser(userId, {
+        title: `Did you attend ${c.name}?`,
+        body: `${show(c.start)}–${show(c.end)}${hours > 1 ? ` · counts as ${hours} classes` : ""}. Cancelled? Tap to open Synora.`,
+        tag: "attend-" + c.id, url: "/dashboard",
+        actions: [{ action: "attended", title: "Attended" }, { action: "missed", title: "Missed" }],
+        attend: { classId: c.id, date: t.date },
+      });
     }
 
     if (t.minutes >= 7 * 60) {

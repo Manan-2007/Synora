@@ -110,13 +110,27 @@ export function analyse(row) {
   return res;
 }
 
-/* ---- Asking after each class (dashboard) ----
+/* ---- Asking after each class (dashboard + notifications) ----
    Today's classes that have finished, for subjects that record
    attendance, and that haven't been answered yet today. The answer is
    remembered on the timetable entry (lastMarked), so every device stops
-   asking once one has answered. */
+   asking once one has answered.
+
+   Colleges count attendance per hour: a 2-hour lab is 2 classes held
+   (and 2 attended). classHours() turns a slot's length into that count,
+   rounded to the nearest hour and never less than 1. */
 
 const nowHHMM = (d) => String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+const minutes = (hhmm) => {
+  const [h, m] = String(hhmm || "").split(":").map(Number);
+  return Number.isFinite(h) && Number.isFinite(m) ? h * 60 + m : null;
+};
+
+export function classHours(entry) {
+  const start = minutes(entry && entry.startTime), end = minutes(entry && entry.endTime);
+  if (start === null || end === null || end <= start) return 1;
+  return Math.max(1, Math.round((end - start) / 60));
+}
 
 export function classesToMark(now = new Date()) {
   const today = todayISO();
@@ -126,20 +140,29 @@ export function classesToMark(now = new Date()) {
     .map((c) => ({ c, s: store.subjects.byId(c.subjectId) }))
     .filter(({ s }) => s && s.trackAttendance)
     .sort((a, b) => (a.c.startTime < b.c.startTime ? -1 : 1))
-    .map(({ c, s }) => ({ id: c.id, subject: s.name, color: s.color, room: c.room || "", time: formatRange(c.startTime, c.endTime), subjectId: s.id }));
+    .map(({ c, s }) => ({
+      id: c.id, subject: s.name, color: s.color, room: c.room || "", hours: classHours(c),
+      time: formatRange(c.startTime, c.endTime), subjectId: s.id,
+    }));
 }
 
-/* outcome: "attended" (held +1, attended +1), "missed" (held +1) or
-   "cancelled" (not held: no change). Returns the subject's new counts. */
-export function markClass(classId, outcome) {
+/* outcome: "attended" (held + h, attended + h), "missed" (held + h) or
+   "cancelled" (not held: no change), where h = classHours(). `date` is
+   the day being answered (a notification can be tapped later); a class
+   already answered for that day is left alone, so a second tap — or a
+   second device — never counts it twice. Returns the subject's new counts
+   and h, or null when there was nothing to do. */
+export function markClass(classId, outcome, date = todayISO()) {
   const entry = store.get("timetable").find((c) => c.id === classId);
-  if (!entry) return null;
+  if (!entry || !["attended", "missed", "cancelled"].includes(outcome)) return null;
+  if (entry.lastMarked && entry.lastMarked >= date) return null;
+  const hours = classHours(entry);
   const row = countsFor(entry.subjectId);
   let total = Number(row.total) || 0;
   let attended = Number(row.attended) || 0;
-  if (outcome === "attended") { total += 1; attended += 1; }
-  else if (outcome === "missed") total += 1;
-  store.update("timetable", (list) => list.map((c) => (c.id === classId ? { ...c, lastMarked: todayISO() } : c)));
+  if (outcome === "attended") { total += hours; attended += hours; }
+  else if (outcome === "missed") total += hours;
+  store.update("timetable", (list) => list.map((c) => (c.id === classId ? { ...c, lastMarked: date } : c)));
   const r = outcome === "cancelled" ? { total, attended } : setCounts(entry.subjectId, total, attended);
-  return { ...r, pct: r.total ? (r.attended / r.total) * 100 : 0 };
+  return { ...r, hours, pct: r.total ? (r.attended / r.total) * 100 : 0 };
 }

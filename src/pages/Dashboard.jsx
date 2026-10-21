@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { useEffect, useRef, useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router";
 import Icon from "../components/Icon.jsx";
 import { UserAvatar } from "../components/AvatarArt.jsx";
 import TaskRow from "../components/tasks/TaskRow.jsx";
@@ -23,7 +23,8 @@ import { formatTime } from "../lib/time.js";
 
 /* Late night (midnight–5am) is still "evening", not morning. */
 /* After a class ends: did you go? One tap updates the attendance counts
-   (lib/attendance.js markClass); each class is asked about once a day. */
+   (lib/attendance.js markClass) by the class's length in hours; each class
+   is asked about once a day. */
 /* ---- End of the week: same timetable next week? ----
    From Friday noon to Sunday, if there is a timetable, ask once per week
    (remembered on this device). "It changed" offers the photo scanner or
@@ -78,21 +79,43 @@ function WeekCheck() {
   );
 }
 
+const hoursLabel = (h) => (h > 1 ? h + " hours" : "1 hour");
+
+/* Records one answer and says what it did. */
+function answerClass(classId, subject, outcome, date) {
+  const r = markClass(classId, outcome, date);
+  if (!r) return false;
+  if (outcome === "cancelled") toast("Not counted", subject + " wasn't held, so attendance is unchanged.");
+  else toast.success(outcome === "attended" ? "Marked present" : "Marked absent",
+    subject + " counts as " + hoursLabel(r.hours) + " · now " + r.pct.toFixed(0) + "% (" + r.attended + " of " + r.total + ").");
+  return true;
+}
+
 function AttendancePrompt() {
   const [, tick] = useState(0);
   useEffect(() => {
     const t = setInterval(() => tick((n) => n + 1), 60000);   // classes finish while the page is open
     return () => clearInterval(t);
   }, []);
+
+  /* A tap on a notification's "Attended" / "Missed" button lands here as
+     /dashboard?attend=<class id>&date=<day>&outcome=<answer> (public/sw.js). */
+  const [params, setParams] = useSearchParams();
+  const handled = useRef(false);
+  useEffect(() => {
+    const id = params.get("attend");
+    if (!id || handled.current) return;
+    handled.current = true;
+    const entry = store.get("timetable").find((c) => c.id === id);
+    const subject = entry ? store.subjects.nameOf(entry.subjectId) || "That class" : "That class";
+    const done = answerClass(id, subject, params.get("outcome"), params.get("date") || undefined);
+    if (!done && entry) toast("Already recorded", subject + " was answered for that day, so nothing changed.");
+    setParams({}, { replace: true });
+  }, [params, setParams]);
+
   const list = classesToMark();
   if (!list.length) return null;
-
-  function answer(c, outcome) {
-    const r = markClass(c.id, outcome);
-    if (outcome === "cancelled") toast("Not counted", c.subject + " wasn't held, so attendance is unchanged.");
-    else toast.success(outcome === "attended" ? "Marked present" : "Marked absent",
-      c.subject + " is now at " + r.pct.toFixed(0) + "% (" + r.attended + " of " + r.total + ").");
-  }
+  const answer = (c, outcome) => answerClass(c.id, c.subject, outcome);
 
   return (
     <section className="card card--pad attend-ask" aria-labelledby="attend-ask-title">
@@ -103,7 +126,7 @@ function AttendancePrompt() {
             <span className="subject-dot" style={subjectVar(c.color)} aria-hidden="true"></span>
             <span className="attend-ask__what">
               <strong>{c.subject}</strong>
-              <span className="text-small muted">{" " + c.time + (c.room ? " · " + c.room : "")}</span>
+              <span className="text-small muted">{" " + c.time + (c.room ? " · " + c.room : "") + (c.hours > 1 ? " · counts as " + c.hours : "")}</span>
             </span>
             <span className="attend-ask__actions">
               <button type="button" className="btn btn--primary btn--sm" onClick={() => answer(c, "attended")}>Attended</button>
