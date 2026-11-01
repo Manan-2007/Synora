@@ -3,7 +3,7 @@
 
    While Synora is open (a tab, even in the background, or the
    installed app) it checks every 30 seconds and notifies:
-     • 10 minutes before each class in today's timetable
+     • 15 minutes before each class in today's timetable
      • when a class ends: did you attend? (Attended / Missed buttons;
        the answer counts the class's hours — lib/attendance.js)
      • once a day from 8 am: what's due today
@@ -25,7 +25,7 @@ import { classesToMark } from "./attendance.js";
 
 const KEY = "synora-reminders";      // { enabled }
 const SHOWN = "synora-reminded";     // { date, keys: ["class:<id>", "due:<date>"] } — today's only
-const CLASS_LEAD_MIN = 10;
+const CLASS_LEAD_MIN = 15;
 const DIGEST_HOUR = 8;
 
 const listeners = new Set();
@@ -233,5 +233,5 @@ export function startReminders() {
 }
 
 export function sendTestReminder() {
-  return notify("Reminders are on", "You'll hear from Synora 10 minutes before each class, after it for attendance, and when work is due.", "test");
+  return notify("Reminders are on", "You'll hear from Synora 15 minutes before each class, after it for attendance, and when work is due.", "test");
 }

@@ -823,7 +823,7 @@ tokens (`--glass-*` and `--app-ambient` in `tokens.css`):
 | **Email** | Brevo's transactional API, for password-reset links (one `fetch`, no SDK) |
 | **Quality** | ESLint (React hooks rules) and a GitHub Actions check (lint + build) on every push |
 | **AI** | Google Gemini (free tier) or Claude reads timetable photos and PDFs, server-side |
-| **Push** | Web Push with VAPID (`web-push`), scheduled by GitHub Actions and Vercel cron |
+| **Push** | Web Push with VAPID (`web-push`), scheduled every minute by cron-job.org (GitHub Actions and Vercel cron as backstops) |
 | **Runtime dependencies** | `react`, `react-dom`, `react-router` in the app, and `express`, `mysql2`, `bcryptjs`, `web-push` in the API. Nothing else. |
 
 ---
@@ -913,7 +913,7 @@ The live site deploys automatically from `main` on **Vercel**.
 - The API runs in Vercel's Mumbai region (`bom1`), a ~20 ms round trip from the Aiven database.
 - New tables and columns are added to the live database automatically after a deploy.
 - Password-reset emails need `BREVO_API_KEY` and `MAIL_FROM` (a sender verified in Brevo). Without them, *Forgot password?* says email isn't set up yet. See [`database/README.md`](database/README.md#6-password-reset-emails-brevo).
-- Push reminders need `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` and `CRON_SECRET` in Vercel, and the same `CRON_SECRET` as a GitHub repository secret (for the 10-minute schedule in `.github/workflows/push-tick.yml`). See [part 7](database/README.md#7-push-reminders-with-synora-closed).
+- Push reminders need `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` and `CRON_SECRET` in Vercel, and the same `CRON_SECRET` in an every-minute [cron-job.org](https://cron-job.org) job (GitHub's `.github/workflows/push-tick.yml` and Vercel's daily cron are backstops). See [part 7](database/README.md#7-push-reminders-with-synora-closed).
 - Timetable scanning needs `GEMINI_API_KEY` (free, from Google AI Studio) or `ANTHROPIC_API_KEY`. See [part 8](database/README.md#8-timetable-from-a-photo-gemini-free).
 - Every one of these is optional: without its keys a feature says it isn't set up, and everything else works.
 - Until those variables are set, `/api/health` answers *no database* and the site runs on browser storage.

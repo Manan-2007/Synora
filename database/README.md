@@ -207,15 +207,21 @@ Class and due-today reminders reach a phone or computer even with Synora closed,
 
    Then **Redeploy**.
 4. **GitHub → the repository → Settings → Secrets and variables → Actions → New repository secret:**
-   name `CRON_SECRET`, the same value. The *Push reminders* workflow then calls the API every
-   10 minutes (Actions tab → *Push reminders* → *Run workflow* tests it straight away). Vercel's own
-   daily cron (`vercel.json`) also runs it at 8 am IST as a backstop.
-5. In the app: **Settings → Reminders → Turn on reminders**. The card says *Also when Synora is closed*
+   name `CRON_SECRET`, the same value. The *Push reminders* workflow then calls the API now and
+   then (Actions tab → *Push reminders* → *Run workflow* tests it straight away). Vercel's own
+   daily cron (`vercel.json`) also runs it at 8 am IST. Both are only backstops: GitHub asks for
+   every 10 minutes but really runs it every few hours.
+5. **The on-time scheduler: [cron-job.org](https://cron-job.org)** (free). Sign up, then
+   **Create cronjob**:
+   * URL `https://synora-v1.vercel.app/api/push/tick`, schedule **every 1 minute**.
+   * **Advanced → Headers → Add**: key `Authorization`, value `Bearer ` + the secret from step 2.
+   * Save, then **Test run**: the response is `{"users":…,"sent":…}` (a `401` means the header is wrong).
+6. In the app: **Settings → Reminders → Turn on reminders**. The card says *Also when Synora is closed*
    when this device is subscribed; **Send a test** comes from the server. On iPhone/iPad, do this inside
    the home-screen app.
 
-GitHub can start scheduled runs a few minutes late, so a class reminder arrives somewhere between 20
-and about 5 minutes before the class.
+With the every-minute job, a class reminder arrives 15 minutes before the class and "Did you attend?"
+within a minute of it ending. Without it, they wait for the next GitHub run, which can be hours.
 
 ## 8. Timetable from a photo (Gemini, free)
 

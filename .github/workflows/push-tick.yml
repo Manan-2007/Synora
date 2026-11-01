@@ -1,6 +1,7 @@
-# Push reminders: every 10 minutes, ask the live API to send any class
-# reminders that are due (server/push.js). GitHub may start scheduled runs
-# a few minutes late, which is why the API looks 20 minutes ahead.
+# Push reminders backstop: ask the live API to send any reminders that are
+# due (server/push.js). GitHub asks for every 10 minutes but in practice
+# runs this every few hours, so the on-time scheduler is a cron-job.org job
+# calling the same URL every minute (database/README.md, part 7).
 # Needs the repository secret CRON_SECRET (the same value as in Vercel).
 name: Push reminders
 

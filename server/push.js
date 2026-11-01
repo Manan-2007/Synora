@@ -3,10 +3,10 @@
 
    A browser that turns reminders on subscribes to Web Push and
    sends its subscription (plus its time zone) here. A scheduler
-   calls /api/push/tick every ~10 minutes (GitHub Actions, and a
-   daily Vercel cron as a backstop); each tick, for every
+   calls /api/push/tick every minute (cron-job.org; GitHub Actions
+   and a daily Vercel cron are backstops); each tick, for every
    subscribed account:
-     • classes starting in the next 20 minutes → one push each
+     • classes starting in the next 15 minutes → one push each
      • classes that have ended today and weren't answered yet → "Did
        you attend?" with Attended / Missed buttons (public/sw.js); the
        answer counts the class's length in hours
@@ -31,6 +31,9 @@ function configure() {
     process.env.VAPID_PUBLIC_KEY, process.env.VAPID_PRIVATE_KEY);
   configuredKeys = true;
 }
+
+/* Same lead as the open app (src/lib/reminders.js). */
+const CLASS_LEAD_MIN = 15;
 
 const sha = (s) => crypto.createHash("sha256").update(s).digest("hex");
 const validTz = (tz) => { try { new Intl.DateTimeFormat("en", { timeZone: tz }); return true; } catch { return false; } };
@@ -107,7 +110,7 @@ export async function tick(now = new Date()) {
     for (const c of classes) {
       const [h, m] = c.start.split(":").map(Number);
       const inMin = h * 60 + m - t.minutes;
-      if (inMin > 0 && inMin <= 20 && await once(userId, `class:${c.id}:${t.date}`)) {
+      if (inMin > 0 && inMin <= CLASS_LEAD_MIN && await once(userId, `class:${c.id}:${t.date}`)) {
         sent += await sendToUser(userId, {
           title: `${c.name} at ${show(c.start)}`,
           body: `Starts in ${inMin} minute${inMin === 1 ? "" : "s"}${c.room ? " · " + c.room : ""}`,
