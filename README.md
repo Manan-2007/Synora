@@ -7,7 +7,7 @@
   </picture>
 </a>
 
-### One calm home for everything you're studying.
+### One calm home for everything you're studying
 
 Tasks, timetable, notes, a focus timer, CGPA, attendance and achievements, in a single quiet workspace.
 
